@@ -18,22 +18,11 @@
 
 package rjc.table.view;
 
-import rjc.table.data.TableData;
-
 /*************************************************************************************************/
-/********************************** Base class for table views ***********************************/
+/*********************** Reading and writing table view config XML streams ***********************/
 /*************************************************************************************************/
 
-public class TableView extends TableDraw
+public class TableXML extends TableSelection
 {
-
-  /**************************************** constructor ******************************************/
-  public TableView( TableData data )
-  {
-    // construct table view
-    m_view = this;
-    m_data = data;
-    data.register( m_view );
-  }
 
 }
