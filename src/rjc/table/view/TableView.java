@@ -18,7 +18,9 @@
 
 package rjc.table.view;
 
+import javafx.geometry.Orientation;
 import rjc.table.data.TableData;
+import rjc.table.support.Utils;
 
 /*************************************************************************************************/
 /********************************** Base class for table views ***********************************/
@@ -30,10 +32,48 @@ public class TableView extends TableDraw
   /**************************************** constructor ******************************************/
   public TableView( TableData data )
   {
-    // construct table view
+    // setup and register table view
     m_view = this;
     m_data = data;
     data.register( m_view );
+
+    // create table canvas and scroll bars
+    m_canvas = new TableCanvas( m_view );
+    m_vScrollBar = new TableScrollBar( m_view, Orientation.VERTICAL );
+    m_hScrollBar = new TableScrollBar( m_view, Orientation.HORIZONTAL );
+
+    // add canvas and scroll bars to parent displayed children
+    add( m_canvas );
+    add( m_vScrollBar );
+    add( m_hScrollBar );
+  }
+
+  /***************************************** redrawCell ******************************************/
+  public void redrawCell( int columnIndex, int rowIndex )
+  {
+    // TODO #########################################################################
+    Utils.trace( columnIndex, rowIndex );
+  }
+
+  /**************************************** redrawColumn *****************************************/
+  public void redrawColumn( int columnIndex )
+  {
+    // TODO #########################################################################
+    Utils.trace( columnIndex );
+  }
+
+  /****************************************** redrawRow ******************************************/
+  public void redrawRow( int rowIndex )
+  {
+    // TODO #########################################################################
+    Utils.trace( rowIndex );
+  }
+
+  /******************************************** reset ********************************************/
+  public void reset()
+  {
+    // TODO #########################################################################
+    Utils.trace( "RESET" );
   }
 
 }

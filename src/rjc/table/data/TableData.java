@@ -36,7 +36,7 @@ public class TableData extends RegisterView
   public int getRowCount()
   {
     // return number of rows to be displayed in table
-    return 3;
+    return 10;
   }
 
   /************************************** getColumnTitle *****************************************/

@@ -19,9 +19,6 @@
 package rjc.table.view;
 
 import javafx.scene.canvas.Canvas;
-import javafx.scene.canvas.GraphicsContext;
-import javafx.scene.paint.Color;
-import javafx.scene.paint.Paint;
 
 /*************************************************************************************************/
 /********************** Canvas where the table headers and cells are drawn ***********************/
@@ -39,34 +36,60 @@ public class TableCanvas extends Canvas
     m_view = view;
 
     // when size changes draw new bits
-    widthProperty().addListener( ( observable, oldW, newW ) ->
-    {
-      // Utils.trace( "Canvas width change", oldW.intValue(), newW.intValue() );
-
-      GraphicsContext gc = getGraphicsContext2D();
-      gc.clearRect( 0.0, 0.0, getWidth(), getHeight() );
-      Paint colour = Color.hsb( 100, 0.5, 1.0 );
-      gc.setFill( colour );
-      gc.fillRect( 4, 4, getWidth() - 8, getHeight() - 8 );
-    } );
-
-    heightProperty().addListener( ( observable, oldH, newH ) ->
-    {
-      // Utils.trace( "Canvas height change", oldH.intValue(), newH.intValue() );
-
-      GraphicsContext gc = getGraphicsContext2D();
-      gc.clearRect( 0.0, 0.0, getWidth(), getHeight() );
-      Paint colour = Color.hsb( 200, 0.5, 1.0 );
-      gc.setFill( colour );
-      gc.fillRect( 4, 4, getWidth() - 8, getHeight() - 8 );
-    } );
+    widthProperty().addListener( ( observable, oldW, newW ) -> widthChange( oldW.intValue(), newW.intValue() ) );
+    heightProperty().addListener( ( observable, oldH, newH ) -> heightChange( oldH.intValue(), newH.intValue() ) );
 
     // redraw table when focus changes
-    focusedProperty().addListener( ( observable, oldF, newF ) ->
-    {
-      // TODO #####################################
-      // Utils.trace( "Canvas focus change", oldF.booleanValue(), newF.booleanValue() );
-    } );
+    focusedProperty().addListener( ( observable, oldF, newF ) -> redraw() );
+  }
+
+  /******************************************* redraw ********************************************/
+  public void redraw()
+  {
+    // return entire canvas
+    widthChange( 0, (int) getWidth() );
+  }
+
+  /***************************************** widthChange *****************************************/
+  private void widthChange( int oldW, int newW )
+  {
+    // only need to draw if new width is larger than old width
+    if ( newW < oldW )
+      return;
+
+    // clear new area
+    getGraphicsContext2D().clearRect( oldW, 0.0, newW - oldW, getHeight() );
+
+    // calculate which columns need to be redrawn, and redraw them
+    int minColumnPos = m_view.getColumnPosAtX( oldW );
+    int maxColumnPos = m_view.getColumnPosAtX( newW );
+    for ( int columnPos = minColumnPos; columnPos <= maxColumnPos; columnPos++ )
+      m_view.redrawColumn( m_view.getColumnIndexFromPosition( columnPos ) );
+
+    // check if vertical header needs to be redrawn
+    if ( oldW < m_view.getVerticalHeaderWidth() )
+      m_view.redrawColumn( TableView.HEADER );
+  }
+
+  /**************************************** heightChange *****************************************/
+  private void heightChange( int oldH, int newH )
+  {
+    // only need to draw if new height is larger than old height
+    if ( newH < oldH )
+      return;
+
+    // clear new area
+    getGraphicsContext2D().clearRect( 0.0, oldH, getWidth(), newH - oldH );
+
+    // calculate which rows need to be redrawn, and redraw them
+    int minRowPos = m_view.getRowPosAtY( oldH );
+    int maxRowPos = m_view.getRowPosAtY( newH );
+    for ( int rowPos = minRowPos; rowPos <= maxRowPos; rowPos++ )
+      m_view.redrawRow( m_view.getRowIndexFromPosition( rowPos ) );
+
+    // check if horizontal header needs to be redrawn
+    if ( oldH < m_view.getHorizontalHeaderHeight() )
+      m_view.redrawRow( TableView.HEADER );
   }
 
 }

@@ -18,11 +18,84 @@
 
 package rjc.table.view;
 
+import java.util.ArrayList;
+
 /*************************************************************************************************/
 /********************** Table column and row index to position arrangement ***********************/
 /*************************************************************************************************/
 
 public class TablePosition extends TableDisplay
 {
+  // arrays mapping from position to index
+  private ArrayList<Integer> m_columnIndexes = new ArrayList<Integer>();
+  private ArrayList<Integer> m_rowIndexes    = new ArrayList<Integer>();
+
+  /********************************* getColumnIndexFromPosition **********************************/
+  public int getColumnIndexFromPosition( int columnPos )
+  {
+    // return column index from position (faster)
+    try
+    {
+      return m_columnIndexes.get( columnPos );
+    }
+    catch ( IndexOutOfBoundsException exception )
+    {
+      // check position is within column count
+      int count = m_data.getColumnCount();
+      if ( columnPos < 0 || columnPos >= count )
+        throw new IndexOutOfBoundsException( "columnPos=" + columnPos + " columnCount=" + count );
+
+      // expand mapping to cover column count
+      for ( int column = m_columnIndexes.size(); column < count; column++ )
+        m_columnIndexes.add( column );
+
+      return m_columnIndexes.get( columnPos );
+    }
+  }
+
+  /********************************* getColumnPositionFromIndex **********************************/
+  public int getColumnPositionFromIndex( int columnIndex )
+  {
+    // return column position from index (slower)
+    return m_columnIndexes.indexOf( columnIndex );
+  }
+
+  /*********************************** getRowIndexFromPosition ***********************************/
+  public int getRowIndexFromPosition( int rowPos )
+  {
+    // return column index from position (faster)
+    try
+    {
+      return m_rowIndexes.get( rowPos );
+    }
+    catch ( IndexOutOfBoundsException exception )
+    {
+      // check position is within row count
+      int count = m_data.getRowCount();
+      if ( rowPos < 0 || rowPos >= count )
+        throw new IndexOutOfBoundsException( "rowPos=" + rowPos + " rowCount=" + count );
+
+      // expand mapping to cover row count
+      for ( int row = m_rowIndexes.size(); row < count; row++ )
+        m_rowIndexes.add( row );
+
+      return m_rowIndexes.get( rowPos );
+    }
+  }
+
+  /*********************************** getRowPositionFromIndex ***********************************/
+  public int getRowPositionFromIndex( int rowIndex )
+  {
+    // return column position from index (slower)
+    return m_rowIndexes.indexOf( rowIndex );
+  }
+
+  /*************************************** resetPositions ****************************************/
+  public void resetPositions()
+  {
+    // reset column and row position to index mapping
+    m_columnIndexes.clear();
+    m_rowIndexes.clear();
+  }
 
 }

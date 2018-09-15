@@ -18,41 +18,11 @@
 
 package rjc.table.view;
 
-import rjc.table.support.Utils;
-
 /*************************************************************************************************/
 /*************************** Table body cells and header cells drawing ***************************/
 /*************************************************************************************************/
 
 public class TableDraw extends TableXML
 {
-
-  /***************************************** redrawCell ******************************************/
-  public void redrawCell( int columnIndex, int rowIndex )
-  {
-    // TODO Auto-generated method stub #########################################################################
-    Utils.trace( columnIndex, rowIndex );
-  }
-
-  /**************************************** redrawColumn *****************************************/
-  public void redrawColumn( int columnIndex )
-  {
-    // TODO Auto-generated method stub #########################################################################
-    Utils.trace( columnIndex );
-  }
-
-  /****************************************** redrawRow ******************************************/
-  public void redrawRow( int rowIndex )
-  {
-    // TODO Auto-generated method stub #########################################################################
-    Utils.trace( rowIndex );
-  }
-
-  /******************************************** reset ********************************************/
-  public void reset()
-  {
-    // TODO Auto-generated method stub #########################################################################
-    Utils.trace( "RESET" );
-  }
 
 }

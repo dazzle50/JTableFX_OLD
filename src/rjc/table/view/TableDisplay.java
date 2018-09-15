@@ -18,12 +18,7 @@
 
 package rjc.table.view;
 
-import static java.lang.Math.min;
-
-import javafx.geometry.Orientation;
-import javafx.stage.Screen;
 import rjc.table.data.TableData;
-import rjc.table.support.Utils;
 
 /*************************************************************************************************/
 /************************ Table view display with canvas and scroll bars *************************/
@@ -31,31 +26,17 @@ import rjc.table.support.Utils;
 
 public class TableDisplay extends TableParent
 {
-  protected TableView    m_view;       // shortcut to table view
-  protected TableData    m_data;       // shortcut to table data
+  protected TableView        m_view;           // shortcut to table view
+  protected TableData        m_data;           // shortcut to table data
 
-  private TableScrollBar m_vScrollBar; // vertical scroll bar
-  private TableScrollBar m_hScrollBar; // horizontal scroll bar
-  private TableCanvas    m_canvas;     // table canvas
+  protected TableScrollBar   m_vScrollBar;     // vertical scroll bar
+  protected TableScrollBar   m_hScrollBar;     // horizontal scroll bar
+  protected TableCanvas      m_canvas;         // table canvas
 
-  private static double  MAXSIZE;
+  protected static final int INVALID = -2;
+  protected static final int HEADER  = -1;
 
-  /**************************************** constructor ******************************************/
-  public TableDisplay()
-  {
-    // construct table display with canvas and scroll bars
-    m_canvas = new TableCanvas( m_view );
-    m_vScrollBar = new TableScrollBar( m_view, Orientation.VERTICAL );
-    m_hScrollBar = new TableScrollBar( m_view, Orientation.HORIZONTAL );
-
-    // add canvas and scroll bars to parent displayed children
-    add( m_canvas );
-    add( m_vScrollBar );
-    add( m_hScrollBar );
-
-    // calculate a maximum valid screen size to avoid unnecessary resizing
-    MAXSIZE = Screen.getPrimary().getBounds().getWidth() * 100.0;
-  }
+  private static double      MAXSIZE = 999999; // max valid size for table
 
   /******************************************* resize ********************************************/
   @Override
@@ -65,11 +46,11 @@ public class TableDisplay extends TableParent
     if ( (int) width == getWidth() && (int) height == getHeight() )
       return;
 
-    // do nothing if size is invalid
+    // do nothing if size is larger than max allowed
     if ( width > MAXSIZE || height > MAXSIZE )
       return;
 
-    // when parent resized re-layout children
+    // resize parent and re-layout canvas and scroll bars
     super.resize( width, height );
     layoutDisplay();
   }
@@ -93,7 +74,7 @@ public class TableDisplay extends TableParent
     isVSBvisible = visibleHeight < m_view.getTableHeight();
     visibleWidth = isVSBvisible ? getWidth() - (int) m_vScrollBar.getWidth() : getWidth();
 
-    // handle vertical scroll bar
+    // update vertical scroll bar
     m_vScrollBar.setVisible( isVSBvisible );
     if ( isVSBvisible )
     {
@@ -106,7 +87,7 @@ public class TableDisplay extends TableParent
       m_vScrollBar.setBlockIncrement( visibleHeight - m_view.getHorizontalHeaderHeight() );
     }
 
-    // handle horizontal scroll bar
+    // update horizontal scroll bar
     m_hScrollBar.setVisible( isHSBvisible );
     if ( isHSBvisible )
     {
@@ -119,7 +100,7 @@ public class TableDisplay extends TableParent
       m_hScrollBar.setBlockIncrement( visibleWidth - m_view.getVerticalHeaderWidth() );
     }
 
-    // handle canvas
+    // update canvas
     m_canvas.setWidth( visibleWidth );
     m_canvas.setHeight( visibleHeight );
   }
@@ -128,48 +109,35 @@ public class TableDisplay extends TableParent
   public void redraw()
   {
     // request complete redraw of table canvas
-
-    // TODO
+    m_canvas.redraw();
   }
 
-  /*********************************** resizeCanvasScrollBars ************************************/
-  public void resizeCanvasScrollBars()
+  /************************************** getColumnPosAtX ****************************************/
+  public int getColumnPosAtX( int x )
   {
-    // check height & width are real before proceeding
-    Utils.trace( getWidth(), getHeight() );
-
-    if ( getHeight() == Integer.MAX_VALUE || getWidth() == Integer.MAX_VALUE )
-      return;
-
-    // determine which scroll-bars should be visible
-    boolean isVSBvisible = getHeight() < m_view.getTableHeight();
-    int visibleWidth = isVSBvisible ? getWidth() - TableScrollBar.SIZE : getWidth();
-    boolean isHSBvisible = visibleWidth < m_view.getTableWidth();
-    int visibleHeight = isHSBvisible ? getHeight() - TableScrollBar.SIZE : getHeight();
-    isVSBvisible = visibleHeight < m_view.getTableHeight();
-    visibleWidth = isVSBvisible ? getWidth() - TableScrollBar.SIZE : getWidth();
-
-    // set scroll-bars visibility and size
-    //m_vScrollBar.setVisbleSize( isVSBvisible, visibleHeight );
-    //m_hScrollBar.setVisbleSize( isHSBvisible, visibleWidth );
-
-    // set canvas size
-    m_canvas.setWidth( min( visibleWidth, m_view.getTableWidth() ) );
-    m_canvas.setHeight( min( visibleHeight, m_view.getTableHeight() ) );
+    // TODO ##################################
+    return 0;
   }
 
-  /***************************************** getVOffset ******************************************/
-  public int getVOffset()
+  /**************************************** getRowPosAtY *****************************************/
+  public int getRowPosAtY( int y )
   {
-    // return table vertical offset due to scroll bar
-    return (int) m_vScrollBar.getValue();
+    // TODO ##################################
+    return 0;
   }
 
-  /***************************************** getHOffset ******************************************/
-  public int getHOffset()
+  /***************************************** getXOffset ******************************************/
+  public int getXOffset()
   {
     // return table horizontal offset due to scroll bar
     return (int) m_hScrollBar.getValue();
+  }
+
+  /***************************************** getYOffset ******************************************/
+  public int getYOffset()
+  {
+    // return table vertical offset due to scroll bar
+    return (int) m_vScrollBar.getValue();
   }
 
 }
