@@ -51,6 +51,9 @@ class TableScrollBar extends ScrollBar
       setMaxWidth( USE_PREF_SIZE );
       setMinHeight( SIZE );
     }
+
+    // redraw table when scroll bar position value changes
+    valueProperty().addListener( ( observable, oldF, newF ) -> m_view.redraw() );
   }
 
   /****************************************** increment ******************************************/

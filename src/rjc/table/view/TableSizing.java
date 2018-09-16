@@ -27,12 +27,12 @@ import java.util.Map;
 
 public class TableSizing extends TablePosition
 {
-  private int                   m_defaultColumnWidth    = 100;
-  private int                   m_defaultRowHeight      = 20;
-  private int                   m_minimumColumnWidth    = 40;
-  private int                   m_minimumRowHeight      = 17;
-  private int                   m_vHeaderWidth          = 30;
-  private int                   m_hHeaderHeight         = 20;
+  private int                   m_columnDefaultWidth    = 100;
+  private int                   m_rowDefaultHeight      = 20;
+  private int                   m_columnMinimumWidth    = 40;
+  private int                   m_rowMinimumHeight      = 17;
+  private int                   m_rowHeaderWidth        = 30;
+  private int                   m_columnHeaderHeight    = 20;
 
   // all columns have default widths, and rows default heights, except those in these maps, -ve means hidden
   private Map<Integer, Integer> m_columnWidthExceptions = new HashMap<Integer, Integer>();
@@ -44,21 +44,35 @@ public class TableSizing extends TablePosition
   /*************************************** getTableWidth *****************************************/
   public int getTableWidth()
   {
-    // return width in pixels of all the visible table columns + vertical header
-    if ( m_bodyWidthCached == INVALID )
-      m_bodyWidthCached = calculateBodyWidth();
-
-    return m_bodyWidthCached + m_vHeaderWidth;
+    // return width in pixels of all the visible table body columns + row header
+    return getBodyWidth() + m_rowHeaderWidth;
   }
 
   /************************************** getTableHeight *****************************************/
   public int getTableHeight()
   {
-    // return height in pixels of all the visible table rows + horizontal header
+    // return height in pixels of all the visible table body rows + column header
+    return getBodyHeight() + m_columnHeaderHeight;
+  }
+
+  /*************************************** getBodyWidth ******************************************/
+  public int getBodyWidth()
+  {
+    // return width in pixels of all the visible table body columns only
+    if ( m_bodyWidthCached == INVALID )
+      m_bodyWidthCached = calculateBodyWidth();
+
+    return m_bodyWidthCached;
+  }
+
+  /************************************** getBodyHeight ******************************************/
+  public int getBodyHeight()
+  {
+    // return height in pixels of all the visible table body rows only
     if ( m_bodyHeightCached == INVALID )
       m_bodyHeightCached = calculateBodyHeight();
 
-    return m_bodyHeightCached + m_hHeaderHeight;
+    return m_bodyHeightCached;
   }
 
   /************************************ calculateBodyWidth ***************************************/
@@ -82,7 +96,7 @@ public class TableSizing extends TablePosition
         m_columnWidthExceptions.remove( columnIndex );
     }
 
-    return bodyWidth + ( columnCount - exceptionsCount ) * m_defaultColumnWidth;
+    return bodyWidth + ( columnCount - exceptionsCount ) * m_columnDefaultWidth;
   }
 
   /************************************ calculateBodyHeight **************************************/
@@ -106,48 +120,48 @@ public class TableSizing extends TablePosition
         m_rowHeightExceptions.remove( rowIndex );
     }
 
-    return bodyHeight + ( rowCount - exceptionsCount ) * m_defaultRowHeight;
+    return bodyHeight + ( rowCount - exceptionsCount ) * m_rowDefaultHeight;
   }
 
-  /*********************************** getVerticalHeaderWidth ************************************/
-  public int getVerticalHeaderWidth()
+  /************************************** getRowHeaderWidth **************************************/
+  public int getRowHeaderWidth()
   {
-    // return table vertical header width
-    return m_vHeaderWidth;
+    // return table row header width
+    return m_rowHeaderWidth;
   }
 
-  /*********************************** setVerticalHeaderWidth ************************************/
-  public void setVerticalHeaderWidth( int width )
+  /************************************** setRowHeaderWidth **************************************/
+  public void setRowHeaderWidth( int width )
   {
-    // set vertical header width
-    m_vHeaderWidth = width;
+    // set table row header width
+    m_rowHeaderWidth = width;
   }
 
-  /********************************** getHorizontalHeaderHeight **********************************/
-  public int getHorizontalHeaderHeight()
+  /************************************ getColumnHeaderHeight ************************************/
+  public int getColumnHeaderHeight()
   {
-    // return table horizontal header height
-    return m_hHeaderHeight;
+    // return table column header height
+    return m_columnHeaderHeight;
   }
 
-  /********************************** setHorizontalHeaderHeight **********************************/
-  public void setHorizontalHeaderHeight( int height )
+  /************************************ setColumnHeaderHeight ************************************/
+  public void setColumnHeaderHeight( int height )
   {
-    // set horizontal header height
-    m_hHeaderHeight = height;
+    // set table column header height
+    m_columnHeaderHeight = height;
   }
 
-  /************************************ setDefaultColumnWidth ************************************/
-  public void setDefaultColumnWidth( int width )
+  /************************************ setColumnDefaultWidth ************************************/
+  public void setColumnDefaultWidth( int width )
   {
-    m_defaultColumnWidth = width;
+    m_columnDefaultWidth = width;
     m_bodyWidthCached = INVALID;
   }
 
-  /************************************* setDefaultRowHeight *************************************/
-  public void setDefaultRowHeight( int height )
+  /************************************* setRowDefaultHeight *************************************/
+  public void setRowDefaultHeight( int height )
   {
-    m_defaultRowHeight = height;
+    m_rowDefaultHeight = height;
     m_bodyHeightCached = INVALID;
   }
 
@@ -155,10 +169,10 @@ public class TableSizing extends TablePosition
   public int getColumnIndexWidth( int columnIndex )
   {
     // return width for column index
-    if ( columnIndex < 0 || columnIndex >= m_data.getColumnCount() )
-      return INVALID;
+    if ( columnIndex == HEADER )
+      return getRowHeaderWidth();
 
-    int width = m_columnWidthExceptions.getOrDefault( columnIndex, m_defaultColumnWidth );
+    int width = m_columnWidthExceptions.getOrDefault( columnIndex, m_columnDefaultWidth );
     if ( width < 0 )
       return 0; // -ve means column hidden, so return zero
 
@@ -169,15 +183,15 @@ public class TableSizing extends TablePosition
   public void setColumnIndexWidth( int columnIndex, int newWidth )
   {
     // width should not be below minimum
-    if ( newWidth < m_minimumColumnWidth )
-      newWidth = m_minimumColumnWidth;
+    if ( newWidth < m_columnMinimumWidth )
+      newWidth = m_columnMinimumWidth;
 
     // if width is changed, update body width and update width exception
     int oldWidth = getColumnIndexWidth( columnIndex );
     if ( newWidth != oldWidth )
     {
       m_bodyWidthCached = m_bodyWidthCached - oldWidth + newWidth;
-      if ( newWidth == m_defaultColumnWidth )
+      if ( newWidth == m_columnDefaultWidth )
         m_columnWidthExceptions.remove( columnIndex );
       else
         m_columnWidthExceptions.put( columnIndex, newWidth );
@@ -188,10 +202,10 @@ public class TableSizing extends TablePosition
   public int getRowIndexHeight( int rowIndex )
   {
     // return height for row index
-    if ( rowIndex < 0 || rowIndex >= m_data.getRowCount() )
-      return INVALID;
+    if ( rowIndex == HEADER )
+      return getColumnHeaderHeight();
 
-    int height = m_rowHeightExceptions.getOrDefault( rowIndex, m_defaultRowHeight );
+    int height = m_rowHeightExceptions.getOrDefault( rowIndex, m_rowDefaultHeight );
     if ( height < 0 )
       return 0; // -ve means row hidden, so return zero
 
@@ -202,26 +216,26 @@ public class TableSizing extends TablePosition
   public void setRowIndexHeight( int rowIndex, int newHeight )
   {
     // height should not be below minimum
-    if ( newHeight < m_minimumRowHeight )
-      newHeight = m_minimumRowHeight;
+    if ( newHeight < m_rowMinimumHeight )
+      newHeight = m_rowMinimumHeight;
 
     // if height is changed, update body height and update height exception
     int oldHeight = getRowIndexHeight( rowIndex );
     if ( newHeight != oldHeight )
     {
       m_bodyHeightCached = m_bodyHeightCached - oldHeight + newHeight;
-      if ( newHeight == m_defaultRowHeight )
+      if ( newHeight == m_rowDefaultHeight )
         m_rowHeightExceptions.remove( rowIndex );
       else
         m_rowHeightExceptions.put( rowIndex, newHeight );
     }
   }
 
-  /******************************************* hideRow *******************************************/
-  public void hideRow( int rowIndex )
+  /**************************************** hideRowIndex *****************************************/
+  public void hideRowIndex( int rowIndex )
   {
     // if row not already hidden, set height exception and update body height
-    int oldHeight = m_rowHeightExceptions.getOrDefault( rowIndex, m_defaultRowHeight );
+    int oldHeight = m_rowHeightExceptions.getOrDefault( rowIndex, m_rowDefaultHeight );
     if ( oldHeight > 0 )
     {
       m_rowHeightExceptions.put( rowIndex, -oldHeight );
@@ -229,20 +243,102 @@ public class TableSizing extends TablePosition
     }
   }
 
-  /******************************************* showRow *******************************************/
-  public void showRow( int rowIndex )
+  /**************************************** showRowIndex *****************************************/
+  public void showRowIndex( int rowIndex )
   {
     // if row hidden, update height exception and update body height
-    int oldHeight = m_rowHeightExceptions.getOrDefault( rowIndex, m_defaultRowHeight );
+    int oldHeight = m_rowHeightExceptions.getOrDefault( rowIndex, m_rowDefaultHeight );
     if ( oldHeight < 0 )
     {
-      if ( oldHeight == -m_defaultRowHeight )
+      if ( oldHeight == -m_rowDefaultHeight )
         m_rowHeightExceptions.remove( rowIndex );
       else
         m_rowHeightExceptions.put( rowIndex, -oldHeight );
 
       m_bodyHeightCached = m_bodyHeightCached - oldHeight;
     }
+  }
+
+  /*********************************** getColumnPositionAtX **************************************/
+  public int getColumnPositionAtX( int x )
+  {
+    // adjust x for horizontal offset due to scroll bar and row header
+    x += getXOffset() - getRowHeaderWidth();
+
+    // if left of table body return Integer.MIN_VALUE
+    if ( x < 0 )
+      return Integer.MIN_VALUE;
+
+    // if right of table body return Integer.MAX_VALUE
+    if ( x > m_view.getBodyWidth() )
+      return Integer.MAX_VALUE;
+
+    // determine column position
+    for ( int pos = 0; pos < m_data.getColumnCount(); pos++ )
+    {
+      int width = getColumnIndexWidth( getColumnIndexFromPosition( pos ) );
+      if ( x <= width )
+        return pos;
+      x -= width;
+    }
+
+    throw new ArithmeticException( "Shouldn't be able to get here " + x + " " + m_view.getBodyWidth() );
+  }
+
+  /************************************* getRowPositionAtY ***************************************/
+  public int getRowPositionAtY( int y )
+  {
+    // adjust y for vertical offset due to scroll bar and column header
+    y += getYOffset() - getColumnHeaderHeight();
+
+    // if above table body return Integer.MIN_VALUE
+    if ( y < 0 )
+      return Integer.MIN_VALUE;
+
+    // if below table body return Integer.MAX_VALUE
+    if ( y > m_view.getBodyHeight() )
+      return Integer.MAX_VALUE;
+
+    // determine row position
+    for ( int pos = 0; pos < m_data.getRowCount(); pos++ )
+    {
+      int height = getRowIndexHeight( getRowIndexFromPosition( pos ) );
+      if ( y <= height )
+        return pos;
+      y -= height;
+    }
+
+    throw new ArithmeticException( "Shouldn't be able to get here " + y + " " + m_view.getBodyHeight() );
+  }
+
+  /************************************ getColumnIndexXStart *************************************/
+  public int getColumnIndexXStart( int columnIndex )
+  {
+    // return column index start x
+    if ( columnIndex == HEADER )
+      return 0;
+
+    int x = getRowHeaderWidth() - getXOffset();
+    int columnPos = getColumnPositionFromIndex( columnIndex );
+    for ( int pos = 0; pos < columnPos; pos++ )
+      x += getColumnIndexWidth( getColumnIndexFromPosition( pos ) );
+
+    return x;
+  }
+
+  /************************************** getRowIndexYStart **************************************/
+  public int getRowIndexYStart( int rowIndex )
+  {
+    // return row index start y
+    if ( rowIndex == HEADER )
+      return 0;
+
+    int y = getColumnHeaderHeight() - getYOffset();
+    int rowPos = getRowPositionFromIndex( rowIndex );
+    for ( int pos = 0; pos < rowPos; pos++ )
+      y += getRowIndexHeight( getRowIndexFromPosition( pos ) );
+
+    return y;
   }
 
 }

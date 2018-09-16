@@ -19,6 +19,7 @@
 package rjc.table.view;
 
 import javafx.geometry.Orientation;
+import javafx.scene.paint.Color;
 import rjc.table.data.TableData;
 import rjc.table.support.Utils;
 
@@ -48,32 +49,14 @@ public class TableView extends TableDraw
     add( m_hScrollBar );
   }
 
-  /***************************************** redrawCell ******************************************/
-  public void redrawCell( int columnIndex, int rowIndex )
+  /****************************************** drawCell *******************************************/
+  public void drawCell()
   {
     // TODO #########################################################################
-    Utils.trace( columnIndex, rowIndex );
-  }
+    Utils.trace( m_columnIndex, m_rowIndex, x, y, w, h, gc );
 
-  /**************************************** redrawColumn *****************************************/
-  public void redrawColumn( int columnIndex )
-  {
-    // TODO #########################################################################
-    Utils.trace( columnIndex );
-  }
-
-  /****************************************** redrawRow ******************************************/
-  public void redrawRow( int rowIndex )
-  {
-    // TODO #########################################################################
-    Utils.trace( rowIndex );
-  }
-
-  /******************************************** reset ********************************************/
-  public void reset()
-  {
-    // TODO #########################################################################
-    Utils.trace( "RESET" );
+    gc.setFill( Color.hsb( ( m_columnIndex + m_rowIndex ) * 20, 1.0, 1.0 ) );
+    gc.fillRect( x, y, w, h );
   }
 
 }

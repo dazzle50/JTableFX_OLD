@@ -26,17 +26,22 @@ import rjc.table.data.TableData;
 
 public class TableDisplay extends TableParent
 {
-  protected TableView        m_view;           // shortcut to table view
-  protected TableData        m_data;           // shortcut to table data
+  protected TableView        m_view;                      // shortcut to table view
+  protected TableData        m_data;                      // shortcut to table data
 
-  protected TableScrollBar   m_vScrollBar;     // vertical scroll bar
-  protected TableScrollBar   m_hScrollBar;     // horizontal scroll bar
-  protected TableCanvas      m_canvas;         // table canvas
+  protected TableScrollBar   m_vScrollBar;                // vertical scroll bar
+  protected TableScrollBar   m_hScrollBar;                // horizontal scroll bar
+  protected TableCanvas      m_canvas;                    // table canvas
 
-  protected static final int INVALID = -2;
-  protected static final int HEADER  = -1;
+  protected static final int INVALID = -2;                // when int value is invalid
+  protected static final int HEADER  = -1;                // when column or row refers to headers
 
-  private static double      MAXSIZE = 999999; // max valid size for table
+  protected static final int LEFT    = Integer.MIN_VALUE; // column index or position left of table body
+  protected static final int RIGHT   = Integer.MAX_VALUE; // column index or position right of table body
+  protected static final int ABOVE   = Integer.MIN_VALUE; // row index or position above table body
+  protected static final int BELOW   = Integer.MAX_VALUE; // row index or position below table body
+
+  private static double      MAXSIZE = 999999;            // max valid size for table
 
   /******************************************* resize ********************************************/
   @Override
@@ -84,8 +89,13 @@ public class TableDisplay extends TableParent
       double max = m_view.getTableHeight() - visibleHeight;
       m_vScrollBar.setMax( max );
       m_vScrollBar.setVisibleAmount( max * visibleHeight / m_view.getTableHeight() );
-      m_vScrollBar.setBlockIncrement( visibleHeight - m_view.getHorizontalHeaderHeight() );
+      m_vScrollBar.setBlockIncrement( visibleHeight - m_view.getColumnHeaderHeight() );
+
+      if ( m_vScrollBar.getValue() > max )
+        m_vScrollBar.setValue( max );
     }
+    else
+      m_vScrollBar.setValue( 0.0 );
 
     // update horizontal scroll bar
     m_hScrollBar.setVisible( isHSBvisible );
@@ -97,8 +107,13 @@ public class TableDisplay extends TableParent
       double max = m_view.getTableWidth() - visibleWidth;
       m_hScrollBar.setMax( max );
       m_hScrollBar.setVisibleAmount( max * visibleWidth / m_view.getTableWidth() );
-      m_hScrollBar.setBlockIncrement( visibleWidth - m_view.getVerticalHeaderWidth() );
+      m_hScrollBar.setBlockIncrement( visibleWidth - m_view.getRowHeaderWidth() );
+
+      if ( m_hScrollBar.getValue() > max )
+        m_hScrollBar.setValue( max );
     }
+    else
+      m_hScrollBar.setValue( 0.0 );
 
     // update canvas
     m_canvas.setWidth( visibleWidth );
@@ -110,20 +125,6 @@ public class TableDisplay extends TableParent
   {
     // request complete redraw of table canvas
     m_canvas.redraw();
-  }
-
-  /************************************** getColumnPosAtX ****************************************/
-  public int getColumnPosAtX( int x )
-  {
-    // TODO ##################################
-    return 0;
-  }
-
-  /**************************************** getRowPosAtY *****************************************/
-  public int getRowPosAtY( int y )
-  {
-    // TODO ##################################
-    return 0;
   }
 
   /***************************************** getXOffset ******************************************/

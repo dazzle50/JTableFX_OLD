@@ -60,14 +60,13 @@ public class TableCanvas extends Canvas
     // clear new area
     getGraphicsContext2D().clearRect( oldW, 0.0, newW - oldW, getHeight() );
 
-    // calculate which columns need to be redrawn, and redraw them
-    int minColumnPos = m_view.getColumnPosAtX( oldW );
-    int maxColumnPos = m_view.getColumnPosAtX( newW );
-    for ( int columnPos = minColumnPos; columnPos <= maxColumnPos; columnPos++ )
-      m_view.redrawColumn( m_view.getColumnIndexFromPosition( columnPos ) );
+    // calculate which columns need to be redrawn
+    int minColumnPos = m_view.getColumnPositionAtX( oldW );
+    int maxColumnPos = m_view.getColumnPositionAtX( newW );
+    m_view.redrawColumns( minColumnPos, maxColumnPos );
 
-    // check if vertical header needs to be redrawn
-    if ( oldW < m_view.getVerticalHeaderWidth() )
+    // check if row header needs to be redrawn
+    if ( oldW < m_view.getRowHeaderWidth() )
       m_view.redrawColumn( TableView.HEADER );
   }
 
@@ -82,13 +81,12 @@ public class TableCanvas extends Canvas
     getGraphicsContext2D().clearRect( 0.0, oldH, getWidth(), newH - oldH );
 
     // calculate which rows need to be redrawn, and redraw them
-    int minRowPos = m_view.getRowPosAtY( oldH );
-    int maxRowPos = m_view.getRowPosAtY( newH );
-    for ( int rowPos = minRowPos; rowPos <= maxRowPos; rowPos++ )
-      m_view.redrawRow( m_view.getRowIndexFromPosition( rowPos ) );
+    int minRowPos = m_view.getRowPositionAtY( oldH );
+    int maxRowPos = m_view.getRowPositionAtY( newH );
+    m_view.redrawRows( minRowPos, maxRowPos );
 
-    // check if horizontal header needs to be redrawn
-    if ( oldH < m_view.getHorizontalHeaderHeight() )
+    // check if column header needs to be redrawn
+    if ( oldH < m_view.getColumnHeaderHeight() )
       m_view.redrawRow( TableView.HEADER );
   }
 
