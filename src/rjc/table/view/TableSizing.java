@@ -21,6 +21,8 @@ package rjc.table.view;
 import java.util.HashMap;
 import java.util.Map;
 
+import rjc.table.support.Utils;
+
 /*************************************************************************************************/
 /****************** Table header + cell column and row sizing including hiding *******************/
 /*************************************************************************************************/
@@ -31,7 +33,7 @@ public class TableSizing extends TablePosition
   private int                   m_rowDefaultHeight      = 20;
   private int                   m_columnMinimumWidth    = 40;
   private int                   m_rowMinimumHeight      = 17;
-  private int                   m_rowHeaderWidth        = 30;
+  private int                   m_rowHeaderWidth        = 40;
   private int                   m_columnHeaderHeight    = 20;
 
   // all columns have default widths, and rows default heights, except those in these maps, -ve means hidden
@@ -149,6 +151,34 @@ public class TableSizing extends TablePosition
   {
     // set table column header height
     m_columnHeaderHeight = height;
+  }
+
+  /************************************* getRowMinimumHeight *************************************/
+  public int getRowMinimumHeight()
+  {
+    // return table row minimum height
+    return m_rowMinimumHeight;
+  }
+
+  /************************************* setRowMinimumHeight *************************************/
+  public void setRowMinimumHeight( int height )
+  {
+    // set table row minimum height
+    Utils.trace( "NOT IMPLEMENTED YET" );
+  }
+
+  /************************************ getColumnMinimumWidth ************************************/
+  public int getColumnMinimumWidth()
+  {
+    // return table column minimum width
+    return m_columnMinimumWidth;
+  }
+
+  /************************************ setColumnMinimumWidth ************************************/
+  public void setColumnMinimumWidth( int height )
+  {
+    // set table column minimum width
+    Utils.trace( "NOT IMPLEMENTED YET" );
   }
 
   /************************************ setColumnDefaultWidth ************************************/

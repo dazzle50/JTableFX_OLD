@@ -18,11 +18,17 @@
 
 package rjc.table.view;
 
+import javafx.geometry.Bounds;
+import javafx.geometry.Insets;
+import javafx.geometry.Pos;
 import javafx.scene.canvas.GraphicsContext;
+import javafx.scene.text.Font;
+import javafx.scene.text.FontSmoothingType;
+import javafx.scene.text.Text;
 import rjc.table.support.Utils;
 
 /*************************************************************************************************/
-/*************************** Table body cells and header cells drawing ***************************/
+/****************************** Table body and header cells drawing ******************************/
 /*************************************************************************************************/
 
 public class TableDraw extends TableXML
@@ -35,11 +41,12 @@ public class TableDraw extends TableXML
   protected double          w;             // width for current table body or header cell being drawn
   protected double          h;             // height for current table body or header cell being drawn
 
+  private Text              text;          // used in drawCellText
+
   /***************************************** redrawCell ******************************************/
   public void redrawCell( int columnIndex, int rowIndex )
   {
-    // redraw table cell
-    gc = m_canvas.getGraphicsContext2D();
+    // redraw table body or header cell
     x = getColumnIndexXStart( columnIndex );
     y = getRowIndexYStart( rowIndex );
     w = getColumnIndexWidth( columnIndex );
@@ -53,11 +60,12 @@ public class TableDraw extends TableXML
     // redraw visible bit of column including header
     Utils.trace( columnIndex );
     m_columnIndex = columnIndex;
-    gc = m_canvas.getGraphicsContext2D();
 
     // calculate which rows are visible
     int minRowPos = getRowPositionAtY( getColumnHeaderHeight() );
     int maxRowPos = getRowPositionAtY( (int) m_canvas.getHeight() );
+    x = getColumnIndexXStart( m_columnIndex );
+    w = getColumnIndexWidth( m_columnIndex );
 
     // redraw all body cells between min and max row positions inclusive
     int max = m_data.getRowCount() - 1;
@@ -68,14 +76,16 @@ public class TableDraw extends TableXML
       if ( maxRowPos > max )
         maxRowPos = max;
 
-      x = getColumnIndexXStart( m_columnIndex );
-      w = getColumnIndexWidth( m_columnIndex );
+      y = getRowIndexYStart( getRowIndexFromPosition( minRowPos ) );
       for ( int pos = minRowPos; pos <= maxRowPos; pos++ )
       {
         m_rowIndex = getRowIndexFromPosition( pos );
-        y = getRowIndexYStart( m_rowIndex );
         h = getRowIndexHeight( m_rowIndex );
-        m_view.drawCell();
+        if ( h > 0 )
+        {
+          m_view.drawCell();
+          y += h;
+        }
       }
     }
 
@@ -92,11 +102,12 @@ public class TableDraw extends TableXML
     // redraw visible bit of row including header
     Utils.trace( rowIndex );
     m_rowIndex = rowIndex;
-    gc = m_canvas.getGraphicsContext2D();
 
     // calculate which columns are visible
     int minColumnPos = m_view.getColumnPositionAtX( getRowHeaderWidth() );
     int maxColumnPos = m_view.getColumnPositionAtX( (int) m_canvas.getWidth() );
+    y = getRowIndexYStart( m_rowIndex );
+    h = getRowIndexHeight( m_rowIndex );
 
     // redraw all body cells between min and max column positions inclusive
     int max = m_data.getColumnCount() - 1;
@@ -107,14 +118,16 @@ public class TableDraw extends TableXML
       if ( maxColumnPos > max )
         maxColumnPos = max;
 
-      y = getRowIndexYStart( m_rowIndex );
-      h = getRowIndexHeight( m_rowIndex );
+      x = getColumnIndexXStart( getColumnIndexFromPosition( minColumnPos ) );
       for ( int pos = minColumnPos; pos <= maxColumnPos; pos++ )
       {
         m_columnIndex = getColumnIndexFromPosition( pos );
-        x = getColumnIndexXStart( m_columnIndex );
         w = getColumnIndexWidth( m_columnIndex );
-        m_view.drawCell();
+        if ( w > 0 )
+        {
+          m_view.drawCell();
+          x += w;
+        }
       }
     }
 
@@ -163,6 +176,60 @@ public class TableDraw extends TableXML
 
       for ( int pos = minRowPos; pos <= maxRowPos; pos++ )
         redrawRow( getRowIndexFromPosition( pos ) );
+    }
+  }
+
+  /**************************************** getCellText ******************************************/
+  public String getCellText()
+  {
+    // return cell value as string
+    if ( m_rowIndex == HEADER && m_columnIndex == HEADER )
+      return null;
+    if ( m_rowIndex == HEADER )
+      return m_data.getColumnTitle( m_columnIndex );
+    if ( m_columnIndex == HEADER )
+      return m_data.getRowTitle( m_rowIndex );
+
+    return m_data.getValue( m_columnIndex, m_rowIndex ).toString();
+  }
+
+  /************************************* drawCellBackground **************************************/
+  public void drawCellBackground()
+  {
+    // draw cell background
+    gc.setFill( m_view.getCellBackgroundPaint() );
+    gc.fillRect( x, y, w, h );
+  }
+
+  /*************************************** drawCellBorder ****************************************/
+  public void drawCellBorder()
+  {
+    // draw cell border
+    gc.setStroke( m_view.getCellBorderPaint() );
+    gc.strokeLine( x + w - 0.5, y + 0.5, x + w - 0.5, y + h - 0.5 );
+    gc.strokeLine( x + 0.5, y + h - 0.5, x + w - 1.5, y + h - 0.5 );
+  }
+
+  /************************************** drawCellContent ****************************************/
+  public void drawCellContent()
+  {
+    // draw cell contents
+    drawCellText( getCellText() );
+  }
+
+  /**************************************** drawCellText *****************************************/
+  public void drawCellText( String cellText )
+  {
+    // convert string into text lines
+    TextLines lines = new TextLines( cellText, m_view, w, h );
+
+    // draw the lines on cell
+    int line = 0;
+    while ( lines.getText( line ) != null )
+    {
+      gc.setFill( m_view.getCellTextPaint() );
+      gc.fillText( lines.getText( line ), x + lines.getX( line ), y + lines.getY( line ) );
+      line++;
     }
   }
 

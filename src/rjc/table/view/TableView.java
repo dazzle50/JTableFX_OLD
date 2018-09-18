@@ -18,10 +18,14 @@
 
 package rjc.table.view;
 
+import javafx.geometry.Insets;
 import javafx.geometry.Orientation;
+import javafx.geometry.Pos;
 import javafx.scene.paint.Color;
+import javafx.scene.paint.Paint;
+import javafx.scene.text.Font;
+import javafx.scene.text.FontSmoothingType;
 import rjc.table.data.TableData;
-import rjc.table.support.Utils;
 
 /*************************************************************************************************/
 /********************************** Base class for table views ***********************************/
@@ -29,6 +33,7 @@ import rjc.table.support.Utils;
 
 public class TableView extends TableDraw
 {
+  protected final static Insets CELL_TEXT_INSERTS = new Insets( 0.0, 1.0, 1.0, 0.0 );
 
   /**************************************** constructor ******************************************/
   public TableView( TableData data )
@@ -47,16 +52,64 @@ public class TableView extends TableDraw
     add( m_canvas );
     add( m_vScrollBar );
     add( m_hScrollBar );
+
+    // setup graphics context
+    gc = m_canvas.getGraphicsContext2D();
+    gc.setFontSmoothingType( FontSmoothingType.LCD );
   }
 
   /****************************************** drawCell *******************************************/
   public void drawCell()
   {
-    // TODO #########################################################################
-    Utils.trace( m_columnIndex, m_rowIndex, x, y, w, h, gc );
+    // draw table body or header cell
+    drawCellBackground();
+    drawCellContent();
+    drawCellBorder();
+  }
 
-    gc.setFill( Color.hsb( ( m_columnIndex + m_rowIndex ) * 20, 1.0, 1.0 ) );
-    gc.fillRect( x, y, w, h );
+  /************************************ getCellTextAlignment *************************************/
+  public Pos getCellTextAlignment()
+  {
+    // return cell text alignment
+    return Pos.CENTER;
+  }
+
+  /************************************** getCellTextFont ****************************************/
+  public Font getCellTextFont()
+  {
+    // return cell text font (includes family, weight, posture, size)
+    return Font.getDefault();
+  }
+
+  /************************************** getCellTextInsets **************************************/
+  public Insets getCellTextInsets()
+  {
+    // return cell text insets
+    return CELL_TEXT_INSERTS;
+  }
+
+  /************************************* getCellBorderPaint **************************************/
+  public Paint getCellBorderPaint()
+  {
+    // return cell border paint
+    return Color.gray( 0.8 );
+  }
+
+  /*********************************** getCellBackgroundPaint ************************************/
+  public Paint getCellBackgroundPaint()
+  {
+    // return cell background paint
+    if ( m_columnIndex == HEADER || m_rowIndex == HEADER )
+      return Color.gray( 0.95 );
+    else
+      return Color.WHITE;
+  }
+
+  /************************************** getCellTextPaint ***************************************/
+  public Paint getCellTextPaint()
+  {
+    // return cell text paint
+    return Color.BLACK;
   }
 
 }
