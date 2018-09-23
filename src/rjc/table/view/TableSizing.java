@@ -21,8 +21,6 @@ package rjc.table.view;
 import java.util.HashMap;
 import java.util.Map;
 
-import rjc.table.support.Utils;
-
 /*************************************************************************************************/
 /****************** Table header + cell column and row sizing including hiding *******************/
 /*************************************************************************************************/
@@ -62,7 +60,27 @@ public class TableSizing extends TablePosition
   {
     // return width in pixels of all the visible table body columns only
     if ( m_bodyWidthCached == INVALID )
-      m_bodyWidthCached = calculateBodyWidth();
+    {
+      // cached width is invalid, so calculate width of table body cell columns
+      int exceptionsCount = 0;
+      int columnCount = m_data.getColumnCount();
+      int bodyWidth = 0;
+
+      for ( int columnIndex : m_columnWidthExceptions.keySet() )
+      {
+        if ( columnIndex < columnCount )
+        {
+          exceptionsCount++;
+          int width = m_columnWidthExceptions.get( columnIndex );
+          if ( width > 0 )
+            bodyWidth += width;
+        }
+        else
+          m_columnWidthExceptions.remove( columnIndex );
+      }
+
+      m_bodyWidthCached = bodyWidth + ( columnCount - exceptionsCount ) * m_columnDefaultWidth;
+    }
 
     return m_bodyWidthCached;
   }
@@ -72,57 +90,29 @@ public class TableSizing extends TablePosition
   {
     // return height in pixels of all the visible table body rows only
     if ( m_bodyHeightCached == INVALID )
-      m_bodyHeightCached = calculateBodyHeight();
+    {
+      // cached height is invalid, so calculate height of table body cell rows
+      int exceptionsCount = 0;
+      int rowCount = m_data.getRowCount();
+      int bodyHeight = 0;
+
+      for ( int rowIndex : m_rowHeightExceptions.keySet() )
+      {
+        if ( rowIndex < rowCount )
+        {
+          exceptionsCount++;
+          int height = m_rowHeightExceptions.get( rowIndex );
+          if ( height > 0 )
+            bodyHeight += height;
+        }
+        else
+          m_rowHeightExceptions.remove( rowIndex );
+      }
+
+      m_bodyHeightCached = bodyHeight + ( rowCount - exceptionsCount ) * m_rowDefaultHeight;
+    }
 
     return m_bodyHeightCached;
-  }
-
-  /************************************ calculateBodyWidth ***************************************/
-  private int calculateBodyWidth()
-  {
-    // calculate width of table body cell columns
-    int exceptionsCount = 0;
-    int columnCount = m_data.getColumnCount();
-    int bodyWidth = 0;
-
-    for ( int columnIndex : m_columnWidthExceptions.keySet() )
-    {
-      if ( columnIndex < columnCount )
-      {
-        exceptionsCount++;
-        int width = m_columnWidthExceptions.get( columnIndex );
-        if ( width > 0 )
-          bodyWidth += width;
-      }
-      else
-        m_columnWidthExceptions.remove( columnIndex );
-    }
-
-    return bodyWidth + ( columnCount - exceptionsCount ) * m_columnDefaultWidth;
-  }
-
-  /************************************ calculateBodyHeight **************************************/
-  private int calculateBodyHeight()
-  {
-    // calculate height of table body cell rows
-    int exceptionsCount = 0;
-    int rowCount = m_data.getRowCount();
-    int bodyHeight = 0;
-
-    for ( int rowIndex : m_rowHeightExceptions.keySet() )
-    {
-      if ( rowIndex < rowCount )
-      {
-        exceptionsCount++;
-        int height = m_rowHeightExceptions.get( rowIndex );
-        if ( height > 0 )
-          bodyHeight += height;
-      }
-      else
-        m_rowHeightExceptions.remove( rowIndex );
-    }
-
-    return bodyHeight + ( rowCount - exceptionsCount ) * m_rowDefaultHeight;
   }
 
   /************************************** getRowHeaderWidth **************************************/
@@ -163,8 +153,21 @@ public class TableSizing extends TablePosition
   /************************************* setRowMinimumHeight *************************************/
   public void setRowMinimumHeight( int height )
   {
-    // set table row minimum height
-    Utils.trace( "NOT IMPLEMENTED YET" );
+    // set table row minimum height, checking exceptions first
+    if ( height > m_rowMinimumHeight )
+    {
+      var it = m_rowHeightExceptions.entrySet().iterator();
+      while ( it.hasNext() )
+      {
+        var entry = it.next();
+        if ( entry.getValue() > 0 && entry.getValue() < height )
+          entry.setValue( height );
+        if ( entry.getValue() < 0 && entry.getValue() > -height )
+          entry.setValue( -height );
+      }
+    }
+
+    m_rowMinimumHeight = height;
   }
 
   /************************************ getColumnMinimumWidth ************************************/
@@ -175,24 +178,47 @@ public class TableSizing extends TablePosition
   }
 
   /************************************ setColumnMinimumWidth ************************************/
-  public void setColumnMinimumWidth( int height )
+  public void setColumnMinimumWidth( int width )
   {
-    // set table column minimum width
-    Utils.trace( "NOT IMPLEMENTED YET" );
+    // set table column minimum width, checking exceptions first
+    if ( width > m_columnMinimumWidth )
+    {
+      var it = m_columnWidthExceptions.entrySet().iterator();
+      while ( it.hasNext() )
+      {
+        var entry = it.next();
+        if ( entry.getValue() > 0 && entry.getValue() < width )
+          entry.setValue( width );
+        if ( entry.getValue() < 0 && entry.getValue() > -width )
+          entry.setValue( -width );
+      }
+    }
+
+    m_columnMinimumWidth = width;
   }
 
   /************************************ setColumnDefaultWidth ************************************/
   public void setColumnDefaultWidth( int width )
   {
+    // set default column width
     m_columnDefaultWidth = width;
     m_bodyWidthCached = INVALID;
+
+    // if new width is less than minimum, also set minimum width to same
+    if ( width < m_columnMinimumWidth )
+      setColumnMinimumWidth( width );
   }
 
   /************************************* setRowDefaultHeight *************************************/
   public void setRowDefaultHeight( int height )
   {
+    // set default row height
     m_rowDefaultHeight = height;
     m_bodyHeightCached = INVALID;
+
+    // if new height is less than minimum, also set minimum height to same
+    if ( height < m_rowMinimumHeight )
+      setRowMinimumHeight( height );
   }
 
   /************************************* getColumnIndexWidth *************************************/

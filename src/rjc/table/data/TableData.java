@@ -22,7 +22,7 @@ package rjc.table.data;
 /*********************** Table data source (with default implementations) ************************/
 /*************************************************************************************************/
 
-public class TableData extends RegisterView
+public class TableData extends TableBase
 {
 
   /*************************************** getColumnCount ****************************************/

@@ -27,7 +27,7 @@ import rjc.table.view.TableView;
 /************************** Supports registered associated table views ***************************/
 /*************************************************************************************************/
 
-public class RegisterView
+public class TableBase
 {
   private ArrayList<TableView> m_views = new ArrayList<TableView>();
 

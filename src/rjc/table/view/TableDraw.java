@@ -18,13 +18,7 @@
 
 package rjc.table.view;
 
-import javafx.geometry.Bounds;
-import javafx.geometry.Insets;
-import javafx.geometry.Pos;
 import javafx.scene.canvas.GraphicsContext;
-import javafx.scene.text.Font;
-import javafx.scene.text.FontSmoothingType;
-import javafx.scene.text.Text;
 import rjc.table.support.Utils;
 
 /*************************************************************************************************/
@@ -40,8 +34,6 @@ public class TableDraw extends TableXML
   protected double          y;             // y coordinate for current table body or header cell being drawn
   protected double          w;             // width for current table body or header cell being drawn
   protected double          h;             // height for current table body or header cell being drawn
-
-  private Text              text;          // used in drawCellText
 
   /***************************************** redrawCell ******************************************/
   public void redrawCell( int columnIndex, int rowIndex )
@@ -221,7 +213,7 @@ public class TableDraw extends TableXML
   public void drawCellText( String cellText )
   {
     // convert string into text lines
-    TextLines lines = new TextLines( cellText, m_view, w, h );
+    CellText lines = new CellText( cellText, m_view, w, h );
 
     // draw the lines on cell
     int line = 0;
