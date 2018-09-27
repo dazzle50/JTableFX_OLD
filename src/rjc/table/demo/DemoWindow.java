@@ -18,12 +18,13 @@
 
 package rjc.table.demo;
 
-import javafx.geometry.Pos;
 import javafx.scene.Scene;
-import javafx.scene.layout.BorderPane;
-import javafx.scene.layout.Region;
+import javafx.scene.control.Tab;
+import javafx.scene.control.TabPane;
 import javafx.stage.Stage;
+import rjc.table.data.TableData;
 import rjc.table.support.Utils;
+import rjc.table.view.TableView;
 
 /*************************************************************************************************/
 /******************************* Main window for demo application ********************************/
@@ -35,37 +36,35 @@ public class DemoWindow
   /**************************************** constructor ******************************************/
   public DemoWindow( Stage stage )
   {
-    // construct demo table data source and view
-    DemoTableData data = new DemoTableData();
-    DemoTableView view = new DemoTableView( data );
+    // create default table in tab
+    TableView defaultTable = new TableView( new TableData() );
+    Tab defaultTab = new Tab();
+    defaultTab.setText( "Default" );
+    defaultTab.setContent( defaultTable );
+    defaultTable.draw.bind( defaultTab.selectedProperty() );
 
-    // construct demo scene
-    BorderPane pane = new BorderPane();
-    pane.setTop( region( 50, "ivory" ) );
-    pane.setBottom( region( 50, "ivory" ) );
-    pane.setLeft( region( 50, "floralwhite" ) );
-    pane.setRight( region( 50, "floralwhite" ) );
+    // create extra large table in tab
+    TableView xlargeTable = new ExtraLargeView( new ExtraLargeData() );
+    Tab xlargeTab = new Tab();
+    xlargeTab.setText( "Extra large" );
+    xlargeTab.setContent( xlargeTable );
+    xlargeTable.draw.bind( xlargeTab.selectedProperty() );
 
-    // setting alignment to top-left reduces positional stuttering during resizing
-    BorderPane.setAlignment( view, Pos.TOP_LEFT );
-    pane.setCenter( view );
+    // create demo tab pane
+    TabPane tabs = new TabPane();
+    tabs.getTabs().add( defaultTab );
+    tabs.getTabs().add( xlargeTab );
 
     // construct demo application window
-    Scene scene = new Scene( pane );
+    Scene scene = new Scene( tabs );
     stage.setScene( scene );
-    stage.setTitle( "JTableFX " + Utils.VERSION + " TEST demo application" );
+    stage.setTitle( "JTableFX " + Utils.VERSION + " demo application" );
+
+    // TEMP placing and sizing for my convenience #############
+    stage.setX( -1100 );
+    stage.setY( 700 );
+    stage.setWidth( 1000 );
     stage.show();
-  }
-
-  /**************************************** region ******************************************/
-  private Region region( int size, String colour )
-  {
-    // return new simple coloured region
-    Region region = new Region();
-    region.setStyle( "-fx-background-color: " + colour + ";" );
-    region.setPrefSize( size, size );
-
-    return region;
   }
 
 }

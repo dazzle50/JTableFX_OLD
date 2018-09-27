@@ -21,10 +21,26 @@ package rjc.table.demo;
 import rjc.table.data.TableData;
 
 /*************************************************************************************************/
-/*********************** Example table data source to demonstrate JTableFX ***********************/
+/****************** Example customised table data source for extra large table *******************/
 /*************************************************************************************************/
 
-public class DemoTableData extends TableData
+public class ExtraLargeData extends TableData
 {
+
+  /*************************************** getColumnCount ****************************************/
+  @Override
+  public int getColumnCount()
+  {
+    // large number of columns
+    return 100;
+  }
+
+  /**************************************** getRowCount ******************************************/
+  @Override
+  public int getRowCount()
+  {
+    // very large number of rows
+    return 100000;
+  }
 
 }

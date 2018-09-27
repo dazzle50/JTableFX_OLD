@@ -18,6 +18,7 @@
 
 package rjc.table.view;
 
+import javafx.beans.property.SimpleBooleanProperty;
 import javafx.scene.canvas.GraphicsContext;
 import rjc.table.support.Utils;
 
@@ -27,107 +28,120 @@ import rjc.table.support.Utils;
 
 public class TableDraw extends TableXML
 {
-  protected int             m_columnIndex; // column index for current table body or header cell being drawn
-  protected int             m_rowIndex;    // row index for current table body or header cell being drawn
-  protected GraphicsContext gc;            // graphics context for current table body or header cell being drawn
-  protected double          x;             // x coordinate for current table body or header cell being drawn
-  protected double          y;             // y coordinate for current table body or header cell being drawn
-  protected double          w;             // width for current table body or header cell being drawn
-  protected double          h;             // height for current table body or header cell being drawn
+  protected int                      m_columnIndex;                      // column index for current table body or header cell being drawn
+  protected int                      m_rowIndex;                         // row index for current table body or header cell being drawn
+  protected GraphicsContext          gc;                                 // graphics context for current table body or header cell being drawn
+  protected double                   x;                                  // x coordinate for current table body or header cell being drawn
+  protected double                   y;                                  // y coordinate for current table body or header cell being drawn
+  protected double                   w;                                  // width for current table body or header cell being drawn
+  protected double                   h;                                  // height for current table body or header cell being drawn
+
+  public final SimpleBooleanProperty draw = new SimpleBooleanProperty(); // flag to say if drawing should occur, defaults to false
 
   /***************************************** redrawCell ******************************************/
   public void redrawCell( int columnIndex, int rowIndex )
   {
     // redraw table body or header cell
-    x = getColumnIndexXStart( columnIndex );
-    y = getRowIndexYStart( rowIndex );
-    w = getColumnIndexWidth( columnIndex );
-    h = getRowIndexHeight( rowIndex );
-    m_view.drawCell();
+    if ( draw.get() )
+    {
+      m_columnIndex = columnIndex;
+      m_rowIndex = rowIndex;
+      x = getColumnIndexXStart( columnIndex );
+      y = getRowIndexYStart( rowIndex );
+      w = getColumnIndexWidth( columnIndex );
+      h = getRowIndexHeight( rowIndex );
+      m_view.drawCell();
+    }
   }
 
   /**************************************** redrawColumn *****************************************/
   public void redrawColumn( int columnIndex )
   {
     // redraw visible bit of column including header
-    Utils.trace( columnIndex );
-    m_columnIndex = columnIndex;
-
-    // calculate which rows are visible
-    int minRowPos = getRowPositionAtY( getColumnHeaderHeight() );
-    int maxRowPos = getRowPositionAtY( (int) m_canvas.getHeight() );
-    x = getColumnIndexXStart( m_columnIndex );
-    w = getColumnIndexWidth( m_columnIndex );
-
-    // redraw all body cells between min and max row positions inclusive
-    int max = m_data.getRowCount() - 1;
-    if ( minRowPos <= max && maxRowPos >= 0 )
+    if ( draw.get() )
     {
-      if ( minRowPos < 0 )
-        minRowPos = 0;
-      if ( maxRowPos > max )
-        maxRowPos = max;
+      Utils.trace( columnIndex, m_canvas.isDisabled(), m_canvas.isVisible() );
+      m_columnIndex = columnIndex;
 
-      y = getRowIndexYStart( getRowIndexFromPosition( minRowPos ) );
-      for ( int pos = minRowPos; pos <= maxRowPos; pos++ )
+      // calculate which rows are visible
+      int minRowPos = getRowPositionAtY( getColumnHeaderHeight() );
+      int maxRowPos = getRowPositionAtY( (int) m_canvas.getHeight() );
+      x = getColumnIndexXStart( m_columnIndex );
+      w = getColumnIndexWidth( m_columnIndex );
+
+      // redraw all body cells between min and max row positions inclusive
+      int max = m_data.getRowCount() - 1;
+      if ( minRowPos <= max && maxRowPos >= 0 )
       {
-        m_rowIndex = getRowIndexFromPosition( pos );
-        h = getRowIndexHeight( m_rowIndex );
-        if ( h > 0 )
+        if ( minRowPos < 0 )
+          minRowPos = 0;
+        if ( maxRowPos > max )
+          maxRowPos = max;
+
+        y = getRowIndexYStart( getRowIndexFromPosition( minRowPos ) );
+        for ( int pos = minRowPos; pos <= maxRowPos; pos++ )
         {
-          m_view.drawCell();
-          y += h;
+          m_rowIndex = getRowIndexFromPosition( pos );
+          h = getRowIndexHeight( m_rowIndex );
+          if ( h > 0 )
+          {
+            m_view.drawCell();
+            y += h;
+          }
         }
       }
-    }
 
-    // redraw column header
-    m_rowIndex = HEADER;
-    y = 0.0;
-    h = getColumnHeaderHeight();
-    m_view.drawCell();
+      // redraw column header
+      m_rowIndex = HEADER;
+      y = 0.0;
+      h = getColumnHeaderHeight();
+      m_view.drawCell();
+    }
   }
 
   /****************************************** redrawRow ******************************************/
   public void redrawRow( int rowIndex )
   {
     // redraw visible bit of row including header
-    Utils.trace( rowIndex );
-    m_rowIndex = rowIndex;
-
-    // calculate which columns are visible
-    int minColumnPos = m_view.getColumnPositionAtX( getRowHeaderWidth() );
-    int maxColumnPos = m_view.getColumnPositionAtX( (int) m_canvas.getWidth() );
-    y = getRowIndexYStart( m_rowIndex );
-    h = getRowIndexHeight( m_rowIndex );
-
-    // redraw all body cells between min and max column positions inclusive
-    int max = m_data.getColumnCount() - 1;
-    if ( minColumnPos <= max && maxColumnPos >= 0 )
+    if ( draw.get() )
     {
-      if ( minColumnPos < 0 )
-        minColumnPos = 0;
-      if ( maxColumnPos > max )
-        maxColumnPos = max;
+      Utils.trace( rowIndex, m_canvas.isDisabled(), m_canvas.isVisible() );
+      m_rowIndex = rowIndex;
 
-      x = getColumnIndexXStart( getColumnIndexFromPosition( minColumnPos ) );
-      for ( int pos = minColumnPos; pos <= maxColumnPos; pos++ )
+      // calculate which columns are visible
+      int minColumnPos = m_view.getColumnPositionAtX( getRowHeaderWidth() );
+      int maxColumnPos = m_view.getColumnPositionAtX( (int) m_canvas.getWidth() );
+      y = getRowIndexYStart( m_rowIndex );
+      h = getRowIndexHeight( m_rowIndex );
+
+      // redraw all body cells between min and max column positions inclusive
+      int max = m_data.getColumnCount() - 1;
+      if ( minColumnPos <= max && maxColumnPos >= 0 )
       {
-        m_columnIndex = getColumnIndexFromPosition( pos );
-        w = getColumnIndexWidth( m_columnIndex );
-        if ( w > 0 )
+        if ( minColumnPos < 0 )
+          minColumnPos = 0;
+        if ( maxColumnPos > max )
+          maxColumnPos = max;
+
+        x = getColumnIndexXStart( getColumnIndexFromPosition( minColumnPos ) );
+        for ( int pos = minColumnPos; pos <= maxColumnPos; pos++ )
         {
-          m_view.drawCell();
-          x += w;
+          m_columnIndex = getColumnIndexFromPosition( pos );
+          w = getColumnIndexWidth( m_columnIndex );
+          if ( w > 0 )
+          {
+            m_view.drawCell();
+            x += w;
+          }
         }
       }
-    }
 
-    // redraw row header
-    m_columnIndex = HEADER;
-    x = 0.0;
-    w = getRowHeaderWidth();
-    m_view.drawCell();
+      // redraw row header
+      m_columnIndex = HEADER;
+      x = 0.0;
+      w = getRowHeaderWidth();
+      m_view.drawCell();
+    }
   }
 
   /******************************************** reset ********************************************/

@@ -21,16 +21,16 @@ package rjc.table.demo;
 import rjc.table.view.TableView;
 
 /*************************************************************************************************/
-/**************** Example table view to demonstrate JTableFX use and capabilities ****************/
+/********************** Example customised table view for extra large table **********************/
 /*************************************************************************************************/
 
-public class DemoTableView extends TableView
+public class ExtraLargeView extends TableView
 {
 
   /**************************************** constructor ******************************************/
-  public DemoTableView( DemoTableData data )
+  public ExtraLargeView( ExtraLargeData data )
   {
-    // construct demo table view
+    // construct customised table view
     super( data );
   }
 

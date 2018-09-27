@@ -18,11 +18,21 @@
 
 package rjc.table.view;
 
+import javafx.beans.property.SimpleIntegerProperty;
+
 /*************************************************************************************************/
 /******************************** Table cell/row/column selection ********************************/
 /*************************************************************************************************/
 
 public class TableSelection extends TableSizing
 {
+  public final SimpleIntegerProperty mouseColumnPos  = new SimpleIntegerProperty( INVALID );
+  public final SimpleIntegerProperty mouseRowPos     = new SimpleIntegerProperty( INVALID );
+
+  public final SimpleIntegerProperty focusColumnPos  = new SimpleIntegerProperty();
+  public final SimpleIntegerProperty focusRowPos     = new SimpleIntegerProperty();
+
+  public final SimpleIntegerProperty selectColumnPos = new SimpleIntegerProperty();
+  public final SimpleIntegerProperty selectRowPos    = new SimpleIntegerProperty();
 
 }

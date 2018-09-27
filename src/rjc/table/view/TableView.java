@@ -42,6 +42,11 @@ public class TableView extends TableDraw
     m_view = this;
     m_data = data;
     data.register( m_view );
+    draw.addListener( ( observable, oldValue, newValue ) ->
+    {
+      if ( newValue )
+        redraw();
+    } );
 
     // create table canvas and scroll bars
     m_canvas = new TableCanvas( m_view );
