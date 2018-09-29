@@ -32,6 +32,9 @@ public class ExtraLargeView extends TableView
   {
     // construct customised table view
     super( data );
+
+    setRowHeaderWidth( 60 );
+    m_vScrollBar.setValue( 18000000.0 );
   }
 
 }

@@ -19,8 +19,14 @@
 package rjc.table.demo;
 
 import javafx.scene.Scene;
+import javafx.scene.control.Menu;
+import javafx.scene.control.MenuBar;
+import javafx.scene.control.MenuItem;
 import javafx.scene.control.Tab;
 import javafx.scene.control.TabPane;
+import javafx.scene.control.TextField;
+import javafx.scene.layout.GridPane;
+import javafx.scene.layout.Priority;
 import javafx.stage.Stage;
 import rjc.table.data.TableData;
 import rjc.table.support.Utils;
@@ -32,9 +38,40 @@ import rjc.table.view.TableView;
 
 public class DemoWindow
 {
+  private MenuBar   m_menus;     // menu bar at top of window
+  private TextField m_statusBar; // status bar at bottom of window
+  private TabPane   m_tabs;      // tabs pane to show the demos
 
   /**************************************** constructor ******************************************/
   public DemoWindow( Stage stage )
+  {
+    // create demo windows contents
+    m_menus = makeMenuBar();
+    m_tabs = makeTabs();
+    m_statusBar = new TextField( "Started" );
+
+    // create demo window layout
+    GridPane grid = new GridPane();
+    grid.add( m_menus, 0, 0 );
+    grid.add( m_tabs, 0, 1 );
+    grid.add( m_statusBar, 0, 2 );
+    GridPane.setHgrow( m_tabs, Priority.ALWAYS );
+    GridPane.setVgrow( m_tabs, Priority.ALWAYS );
+
+    // create demo application window
+    Scene scene = new Scene( grid );
+    stage.setScene( scene );
+    stage.setTitle( "JTableFX " + Utils.VERSION + " demo application" );
+
+    // TEMP placing and sizing for my convenience #############
+    stage.setX( -1100 );
+    stage.setY( 700 );
+    stage.setWidth( 1000 );
+    stage.show();
+  }
+
+  /****************************************** makeTabs *******************************************/
+  private TabPane makeTabs()
   {
     // create default table in tab
     TableView defaultTable = new TableView( new TableData() );
@@ -55,16 +92,92 @@ public class DemoWindow
     tabs.getTabs().add( defaultTab );
     tabs.getTabs().add( xlargeTab );
 
-    // construct demo application window
-    Scene scene = new Scene( tabs );
-    stage.setScene( scene );
-    stage.setTitle( "JTableFX " + Utils.VERSION + " demo application" );
+    return tabs;
+  }
 
-    // TEMP placing and sizing for my convenience #############
-    stage.setX( -1100 );
-    stage.setY( 700 );
-    stage.setWidth( 1000 );
-    stage.show();
+  /**************************************** makeMenuBar ******************************************/
+  private MenuBar makeMenuBar()
+  {
+    // create menu bar
+    MenuBar menus = new MenuBar();
+    Menu benchmarks = new Menu( "Benchmarks" );
+    menus.getMenus().add( benchmarks );
+
+    // benchmarking
+    addBenchmark( benchmarks, "Null", () ->
+    {
+    }, 1000 );
+
+    addBenchmark( benchmarks, "Trace Here", () -> Utils.trace( "Here" ), 100 );
+
+    addBenchmark( benchmarks, "Redraw", () ->
+    {
+      var tab = m_tabs.getSelectionModel().getSelectedItem();
+      TableView view = (TableView) tab.getContent();
+      view.redraw();
+    }, 1000 );
+
+    return menus;
+  }
+
+  /**************************************** addBenchmark *****************************************/
+  private MenuItem addBenchmark( Menu menu, String name, Runnable test, int count )
+  {
+    // add benchmark test to menu
+    MenuItem benchmark = new MenuItem( "BenchMark - " + count + " " + name );
+    menu.getItems().addAll( benchmark );
+
+    benchmark.setOnAction( event ->
+    {
+      // run benchmark requested number of times
+      long[] nanos = new long[count + 1];
+      Utils.trace( "######### BENCHMARK START - " + name + " " + count + " times" );
+      nanos[0] = System.nanoTime();
+      for ( int num = 1; num <= count; num++ )
+      {
+        test.run();
+        nanos[num] = System.nanoTime();
+      }
+
+      // report each run duration
+      for ( int num = 0; num < count; num++ )
+        report( "Run " + ( num + 1 ) + " duration =", nanos[num + 1] - nanos[num] );
+
+      // report total & average duration
+      long total = nanos[count] - nanos[0];
+      report( "  Total duration =", total );
+      report( "Average duration =", total / count );
+    } );
+
+    return benchmark;
+  }
+
+  /******************************************* report ********************************************/
+  private void report( String text, long nanos )
+  {
+    // generate trace output with nano-seconds in human readable format
+    String units = " ns";
+    double div = 1.0;
+
+    if ( nanos > 1000L )
+    {
+      units = " \u00B5s";
+      div = 1000.0;
+    }
+
+    if ( nanos > 1000000L )
+    {
+      units = " ms";
+      div = 1000000.0;
+    }
+
+    if ( nanos > 1000000000L )
+    {
+      units = " s";
+      div = 1000000000.0;
+    }
+
+    Utils.trace( "BENCHMARK " + text + String.format( "%8.3f", nanos / div ) + units );
   }
 
 }

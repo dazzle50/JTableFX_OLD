@@ -25,7 +25,7 @@ import javafx.scene.control.ScrollBar;
 /*************** Extended version of ScrollBar with special increment & decrement ****************/
 /*************************************************************************************************/
 
-class TableScrollBar extends ScrollBar
+public class TableScrollBar extends ScrollBar
 {
   private TableView m_view;   // associated table view
 

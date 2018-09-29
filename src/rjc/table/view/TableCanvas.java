@@ -142,11 +142,10 @@ public class TableCanvas extends Canvas
     // only need to draw if new width is larger than old width
     if ( newW > oldW )
     {
-      // clear new area
-      getGraphicsContext2D().clearRect( oldW, 0.0, newW - oldW, getHeight() );
-
       // calculate which columns need to be redrawn
       int minColumnPos = m_view.getColumnPositionAtX( oldW );
+      if ( minColumnPos == TableView.HEADER )
+        minColumnPos = m_view.getColumnPositionAtX( m_view.getRowHeaderWidth() );
       int maxColumnPos = m_view.getColumnPositionAtX( newW );
       m_view.redrawColumns( minColumnPos, maxColumnPos );
 
@@ -162,11 +161,10 @@ public class TableCanvas extends Canvas
     // only need to draw if new height is larger than old height
     if ( newH > oldH )
     {
-      // clear new area
-      getGraphicsContext2D().clearRect( 0.0, oldH, getWidth(), newH - oldH );
-
       // calculate which rows need to be redrawn, and redraw them
       int minRowPos = m_view.getRowPositionAtY( oldH );
+      if ( minRowPos == TableView.HEADER )
+        minRowPos = m_view.getRowPositionAtY( m_view.getColumnHeaderHeight() );
       int maxRowPos = m_view.getRowPositionAtY( newH );
       m_view.redrawRows( minRowPos, maxRowPos );
 

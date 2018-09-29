@@ -42,7 +42,7 @@ public class TableSizing extends TablePosition
   private Map<Integer, Integer> m_rowIndexHeightExceptions   = new HashMap<Integer, Integer>();
 
   private ArrayList<Integer>    m_rowPosYStartCached         = new ArrayList<Integer>();
-  private ArrayList<Integer>    m_columnPosYStartCached      = new ArrayList<Integer>();
+  private ArrayList<Integer>    m_columnPosXStartCached      = new ArrayList<Integer>();
 
   private int                   m_bodyWidthCached            = INVALID;                        // body cells total width (excludes header)
   private int                   m_bodyHeightCached           = INVALID;                        // body cells total height (excludes header)
@@ -171,6 +171,8 @@ public class TableSizing extends TablePosition
         if ( entry.getValue() < 0 && entry.getValue() > -height )
           entry.setValue( -height );
       }
+      m_bodyHeightCached = INVALID;
+      m_rowPosYStartCached.clear();
     }
 
     m_rowMinimumHeight = height;
@@ -198,6 +200,8 @@ public class TableSizing extends TablePosition
         if ( entry.getValue() < 0 && entry.getValue() > -width )
           entry.setValue( -width );
       }
+      m_bodyWidthCached = INVALID;
+      m_columnPosXStartCached.clear();
     }
 
     m_columnMinimumWidth = width;
@@ -209,6 +213,7 @@ public class TableSizing extends TablePosition
     // set default column width
     m_columnDefaultWidth = width;
     m_bodyWidthCached = INVALID;
+    m_columnPosXStartCached.clear();
 
     // if new width is less than minimum, also set minimum width to same
     if ( width < m_columnMinimumWidth )
@@ -221,6 +226,7 @@ public class TableSizing extends TablePosition
     // set default row height
     m_rowDefaultHeight = height;
     m_bodyHeightCached = INVALID;
+    m_rowPosYStartCached.clear();
 
     // if new height is less than minimum, also set minimum height to same
     if ( height < m_rowMinimumHeight )
@@ -257,6 +263,11 @@ public class TableSizing extends TablePosition
         m_columnIndexWidthExceptions.remove( columnIndex );
       else
         m_columnIndexWidthExceptions.put( columnIndex, newWidth );
+
+      int size = m_columnPosXStartCached.size();
+      int pos = getColumnPositionFromIndex( columnIndex );
+      if ( pos < size )
+        m_columnPosXStartCached.subList( pos, size ).clear();
     }
   }
 
@@ -290,6 +301,11 @@ public class TableSizing extends TablePosition
         m_rowIndexHeightExceptions.remove( rowIndex );
       else
         m_rowIndexHeightExceptions.put( rowIndex, newHeight );
+
+      int size = m_rowPosYStartCached.size();
+      int pos = getRowPositionFromIndex( rowIndex );
+      if ( pos < size )
+        m_rowPosYStartCached.subList( pos, size ).clear();
     }
   }
 
@@ -302,6 +318,11 @@ public class TableSizing extends TablePosition
     {
       m_rowIndexHeightExceptions.put( rowIndex, -oldHeight );
       m_bodyHeightCached = m_bodyHeightCached - oldHeight;
+
+      int size = m_rowPosYStartCached.size();
+      int pos = getRowPositionFromIndex( rowIndex );
+      if ( pos < size )
+        m_rowPosYStartCached.subList( pos, size ).clear();
     }
   }
 
@@ -318,6 +339,11 @@ public class TableSizing extends TablePosition
         m_rowIndexHeightExceptions.put( rowIndex, -oldHeight );
 
       m_bodyHeightCached = m_bodyHeightCached - oldHeight;
+
+      int size = m_rowPosYStartCached.size();
+      int pos = getRowPositionFromIndex( rowIndex );
+      if ( pos < size )
+        m_rowPosYStartCached.subList( pos, size ).clear();
     }
   }
 
@@ -325,7 +351,7 @@ public class TableSizing extends TablePosition
   public int getColumnPositionAtX( int x )
   {
     // determine if row header
-    if ( x >= 0 && x <= getRowHeaderWidth() )
+    if ( x >= 0 && x < getRowHeaderWidth() )
       return HEADER;
 
     // adjust x for horizontal offset due to scroll bar and row header
@@ -336,26 +362,47 @@ public class TableSizing extends TablePosition
       return LEFT;
 
     // if right of table body return RIGHT
-    if ( x > m_view.getBodyWidth() )
+    if ( x >= m_view.getBodyWidth() )
       return RIGHT;
 
-    // determine column position
-    for ( int pos = 0; pos < m_data.getColumnCount(); pos++ )
+    // column zero always starts at adjusted zero x
+    if ( m_columnPosXStartCached.isEmpty() )
+      m_columnPosXStartCached.add( 0 );
+
+    // if x past cache end then add new cached values until column position found
+    int size = m_columnPosXStartCached.size();
+    int end = m_columnPosXStartCached.get( size - 1 );
+    if ( x >= end )
+      for ( int columnPos = size - 1; columnPos < m_data.getColumnCount(); columnPos++ )
+      {
+        end += getColumnIndexWidth( getColumnIndexFromPosition( columnPos ) );
+        m_columnPosXStartCached.add( end );
+        if ( x < end )
+          return columnPos;
+      }
+
+    // x in cache so find by binary searching
+    int startPos = 0;
+    int endPos = size - 1;
+    int columnPos = ( endPos + startPos ) / 2;
+    while ( x < m_columnPosXStartCached.get( columnPos ) || x >= m_columnPosXStartCached.get( columnPos + 1 ) )
     {
-      int width = getColumnIndexWidth( getColumnIndexFromPosition( pos ) );
-      if ( x <= width )
-        return pos;
-      x -= width;
+      if ( x < m_columnPosXStartCached.get( columnPos ) )
+        endPos = columnPos;
+      else
+        startPos = columnPos;
+
+      columnPos = ( endPos + startPos ) / 2;
     }
 
-    throw new ArithmeticException( "Shouldn't be able to get here " + x + " " + m_view.getBodyWidth() );
+    return columnPos;
   }
 
   /************************************* getRowPositionAtY ***************************************/
   public int getRowPositionAtY( int y )
   {
     // determine if column header
-    if ( y >= 0 && y <= getColumnHeaderHeight() )
+    if ( y >= 0 && y < getColumnHeaderHeight() )
       return HEADER;
 
     // adjust y for vertical offset due to scroll bar and column header
@@ -366,19 +413,40 @@ public class TableSizing extends TablePosition
       return ABOVE;
 
     // if below table body return BELOW
-    if ( y > m_view.getBodyHeight() )
+    if ( y >= m_view.getBodyHeight() )
       return BELOW;
 
-    // determine row position
-    for ( int pos = 0; pos < m_data.getRowCount(); pos++ )
+    // row zero always starts at adjusted zero y
+    if ( m_rowPosYStartCached.isEmpty() )
+      m_rowPosYStartCached.add( 0 );
+
+    // if y past cache end then add new cached values until row position found
+    int size = m_rowPosYStartCached.size();
+    int end = m_rowPosYStartCached.get( size - 1 );
+    if ( y >= end )
+      for ( int rowPos = size - 1; rowPos < m_data.getRowCount(); rowPos++ )
+      {
+        end += getRowIndexHeight( getRowIndexFromPosition( rowPos ) );
+        m_rowPosYStartCached.add( end );
+        if ( y < end )
+          return rowPos;
+      }
+
+    // y in cache so find by binary searching
+    int startPos = 0;
+    int endPos = size - 1;
+    int rowPos = ( endPos + startPos ) / 2;
+    while ( y < m_rowPosYStartCached.get( rowPos ) || y >= m_rowPosYStartCached.get( rowPos + 1 ) )
     {
-      int height = getRowIndexHeight( getRowIndexFromPosition( pos ) );
-      if ( y <= height )
-        return pos;
-      y -= height;
+      if ( y < m_rowPosYStartCached.get( rowPos ) )
+        endPos = rowPos;
+      else
+        startPos = rowPos;
+
+      rowPos = ( endPos + startPos ) / 2;
     }
 
-    throw new ArithmeticException( "Shouldn't be able to get here " + y + " " + m_view.getBodyHeight() );
+    return rowPos;
   }
 
   /*********************************** getColumnPositionXStart ***********************************/

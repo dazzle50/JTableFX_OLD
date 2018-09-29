@@ -32,7 +32,7 @@ public class ExtraLargeData extends TableData
   public int getColumnCount()
   {
     // large number of columns
-    return 100;
+    return 10000;
   }
 
   /**************************************** getRowCount ******************************************/
@@ -40,7 +40,7 @@ public class ExtraLargeData extends TableData
   public int getRowCount()
   {
     // very large number of rows
-    return 100000;
+    return 1000000;
   }
 
 }
