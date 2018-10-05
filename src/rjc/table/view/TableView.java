@@ -64,7 +64,7 @@ public class TableView extends TableDraw
   }
 
   /****************************************** drawCell *******************************************/
-  public void drawCell()
+  protected void drawCell()
   {
     // draw table body or header cell
     drawCellBackground();
@@ -73,35 +73,35 @@ public class TableView extends TableDraw
   }
 
   /************************************ getCellTextAlignment *************************************/
-  public Pos getCellTextAlignment()
+  protected Pos getCellTextAlignment()
   {
     // return cell text alignment
     return Pos.CENTER;
   }
 
   /************************************** getCellTextFont ****************************************/
-  public Font getCellTextFont()
+  protected Font getCellTextFont()
   {
     // return cell text font (includes family, weight, posture, size)
     return Font.getDefault();
   }
 
   /************************************** getCellTextInsets **************************************/
-  public Insets getCellTextInsets()
+  protected Insets getCellTextInsets()
   {
     // return cell text insets
     return CELL_TEXT_INSERTS;
   }
 
   /************************************* getCellBorderPaint **************************************/
-  public Paint getCellBorderPaint()
+  protected Paint getCellBorderPaint()
   {
     // return cell border paint
     return Color.gray( 0.8 );
   }
 
   /*********************************** getCellBackgroundPaint ************************************/
-  public Paint getCellBackgroundPaint()
+  protected Paint getCellBackgroundPaint()
   {
     // return cell background paint
     if ( m_columnIndex == HEADER || m_rowIndex == HEADER )
@@ -111,7 +111,7 @@ public class TableView extends TableDraw
   }
 
   /************************************** getCellTextPaint ***************************************/
-  public Paint getCellTextPaint()
+  protected Paint getCellTextPaint()
   {
     // return cell text paint
     return Color.BLACK;

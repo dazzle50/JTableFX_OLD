@@ -24,15 +24,15 @@ import rjc.table.data.TableData;
 /****************** Example customised table data source for extra large table *******************/
 /*************************************************************************************************/
 
-public class ExtraLargeData extends TableData
+public class LargeData extends TableData
 {
 
   /*************************************** getColumnCount ****************************************/
   @Override
   public int getColumnCount()
   {
-    // large number of columns
-    return 10000;
+    // very large number of columns
+    return 1000000;
   }
 
   /**************************************** getRowCount ******************************************/

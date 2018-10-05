@@ -43,7 +43,7 @@ public class TablePosition extends TableDisplay
       // check position is within column count
       int count = m_data.getColumnCount();
       if ( columnPos < 0 || columnPos >= count )
-        throw new IndexOutOfBoundsException( "columnPos=" + columnPos + " columnCount=" + count );
+        return INVALID;
 
       // expand mapping to cover column count
       for ( int column = m_columnIndexes.size(); column < count; column++ )
@@ -73,7 +73,7 @@ public class TablePosition extends TableDisplay
       // check position is within row count
       int count = m_data.getRowCount();
       if ( rowPos < 0 || rowPos >= count )
-        throw new IndexOutOfBoundsException( "rowPos=" + rowPos + " rowCount=" + count );
+        return INVALID;
 
       // expand mapping to cover row count
       for ( int row = m_rowIndexes.size(); row < count; row++ )

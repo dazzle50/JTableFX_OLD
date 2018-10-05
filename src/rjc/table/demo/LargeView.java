@@ -18,23 +18,56 @@
 
 package rjc.table.demo;
 
+import javafx.scene.paint.Color;
+import javafx.scene.paint.Paint;
 import rjc.table.view.TableView;
 
 /*************************************************************************************************/
 /********************** Example customised table view for extra large table **********************/
 /*************************************************************************************************/
 
-public class ExtraLargeView extends TableView
+public class LargeView extends TableView
 {
 
   /**************************************** constructor ******************************************/
-  public ExtraLargeView( ExtraLargeData data )
+  public LargeView( LargeData data )
   {
     // construct customised table view
     super( data );
-
     setRowHeaderWidth( 60 );
-    m_vScrollBar.setValue( 18000000.0 );
+
+    // when mouse moved redraw old and new column to show highlighting
+    mouseColumnIndex.addListener( ( observable, oldColumn, newColumn ) ->
+    {
+      redrawColumn( oldColumn.intValue() );
+      redrawColumn( newColumn.intValue() );
+    } );
+
+    // when mouse moved redraw old and new row to show highlighting
+    mouseRowIndex.addListener( ( observable, oldRow, newRow ) ->
+    {
+      redrawRow( oldRow.intValue() );
+      redrawRow( newRow.intValue() );
+    } );
+  }
+
+  /**************************************** constructor ******************************************/
+  @Override
+  protected Paint getCellBackgroundPaint()
+  {
+    int columnIndex = mouseColumnIndex.get();
+    int rowIndex = mouseRowIndex.get();
+
+    // highlight row and column light blue where mouse is positioned
+    if ( m_columnIndex == columnIndex && m_rowIndex == rowIndex )
+      return Color.CORNFLOWERBLUE;
+
+    // highlight cell blue where mouse is positioned
+    if ( m_columnIndex == columnIndex || m_rowIndex == rowIndex )
+      return Color.ALICEBLUE;
+
+    // otherwise default
+    return super.getCellBackgroundPaint();
   }
 
 }

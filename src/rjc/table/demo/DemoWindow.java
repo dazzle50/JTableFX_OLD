@@ -80,10 +80,10 @@ public class DemoWindow
     defaultTab.setContent( defaultTable );
     defaultTable.draw.bind( defaultTab.selectedProperty() );
 
-    // create extra large table in tab
-    TableView xlargeTable = new ExtraLargeView( new ExtraLargeData() );
+    // create large table in tab
+    TableView xlargeTable = new LargeView( new LargeData() );
     Tab xlargeTab = new Tab();
-    xlargeTab.setText( "Extra large" );
+    xlargeTab.setText( "Large" );
     xlargeTab.setContent( xlargeTable );
     xlargeTable.draw.bind( xlargeTab.selectedProperty() );
 

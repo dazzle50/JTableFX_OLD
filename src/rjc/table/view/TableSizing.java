@@ -365,37 +365,22 @@ public class TableSizing extends TablePosition
     if ( x >= m_view.getBodyWidth() )
       return RIGHT;
 
-    // column zero always starts at adjusted zero x
-    if ( m_columnPosXStartCached.isEmpty() )
-      m_columnPosXStartCached.add( 0 );
+    // make sure x start cache is populated by calling getColumnPositionXStart
+    getColumnPositionXStart( m_data.getColumnCount() - 1 );
 
-    // if x past cache end then add new cached values until column position found
-    int size = m_columnPosXStartCached.size();
-    int end = m_columnPosXStartCached.get( size - 1 );
-    if ( x >= end )
-      for ( int columnPos = size - 1; columnPos < m_data.getColumnCount(); columnPos++ )
-      {
-        end += getColumnIndexWidth( getColumnIndexFromPosition( columnPos ) );
-        m_columnPosXStartCached.add( end );
-        if ( x < end )
-          return columnPos;
-      }
-
-    // x in cache so find by binary searching
+    // find columnPos by binary search of cache
     int startPos = 0;
-    int endPos = size - 1;
-    int columnPos = ( endPos + startPos ) / 2;
-    while ( x < m_columnPosXStartCached.get( columnPos ) || x >= m_columnPosXStartCached.get( columnPos + 1 ) )
+    int endPos = m_columnPosXStartCached.size();
+    while ( startPos != endPos )
     {
-      if ( x < m_columnPosXStartCached.get( columnPos ) )
-        endPos = columnPos;
+      int columnPos = ( endPos + startPos ) / 2;
+      if ( m_columnPosXStartCached.get( columnPos ) <= x )
+        startPos = columnPos + 1;
       else
-        startPos = columnPos;
-
-      columnPos = ( endPos + startPos ) / 2;
+        endPos = columnPos;
     }
 
-    return columnPos;
+    return startPos - 1;
   }
 
   /************************************* getRowPositionAtY ***************************************/
@@ -416,55 +401,83 @@ public class TableSizing extends TablePosition
     if ( y >= m_view.getBodyHeight() )
       return BELOW;
 
-    // row zero always starts at adjusted zero y
-    if ( m_rowPosYStartCached.isEmpty() )
-      m_rowPosYStartCached.add( 0 );
+    // make sure y start cache is populated by calling getRowPositionYStart
+    getRowPositionYStart( m_data.getRowCount() - 1 );
 
-    // if y past cache end then add new cached values until row position found
-    int size = m_rowPosYStartCached.size();
-    int end = m_rowPosYStartCached.get( size - 1 );
-    if ( y >= end )
-      for ( int rowPos = size - 1; rowPos < m_data.getRowCount(); rowPos++ )
-      {
-        end += getRowIndexHeight( getRowIndexFromPosition( rowPos ) );
-        m_rowPosYStartCached.add( end );
-        if ( y < end )
-          return rowPos;
-      }
-
-    // y in cache so find by binary searching
+    // find rowPos by binary search of cache
     int startPos = 0;
-    int endPos = size - 1;
-    int rowPos = ( endPos + startPos ) / 2;
-    while ( y < m_rowPosYStartCached.get( rowPos ) || y >= m_rowPosYStartCached.get( rowPos + 1 ) )
+    int endPos = m_rowPosYStartCached.size();
+    while ( startPos != endPos )
     {
-      if ( y < m_rowPosYStartCached.get( rowPos ) )
-        endPos = rowPos;
+      int rowPos = ( endPos + startPos ) / 2;
+      if ( m_rowPosYStartCached.get( rowPos ) <= y )
+        startPos = rowPos + 1;
       else
-        startPos = rowPos;
-
-      rowPos = ( endPos + startPos ) / 2;
+        endPos = rowPos;
     }
 
-    return rowPos;
+    return startPos - 1;
   }
 
   /*********************************** getColumnPositionXStart ***********************************/
   public int getColumnPositionXStart( int columnPos )
   {
     // return column pos start x
-    Utils.trace( "NOT YET IMPLEMETED" );
+    try
+    {
+      return m_columnPosXStartCached.get( columnPos ) - getXOffset() + getRowHeaderWidth();
+    }
+    catch ( IndexOutOfBoundsException exception )
+    {
+      // cache does not yet have value so build cache
+      int count = m_data.getColumnCount();
+      m_columnPosXStartCached.ensureCapacity( count + 1 );
 
-    return INVALID;
+      // column zero always starts at adjusted zero x
+      if ( m_columnPosXStartCached.isEmpty() )
+        m_columnPosXStartCached.add( 0 );
+
+      int size = m_columnPosXStartCached.size();
+      int x = m_columnPosXStartCached.get( size - 1 );
+      for ( int pos = size - 1; pos < count; pos++ )
+      {
+        x += getColumnIndexWidth( getColumnIndexFromPosition( pos ) );
+        m_columnPosXStartCached.add( x );
+      }
+
+      return m_columnPosXStartCached.get( columnPos ) - getXOffset() + getRowHeaderWidth();
+    }
+
   }
 
   /************************************ getRowPositionYStart *************************************/
   public int getRowPositionYStart( int rowPos )
   {
     // return row pos start y
-    Utils.trace( "NOT YET IMPLEMETED" );
+    try
+    {
+      return m_rowPosYStartCached.get( rowPos ) - getYOffset() + getColumnHeaderHeight();
+    }
+    catch ( IndexOutOfBoundsException exception )
+    {
+      // cache does not yet have value so build cache
+      int count = m_data.getRowCount();
+      m_rowPosYStartCached.ensureCapacity( count + 1 );
 
-    return INVALID;
+      // row zero always starts at adjusted zero y
+      if ( m_rowPosYStartCached.isEmpty() )
+        m_rowPosYStartCached.add( 0 );
+
+      int size = m_rowPosYStartCached.size();
+      int y = m_rowPosYStartCached.get( size - 1 );
+      for ( int pos = size - 1; pos < count; pos++ )
+      {
+        y += getRowIndexHeight( getRowIndexFromPosition( pos ) );
+        m_rowPosYStartCached.add( y );
+      }
+
+      return m_rowPosYStartCached.get( rowPos ) - getYOffset() + getColumnHeaderHeight();
+    }
   }
 
   /************************************ getColumnIndexXStart *************************************/

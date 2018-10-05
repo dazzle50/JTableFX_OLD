@@ -42,7 +42,7 @@ public class TableDraw extends TableXML
   public void redrawCell( int columnIndex, int rowIndex )
   {
     // redraw table body or header cell
-    if ( draw.get() )
+    if ( draw.get() && columnIndex >= HEADER && rowIndex >= HEADER )
     {
       m_columnIndex = columnIndex;
       m_rowIndex = rowIndex;
@@ -51,6 +51,14 @@ public class TableDraw extends TableXML
       w = getColumnIndexWidth( columnIndex );
       h = getRowIndexHeight( rowIndex );
       m_view.drawCell();
+
+      // redraw column header if overlaps row
+      if ( rowIndex != HEADER && y < getColumnHeaderHeight() )
+        redrawRow( HEADER );
+
+      // redraw row header if overlaps column
+      if ( columnIndex != HEADER && x < getRowHeaderWidth() )
+        redrawColumn( HEADER );
     }
   }
 
@@ -58,9 +66,9 @@ public class TableDraw extends TableXML
   public void redrawColumn( int columnIndex )
   {
     // redraw visible bit of column including header
-    if ( draw.get() )
+    if ( draw.get() && columnIndex >= HEADER )
     {
-      Utils.trace( columnIndex, m_canvas.isDisabled(), m_canvas.isVisible() );
+      Utils.trace( columnIndex );
       m_columnIndex = columnIndex;
 
       // calculate which rows are visible
@@ -78,16 +86,13 @@ public class TableDraw extends TableXML
         if ( maxRowPos > max )
           maxRowPos = max;
 
-        y = getRowIndexYStart( getRowIndexFromPosition( minRowPos ) );
         for ( int pos = minRowPos; pos <= maxRowPos; pos++ )
         {
           m_rowIndex = getRowIndexFromPosition( pos );
-          h = getRowIndexHeight( m_rowIndex );
+          y = getRowPositionYStart( pos );
+          h = getRowPositionYStart( pos + 1 ) - y;
           if ( h > 0 )
-          {
             m_view.drawCell();
-            y += h;
-          }
         }
       }
 
@@ -96,6 +101,10 @@ public class TableDraw extends TableXML
       y = 0.0;
       h = getColumnHeaderHeight();
       m_view.drawCell();
+
+      // redraw row header if overlaps column
+      if ( columnIndex != HEADER && x < getRowHeaderWidth() )
+        redrawColumn( HEADER );
     }
   }
 
@@ -103,9 +112,9 @@ public class TableDraw extends TableXML
   public void redrawRow( int rowIndex )
   {
     // redraw visible bit of row including header
-    if ( draw.get() )
+    if ( draw.get() && rowIndex >= HEADER )
     {
-      Utils.trace( rowIndex, m_canvas.isDisabled(), m_canvas.isVisible() );
+      Utils.trace( rowIndex );
       m_rowIndex = rowIndex;
 
       // calculate which columns are visible
@@ -123,16 +132,13 @@ public class TableDraw extends TableXML
         if ( maxColumnPos > max )
           maxColumnPos = max;
 
-        x = getColumnIndexXStart( getColumnIndexFromPosition( minColumnPos ) );
         for ( int pos = minColumnPos; pos <= maxColumnPos; pos++ )
         {
           m_columnIndex = getColumnIndexFromPosition( pos );
-          w = getColumnIndexWidth( m_columnIndex );
+          x = getColumnPositionXStart( pos );
+          w = getColumnPositionXStart( pos + 1 ) - x;
           if ( w > 0 )
-          {
             m_view.drawCell();
-            x += w;
-          }
         }
       }
 
@@ -141,6 +147,10 @@ public class TableDraw extends TableXML
       x = 0.0;
       w = getRowHeaderWidth();
       m_view.drawCell();
+
+      // redraw column header if overlaps row
+      if ( rowIndex != HEADER && y < getColumnHeaderHeight() )
+        redrawRow( HEADER );
     }
   }
 
@@ -186,7 +196,7 @@ public class TableDraw extends TableXML
   }
 
   /**************************************** getCellText ******************************************/
-  public String getCellText()
+  protected String getCellText()
   {
     // return cell value as string
     if ( m_rowIndex == HEADER && m_columnIndex == HEADER )
@@ -200,7 +210,7 @@ public class TableDraw extends TableXML
   }
 
   /************************************* drawCellBackground **************************************/
-  public void drawCellBackground()
+  protected void drawCellBackground()
   {
     // draw cell background
     gc.setFill( m_view.getCellBackgroundPaint() );
@@ -208,7 +218,7 @@ public class TableDraw extends TableXML
   }
 
   /*************************************** drawCellBorder ****************************************/
-  public void drawCellBorder()
+  protected void drawCellBorder()
   {
     // draw cell border
     gc.setStroke( m_view.getCellBorderPaint() );
@@ -217,14 +227,14 @@ public class TableDraw extends TableXML
   }
 
   /************************************** drawCellContent ****************************************/
-  public void drawCellContent()
+  protected void drawCellContent()
   {
     // draw cell contents
     drawCellText( getCellText() );
   }
 
   /**************************************** drawCellText *****************************************/
-  public void drawCellText( String cellText )
+  protected void drawCellText( String cellText )
   {
     // convert string into text lines
     CellText lines = new CellText( cellText, m_view, w, h );

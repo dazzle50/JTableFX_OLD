@@ -26,13 +26,29 @@ import javafx.beans.property.SimpleIntegerProperty;
 
 public class TableSelection extends TableSizing
 {
-  public final SimpleIntegerProperty mouseColumnPos  = new SimpleIntegerProperty( INVALID );
-  public final SimpleIntegerProperty mouseRowPos     = new SimpleIntegerProperty( INVALID );
+  public final SimpleIntegerProperty mouseColumnPos   = new SimpleIntegerProperty( INVALID );
+  public final SimpleIntegerProperty mouseRowPos      = new SimpleIntegerProperty( INVALID );
 
-  public final SimpleIntegerProperty focusColumnPos  = new SimpleIntegerProperty();
-  public final SimpleIntegerProperty focusRowPos     = new SimpleIntegerProperty();
+  public final SimpleIntegerProperty mouseColumnIndex = new SimpleIntegerProperty();
+  public final SimpleIntegerProperty mouseRowIndex    = new SimpleIntegerProperty();
 
-  public final SimpleIntegerProperty selectColumnPos = new SimpleIntegerProperty();
-  public final SimpleIntegerProperty selectRowPos    = new SimpleIntegerProperty();
+  public final SimpleIntegerProperty focusColumnPos   = new SimpleIntegerProperty();
+  public final SimpleIntegerProperty focusRowPos      = new SimpleIntegerProperty();
 
+  public final SimpleIntegerProperty selectColumnPos  = new SimpleIntegerProperty();
+  public final SimpleIntegerProperty selectRowPos     = new SimpleIntegerProperty();
+
+  /**************************************** constructor ******************************************/
+  public TableSelection()
+  {
+    super();
+
+    // keep mouse column index property updated
+    mouseColumnPos.addListener( ( observable, oldColumn, newColumn ) -> mouseColumnIndex
+        .set( getColumnIndexFromPosition( newColumn.intValue() ) ) );
+
+    // keep mouse row index property updated
+    mouseRowPos.addListener(
+        ( observable, oldRow, newRow ) -> mouseRowIndex.set( getRowIndexFromPosition( newRow.intValue() ) ) );
+  }
 }

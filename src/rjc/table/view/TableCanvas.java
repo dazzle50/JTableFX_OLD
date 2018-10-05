@@ -80,6 +80,10 @@ public class TableCanvas extends Canvas
     // mouse has left table, so set mouse column/row to invalid
     m_view.mouseColumnPos.set( TableView.INVALID );
     m_view.mouseRowPos.set( TableView.INVALID );
+    m_cellXstart = TableView.INVALID;
+    m_cellXend = TableView.INVALID;
+    m_cellYstart = TableView.INVALID;
+    m_cellYend = TableView.INVALID;
   }
 
   /***************************************** mouseMoved ******************************************/
@@ -90,19 +94,62 @@ public class TableCanvas extends Canvas
     int y = (int) event.getY();
 
     // check if mouse moved outside current column 
-    if ( x < m_cellXstart || x > m_cellXend )
+    if ( x < m_cellXstart || x >= m_cellXend )
     {
-      m_view.mouseColumnPos.set( m_view.getColumnPositionAtX( x ) );
+      int columnPos = m_view.getColumnPositionAtX( x );
+
+      if ( columnPos == TableView.HEADER )
+      {
+        m_cellXstart = 0;
+        m_cellXend = m_view.getRowHeaderWidth();
+      }
+      else if ( columnPos == TableView.LEFT )
+      {
+        m_cellXstart = Integer.MIN_VALUE;
+        m_cellXend = 0;
+      }
+      else if ( columnPos == TableView.RIGHT )
+      {
+        m_cellXstart = m_view.getTableWidth();
+        m_cellXend = Integer.MAX_VALUE;
+      }
+      else
+      {
+        m_cellXstart = m_view.getColumnPositionXStart( columnPos );
+        m_cellXend = m_view.getColumnPositionXStart( columnPos + 1 );
+      }
+
+      m_view.mouseColumnPos.set( columnPos );
     }
 
     // check if mouse moved outside current row 
-    if ( y < m_cellYstart || y > m_cellYend )
+    if ( y < m_cellYstart || y >= m_cellYend )
     {
-      m_view.mouseRowPos.set( m_view.getRowPositionAtY( y ) );
-    }
+      int rowPos = m_view.getRowPositionAtY( y );
 
-    // TODO Auto-generated method stub #########################################
-    //Utils.trace( event.getEventType(), x, y, m_view.getColumnPositionAtX( x ), m_view.getRowPositionAtY( y ) );
+      if ( rowPos == TableView.HEADER )
+      {
+        m_cellYstart = 0;
+        m_cellYend = m_view.getColumnHeaderHeight();
+      }
+      else if ( rowPos == TableView.ABOVE )
+      {
+        m_cellYstart = Integer.MIN_VALUE;
+        m_cellYend = 0;
+      }
+      else if ( rowPos == TableView.BELOW )
+      {
+        m_cellYstart = m_view.getTableHeight();
+        m_cellYend = Integer.MAX_VALUE;
+      }
+      else
+      {
+        m_cellYstart = m_view.getRowPositionYStart( rowPos );
+        m_cellYend = m_view.getRowPositionYStart( rowPos + 1 );
+      }
+
+      m_view.mouseRowPos.set( rowPos );
+    }
   }
 
   /**************************************** mouseClicked *****************************************/
@@ -140,7 +187,7 @@ public class TableCanvas extends Canvas
   private void widthChange( int oldW, int newW )
   {
     // only need to draw if new width is larger than old width
-    if ( newW > oldW )
+    if ( newW > oldW && m_view.draw.get() )
     {
       // calculate which columns need to be redrawn
       int minColumnPos = m_view.getColumnPositionAtX( oldW );
@@ -159,7 +206,7 @@ public class TableCanvas extends Canvas
   private void heightChange( int oldH, int newH )
   {
     // only need to draw if new height is larger than old height
-    if ( newH > oldH )
+    if ( newH > oldH && m_view.draw.get() )
     {
       // calculate which rows need to be redrawn, and redraw them
       int minRowPos = m_view.getRowPositionAtY( oldH );
