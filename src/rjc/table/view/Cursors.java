@@ -18,11 +18,30 @@
 
 package rjc.table.view;
 
+import javafx.scene.Cursor;
+import javafx.scene.ImageCursor;
+import javafx.scene.image.Image;
+
 /*************************************************************************************************/
-/*********************** Reading and writing table view config XML streams ***********************/
+/***************************** Mouse cursors available to the tables *****************************/
 /*************************************************************************************************/
 
-public class TableXML extends TableEvents
+public final class Cursors
 {
+  public static final Cursor H_RESIZE   = Cursor.H_RESIZE;
+  public static final Cursor V_RESIZE   = Cursor.V_RESIZE;
+  public static final Cursor DEFAULT    = Cursor.DEFAULT;
 
+  public static final Cursor DOWNARROW  = makeCursor( "arrowdown.png", 7, 16 );
+  public static final Cursor RIGHTARROW = makeCursor( "arrowright.png", 16, 24 );
+  public static final Cursor CROSS      = makeCursor( "cross.png", 16, 20 );
+  public static final Cursor H_MOVE     = makeCursor( "move.png", 16, 16 );
+  public static final Cursor V_MOVE     = makeCursor( "move.png", 16, 16 );
+
+  /***************************************** makeCursor ******************************************/
+  private static Cursor makeCursor( String file, int x, int y )
+  {
+    // return a cursor based on image file with specified x & y hot spot
+    return new ImageCursor( new Image( Cursors.class.getResourceAsStream( file ) ), x, y );
+  }
 }

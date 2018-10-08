@@ -77,20 +77,22 @@ public class DemoWindow
     TableView defaultTable = new TableView( new TableData() );
     Tab defaultTab = new Tab();
     defaultTab.setText( "Default" );
+    defaultTab.setClosable( false );
     defaultTab.setContent( defaultTable );
     defaultTable.draw.bind( defaultTab.selectedProperty() );
 
     // create large table in tab
-    TableView xlargeTable = new LargeView( new LargeData() );
-    Tab xlargeTab = new Tab();
-    xlargeTab.setText( "Large" );
-    xlargeTab.setContent( xlargeTable );
-    xlargeTable.draw.bind( xlargeTab.selectedProperty() );
+    TableView largeTable = new LargeView( new LargeData() );
+    Tab largeTab = new Tab();
+    largeTab.setText( "Large" );
+    largeTab.setClosable( false );
+    largeTab.setContent( largeTable );
+    largeTable.draw.bind( largeTab.selectedProperty() );
 
     // create demo tab pane
     TabPane tabs = new TabPane();
     tabs.getTabs().add( defaultTab );
-    tabs.getTabs().add( xlargeTab );
+    tabs.getTabs().add( largeTab );
 
     return tabs;
   }

@@ -22,8 +22,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 
-import rjc.table.support.Utils;
-
 /*************************************************************************************************/
 /****************** Table header + cell column and row sizing including hiding *******************/
 /*************************************************************************************************/
@@ -362,7 +360,7 @@ public class TableSizing extends TablePosition
       return LEFT;
 
     // if right of table body return RIGHT
-    if ( x >= m_view.getBodyWidth() )
+    if ( x >= getBodyWidth() )
       return RIGHT;
 
     // make sure x start cache is populated by calling getColumnPositionXStart
@@ -398,7 +396,7 @@ public class TableSizing extends TablePosition
       return ABOVE;
 
     // if below table body return BELOW
-    if ( y >= m_view.getBodyHeight() )
+    if ( y >= getBodyHeight() )
       return BELOW;
 
     // make sure y start cache is populated by calling getRowPositionYStart

@@ -118,8 +118,8 @@ public class TableDraw extends TableXML
       m_rowIndex = rowIndex;
 
       // calculate which columns are visible
-      int minColumnPos = m_view.getColumnPositionAtX( getRowHeaderWidth() );
-      int maxColumnPos = m_view.getColumnPositionAtX( (int) m_canvas.getWidth() );
+      int minColumnPos = getColumnPositionAtX( getRowHeaderWidth() );
+      int maxColumnPos = getColumnPositionAtX( (int) m_canvas.getWidth() );
       y = getRowIndexYStart( m_rowIndex );
       h = getRowIndexHeight( m_rowIndex );
 
@@ -206,7 +206,8 @@ public class TableDraw extends TableXML
     if ( m_columnIndex == HEADER )
       return m_data.getRowTitle( m_rowIndex );
 
-    return m_data.getValue( m_columnIndex, m_rowIndex ).toString();
+    Object value = m_data.getValue( m_columnIndex, m_rowIndex );
+    return value == null ? null : value.toString();
   }
 
   /************************************* drawCellBackground **************************************/

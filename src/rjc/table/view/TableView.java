@@ -66,10 +66,19 @@ public class TableView extends TableDraw
   /****************************************** drawCell *******************************************/
   protected void drawCell()
   {
+    // clip drawing to cell boundaries
+    gc.save();
+    gc.beginPath();
+    gc.rect( x, y, w, h );
+    gc.clip();
+
     // draw table body or header cell
     drawCellBackground();
     drawCellContent();
     drawCellBorder();
+
+    // remove clip
+    gc.restore();
   }
 
   /************************************ getCellTextAlignment *************************************/
