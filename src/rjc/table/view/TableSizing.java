@@ -485,12 +485,8 @@ public class TableSizing extends TablePosition
     if ( columnIndex == HEADER )
       return 0;
 
-    int x = getRowHeaderWidth() - getXOffset();
     int columnPos = getColumnPositionFromIndex( columnIndex );
-    for ( int pos = 0; pos < columnPos; pos++ )
-      x += getColumnIndexWidth( getColumnIndexFromPosition( pos ) );
-
-    return x;
+    return getColumnPositionXStart( columnPos );
   }
 
   /************************************** getRowIndexYStart **************************************/
@@ -500,12 +496,8 @@ public class TableSizing extends TablePosition
     if ( rowIndex == HEADER )
       return 0;
 
-    int y = getColumnHeaderHeight() - getYOffset();
     int rowPos = getRowPositionFromIndex( rowIndex );
-    for ( int pos = 0; pos < rowPos; pos++ )
-      y += getRowIndexHeight( getRowIndexFromPosition( pos ) );
-
-    return y;
+    return getRowPositionYStart( rowPos );
   }
 
 }

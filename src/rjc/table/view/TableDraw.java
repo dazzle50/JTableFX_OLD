@@ -68,7 +68,6 @@ public class TableDraw extends TableXML
     // redraw visible bit of column including header
     if ( draw.get() && columnIndex >= HEADER )
     {
-      Utils.trace( columnIndex );
       m_columnIndex = columnIndex;
 
       // calculate which rows are visible
@@ -114,7 +113,6 @@ public class TableDraw extends TableXML
     // redraw visible bit of row including header
     if ( draw.get() && rowIndex >= HEADER )
     {
-      Utils.trace( rowIndex );
       m_rowIndex = rowIndex;
 
       // calculate which columns are visible

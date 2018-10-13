@@ -19,6 +19,7 @@
 package rjc.table.view;
 
 import javafx.scene.input.KeyEvent;
+import javafx.scene.input.MouseButton;
 import javafx.scene.input.MouseEvent;
 
 /*************************************************************************************************/
@@ -27,17 +28,15 @@ import javafx.scene.input.MouseEvent;
 
 public class TableEvents extends TableSelection
 {
-  private int m_cellXstart; // current mouse cell X start
-  private int m_cellXend;   // current mouse cell X end
-  private int m_cellYstart; // current mouse cell Y start
-  private int m_cellYend;   // current mouse cell Y end
+  private int              m_cellXstart;             // current mouse cell X start
+  private int              m_cellXend;               // current mouse cell X end
+  private int              m_cellYstart;             // current mouse cell Y start
+  private int              m_cellYend;               // current mouse cell Y end
 
-  /****************************************** setCursor ******************************************/
-  protected void setCursor( int x, int y )
-  {
-    // TODO Auto-generated method stub <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
+  private int              m_resizeIndex  = INVALID; // column or row index being resized or INVALID
+  private int              m_resizeOffset = INVALID; // column or row resize offset
 
-  }
+  private static final int PROXIMITY      = 4;       // used to distinguish resize from reorder
 
   /****************************************** keyTyped *******************************************/
   protected void keyTyped( KeyEvent event )
@@ -54,23 +53,98 @@ public class TableEvents extends TableSelection
   /***************************************** mouseExited *****************************************/
   protected void mouseExited( MouseEvent event )
   {
-    // mouse has left table, so set mouse column/row to invalid
-    mouseColumnPos.set( INVALID );
-    mouseRowPos.set( INVALID );
-    m_cellXstart = INVALID;
-    m_cellXend = INVALID;
-    m_cellYstart = INVALID;
-    m_cellYend = INVALID;
+    // mouse has left table
+    setMouseCellPosition( INVALID, INVALID );
+    setCursor( Cursors.DEFAULT );
   }
 
   /***************************************** mouseMoved ******************************************/
   protected void mouseMoved( MouseEvent event )
   {
-    // determine which cell mouse is over
+    // determine which table cell mouse is over
     int x = (int) event.getX();
     int y = (int) event.getY();
-    setCursor( x, y );
+    setMouseCellPosition( x, y );
+    setMouseCursor( x, y );
+  }
 
+  /**************************************** mouseClicked *****************************************/
+  protected void mouseClicked( MouseEvent event )
+  {
+    // user has clicked the table
+    mouseMoved( event );
+  }
+
+  /**************************************** mousePressed *****************************************/
+  protected void mousePressed( MouseEvent event )
+  {
+    // user has press a mouse button
+    MouseButton button = event.getButton();
+    int x = (int) event.getX();
+    int y = (int) event.getY();
+    setMouseCellPosition( x, y );
+    setMouseCursor( x, y );
+
+    // check if column resize started
+    if ( getCursor() == Cursors.H_RESIZE && button == MouseButton.PRIMARY )
+    {
+      if ( x - m_cellXstart < m_cellXend - x )
+        m_resizeIndex = mouseColumnIndex.get() - 1;
+      else
+        m_resizeIndex = mouseColumnIndex.get();
+
+      m_resizeOffset = x - getColumnIndexWidth( m_resizeIndex );
+    }
+
+    // check if row resize started
+    if ( getCursor() == Cursors.V_RESIZE && button == MouseButton.PRIMARY )
+    {
+      if ( y - m_cellYstart < m_cellYend - y )
+        m_resizeIndex = mouseRowIndex.get() - 1;
+      else
+        m_resizeIndex = mouseRowIndex.get();
+
+      m_resizeOffset = y - getRowIndexHeight( m_resizeIndex );
+    }
+
+  }
+
+  /*************************************** mouseReleased *****************************************/
+  protected void mouseReleased( MouseEvent event )
+  {
+    // TODO Auto-generated method stub #########################################
+  }
+
+  /**************************************** mouseDragged *****************************************/
+  protected void mouseDragged( MouseEvent event )
+  {
+    //Utils.trace( m_resizeIndex, m_resizeOffset, event );
+
+    // user is moving mouse with button down
+    int x = (int) event.getX();
+    int y = (int) event.getY();
+
+    // check if column resizing
+    if ( getCursor() == Cursors.H_RESIZE && m_resizeIndex >= 0 )
+    {
+      setColumnIndexWidth( m_resizeIndex, x - m_resizeOffset );
+      m_canvas.widthChange( getColumnIndexXStart( m_resizeIndex ), (int) m_canvas.getWidth() );
+      return;
+    }
+
+    // check if row resizing
+    if ( getCursor() == Cursors.V_RESIZE && m_resizeIndex >= 0 )
+    {
+      setRowIndexHeight( m_resizeIndex, y - m_resizeOffset );
+      m_canvas.heightChange( getRowIndexYStart( m_resizeIndex ), (int) m_canvas.getWidth() );
+      return;
+    }
+
+  }
+
+  /************************************ setMouseCellPosition *************************************/
+  private void setMouseCellPosition( int x, int y )
+  {
     // check if mouse moved outside current column 
     if ( x < m_cellXstart || x >= m_cellXend )
     {
@@ -130,28 +204,69 @@ public class TableEvents extends TableSelection
     }
   }
 
-  /**************************************** mouseClicked *****************************************/
-  protected void mouseClicked( MouseEvent event )
+  /*************************************** setMouseCursor ****************************************/
+  protected void setMouseCursor( int x, int y )
   {
-    // TODO Auto-generated method stub #########################################
-  }
+    // if over table headers corner, set cursor to default
+    if ( x < getRowHeaderWidth() && y < getColumnHeaderHeight() )
+    {
+      setCursor( Cursors.DEFAULT );
+      return;
+    }
 
-  /**************************************** mousePressed *****************************************/
-  protected void mousePressed( MouseEvent event )
-  {
-    // TODO Auto-generated method stub #########################################
-  }
+    // if beyond table cells, set cursor to default
+    if ( x >= getTableWidth() || y >= getTableHeight() )
+    {
+      setCursor( Cursors.DEFAULT );
+      return;
+    }
 
-  /*************************************** mouseReleased *****************************************/
-  protected void mouseReleased( MouseEvent event )
-  {
-    // TODO Auto-generated method stub #########################################
-  }
+    // if over column header, check if resize, move, or select
+    if ( y < getColumnHeaderHeight() )
+    {
+      // if near column edge, set cursor to resize
+      if ( m_cellXend - x <= PROXIMITY || ( x - m_cellXstart <= PROXIMITY && mouseColumnPos.get() != 0 ) )
+      {
+        setCursor( Cursors.H_RESIZE );
+        return;
+      }
 
-  /**************************************** mouseDragged *****************************************/
-  protected void mouseDragged( MouseEvent event )
-  {
-    // TODO Auto-generated method stub #########################################
+      // if column is selected, set cursor to move
+      if ( isColumnSelected( mouseColumnPos.get() ) )
+      {
+        setCursor( Cursors.H_MOVE );
+        return;
+      }
+
+      // otherwise, set cursor to down-arrow for selecting 
+      setCursor( Cursors.DOWNARROW );
+      return;
+    }
+
+    // if over vertical header, check if resize, move, or select
+    if ( x < getRowHeaderWidth() )
+    {
+      // if near row edge, set cursor to resize
+      if ( m_cellYend - y <= PROXIMITY || ( y - m_cellYstart <= PROXIMITY && mouseRowPos.get() != 0 ) )
+      {
+        setCursor( Cursors.V_RESIZE );
+        return;
+      }
+
+      // if row is selected, set cursor to move
+      if ( isRowSelected( mouseRowPos.get() ) )
+      {
+        setCursor( Cursors.V_MOVE );
+        return;
+      }
+
+      // otherwise, set cursor to right-arrow for selecting 
+      setCursor( Cursors.RIGHTARROW );
+      return;
+    }
+
+    // mouse over table cells
+    setCursor( Cursors.CROSS );
   }
 
 }

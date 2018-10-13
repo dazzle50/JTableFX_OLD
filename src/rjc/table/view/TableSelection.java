@@ -18,37 +18,24 @@
 
 package rjc.table.view;
 
-import javafx.beans.property.SimpleIntegerProperty;
-
 /*************************************************************************************************/
 /******************************** Table cell/row/column selection ********************************/
 /*************************************************************************************************/
 
 public class TableSelection extends TableSizing
 {
-  public final SimpleIntegerProperty mouseColumnPos   = new SimpleIntegerProperty( INVALID );
-  public final SimpleIntegerProperty mouseRowPos      = new SimpleIntegerProperty( INVALID );
-
-  public final SimpleIntegerProperty mouseColumnIndex = new SimpleIntegerProperty();
-  public final SimpleIntegerProperty mouseRowIndex    = new SimpleIntegerProperty();
-
-  public final SimpleIntegerProperty focusColumnPos   = new SimpleIntegerProperty();
-  public final SimpleIntegerProperty focusRowPos      = new SimpleIntegerProperty();
-
-  public final SimpleIntegerProperty selectColumnPos  = new SimpleIntegerProperty();
-  public final SimpleIntegerProperty selectRowPos     = new SimpleIntegerProperty();
-
-  /**************************************** constructor ******************************************/
-  public TableSelection()
+  /*************************************** isRowSelected *****************************************/
+  public boolean isRowSelected( int rowPos )
   {
-    super();
-
-    // keep mouse column index property updated
-    mouseColumnPos.addListener( ( observable, oldColumn, newColumn ) -> mouseColumnIndex
-        .set( getColumnIndexFromPosition( newColumn.intValue() ) ) );
-
-    // keep mouse row index property updated
-    mouseRowPos.addListener(
-        ( observable, oldRow, newRow ) -> mouseRowIndex.set( getRowIndexFromPosition( newRow.intValue() ) ) );
+    // TODO Auto-generated method stub
+    return false;
   }
+
+  /************************************** isColumnSelected ***************************************/
+  public boolean isColumnSelected( int columnPos )
+  {
+    // TODO Auto-generated method stub
+    return false;
+  }
+
 }

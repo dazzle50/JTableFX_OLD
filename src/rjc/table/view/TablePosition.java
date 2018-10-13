@@ -20,6 +20,8 @@ package rjc.table.view;
 
 import java.util.ArrayList;
 
+import javafx.beans.property.SimpleIntegerProperty;
+
 /*************************************************************************************************/
 /********************** Table column and row index to position arrangement ***********************/
 /*************************************************************************************************/
@@ -27,8 +29,35 @@ import java.util.ArrayList;
 public class TablePosition extends TableDisplay
 {
   // arrays mapping from position to index
-  private ArrayList<Integer> m_columnIndexes = new ArrayList<Integer>();
-  private ArrayList<Integer> m_rowIndexes    = new ArrayList<Integer>();
+  private ArrayList<Integer>         m_columnIndexes  = new ArrayList<Integer>();
+  private ArrayList<Integer>         m_rowIndexes     = new ArrayList<Integer>();
+
+  // properties holding mouse, edit focus, and select cell positions
+  public final SimpleIntegerProperty mouseColumnPos   = new SimpleIntegerProperty( INVALID );
+  public final SimpleIntegerProperty mouseRowPos      = new SimpleIntegerProperty( INVALID );
+
+  public final SimpleIntegerProperty mouseColumnIndex = new SimpleIntegerProperty();
+  public final SimpleIntegerProperty mouseRowIndex    = new SimpleIntegerProperty();
+
+  public final SimpleIntegerProperty focusColumnPos   = new SimpleIntegerProperty();
+  public final SimpleIntegerProperty focusRowPos      = new SimpleIntegerProperty();
+
+  public final SimpleIntegerProperty selectColumnPos  = new SimpleIntegerProperty();
+  public final SimpleIntegerProperty selectRowPos     = new SimpleIntegerProperty();
+
+  /**************************************** constructor ******************************************/
+  public TablePosition()
+  {
+    super();
+
+    // keep mouse column index property updated
+    mouseColumnPos.addListener( ( observable, oldColumn, newColumn ) -> mouseColumnIndex
+        .set( getColumnIndexFromPosition( newColumn.intValue() ) ) );
+
+    // keep mouse row index property updated
+    mouseRowPos.addListener(
+        ( observable, oldRow, newRow ) -> mouseRowIndex.set( getRowIndexFromPosition( newRow.intValue() ) ) );
+  }
 
   /********************************* getColumnIndexFromPosition **********************************/
   public int getColumnIndexFromPosition( int columnPos )
