@@ -21,6 +21,7 @@ package rjc.table.view;
 import javafx.scene.input.KeyEvent;
 import javafx.scene.input.MouseButton;
 import javafx.scene.input.MouseEvent;
+import javafx.scene.input.ScrollEvent;
 
 /*************************************************************************************************/
 /*************************** Handles canvas mouse and keyboard events ****************************/
@@ -55,7 +56,8 @@ public class TableEvents extends TableSelection
   {
     // mouse has left table
     setMouseCellPosition( INVALID, INVALID );
-    setCursor( Cursors.DEFAULT );
+    if ( event.getButton() == MouseButton.NONE )
+      setCursor( Cursors.DEFAULT );
   }
 
   /***************************************** mouseMoved ******************************************/
@@ -79,11 +81,20 @@ public class TableEvents extends TableSelection
   protected void mousePressed( MouseEvent event )
   {
     // user has press a mouse button
+    boolean redraw = false;
     MouseButton button = event.getButton();
     int x = (int) event.getX();
     int y = (int) event.getY();
     setMouseCellPosition( x, y );
     setMouseCursor( x, y );
+
+    // check if cell selected
+    if ( getCursor() == Cursors.CROSS )
+    {
+      focusColumnPos.set( mouseColumnPos.get() );
+      focusRowPos.set( mouseRowPos.get() );
+      redraw = true;
+    }
 
     // check if column resize started
     if ( getCursor() == Cursors.H_RESIZE && button == MouseButton.PRIMARY )
@@ -107,6 +118,12 @@ public class TableEvents extends TableSelection
       m_resizeOffset = y - getRowIndexHeight( m_resizeIndex );
     }
 
+    // request focus and consume event so table does not loss focus to tab-pane
+    if ( isTableFocused() && redraw )
+      redraw();
+    else
+      requestFocus();
+    event.consume();
   }
 
   /*************************************** mouseReleased *****************************************/
@@ -118,8 +135,6 @@ public class TableEvents extends TableSelection
   /**************************************** mouseDragged *****************************************/
   protected void mouseDragged( MouseEvent event )
   {
-    //Utils.trace( m_resizeIndex, m_resizeOffset, event );
-
     // user is moving mouse with button down
     int x = (int) event.getX();
     int y = (int) event.getY();
@@ -128,7 +143,9 @@ public class TableEvents extends TableSelection
     if ( getCursor() == Cursors.H_RESIZE && m_resizeIndex >= 0 )
     {
       setColumnIndexWidth( m_resizeIndex, x - m_resizeOffset );
+      m_cellXend = INVALID;
       m_canvas.widthChange( getColumnIndexXStart( m_resizeIndex ), (int) m_canvas.getWidth() );
+      layoutDisplay();
       return;
     }
 
@@ -136,67 +153,89 @@ public class TableEvents extends TableSelection
     if ( getCursor() == Cursors.V_RESIZE && m_resizeIndex >= 0 )
     {
       setRowIndexHeight( m_resizeIndex, y - m_resizeOffset );
+      m_cellYend = INVALID;
       m_canvas.heightChange( getRowIndexYStart( m_resizeIndex ), (int) m_canvas.getWidth() );
+      layoutDisplay();
       return;
     }
 
   }
 
+  /**************************************** mouseScroll ******************************************/
+  protected void mouseScroll( ScrollEvent event )
+  {
+    // scroll up or down depending on mouse wheel scroll event
+    if ( m_vScrollBar.isVisible() )
+    {
+      if ( event.getDeltaY() > 0 )
+        m_vScrollBar.decrement();
+      else
+        m_vScrollBar.increment();
+      finishAnimation();
+    }
+  }
+
   /************************************ setMouseCellPosition *************************************/
   private void setMouseCellPosition( int x, int y )
   {
-    // check if mouse moved outside current column 
+    // check if mouse moved outside current column
     if ( x < m_cellXstart || x >= m_cellXend )
     {
-      int columnPos = getColumnPositionAtX( x );
-
-      if ( columnPos == HEADER )
-      {
-        m_cellXstart = 0;
-        m_cellXend = getRowHeaderWidth();
-      }
-      else if ( columnPos == LEFT )
+      int columnPos = INVALID;
+      if ( x < 0 )
       {
         m_cellXstart = Integer.MIN_VALUE;
         m_cellXend = 0;
       }
-      else if ( columnPos == RIGHT )
+      else if ( x >= getTableWidth() )
       {
         m_cellXstart = getTableWidth();
         m_cellXend = Integer.MAX_VALUE;
       }
+      else if ( x < getRowHeaderWidth() )
+      {
+        m_cellXstart = 0;
+        m_cellXend = getRowHeaderWidth();
+        columnPos = HEADER;
+      }
       else
       {
+        columnPos = getColumnPositionAtX( x );
         m_cellXstart = getColumnPositionXStart( columnPos );
+        if ( m_cellXstart < getRowHeaderWidth() )
+          m_cellXstart = getRowHeaderWidth();
         m_cellXend = getColumnPositionXStart( columnPos + 1 );
       }
 
       mouseColumnPos.set( columnPos );
     }
 
-    // check if mouse moved outside current row 
+    // check if mouse moved outside current row
     if ( y < m_cellYstart || y >= m_cellYend )
     {
-      int rowPos = getRowPositionAtY( y );
-
-      if ( rowPos == HEADER )
-      {
-        m_cellYstart = 0;
-        m_cellYend = getColumnHeaderHeight();
-      }
-      else if ( rowPos == ABOVE )
+      int rowPos = INVALID;
+      if ( y < 0 )
       {
         m_cellYstart = Integer.MIN_VALUE;
         m_cellYend = 0;
       }
-      else if ( rowPos == BELOW )
+      else if ( y >= getTableHeight() )
       {
         m_cellYstart = getTableHeight();
         m_cellYend = Integer.MAX_VALUE;
       }
+      else if ( y < getColumnHeaderHeight() )
+      {
+        m_cellYstart = 0;
+        m_cellYend = getColumnHeaderHeight();
+        rowPos = HEADER;
+      }
       else
       {
+        rowPos = getRowPositionAtY( y );
         m_cellYstart = getRowPositionYStart( rowPos );
+        if ( m_cellYstart < getColumnHeaderHeight() )
+          m_cellYstart = getColumnHeaderHeight();
         m_cellYend = getRowPositionYStart( rowPos + 1 );
       }
 

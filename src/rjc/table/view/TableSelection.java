@@ -24,6 +24,13 @@ package rjc.table.view;
 
 public class TableSelection extends TableSizing
 {
+  /*************************************** isCellSelected ****************************************/
+  public boolean isCellSelected( int columnPos, int rowPos )
+  {
+    // TODO Auto-generated method stub
+    return false;
+  }
+
   /*************************************** isRowSelected *****************************************/
   public boolean isRowSelected( int rowPos )
   {

@@ -348,10 +348,6 @@ public class TableSizing extends TablePosition
   /*********************************** getColumnPositionAtX **************************************/
   public int getColumnPositionAtX( int x )
   {
-    // determine if row header
-    if ( x >= 0 && x < getRowHeaderWidth() )
-      return HEADER;
-
     // adjust x for horizontal offset due to scroll bar and row header
     x += getXOffset() - getRowHeaderWidth();
 
@@ -384,10 +380,6 @@ public class TableSizing extends TablePosition
   /************************************* getRowPositionAtY ***************************************/
   public int getRowPositionAtY( int y )
   {
-    // determine if column header
-    if ( y >= 0 && y < getColumnHeaderHeight() )
-      return HEADER;
-
     // adjust y for vertical offset due to scroll bar and column header
     y += getYOffset() - getColumnHeaderHeight();
 

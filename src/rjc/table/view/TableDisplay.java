@@ -68,6 +68,13 @@ public class TableDisplay extends TableParent
     m_canvas.requestFocus();
   }
 
+  /*************************************** isTableFocused ****************************************/
+  public boolean isTableFocused()
+  {
+    // return if table canvas has focus
+    return m_canvas.isFocused();
+  }
+
   /**************************************** layoutDisplay ****************************************/
   public void layoutDisplay()
   {

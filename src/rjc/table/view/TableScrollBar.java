@@ -53,7 +53,7 @@ public class TableScrollBar extends ScrollBar
     }
 
     // redraw table when scroll bar position value changes
-    valueProperty().addListener( ( observable, oldF, newF ) -> m_view.redraw() );
+    valueProperty().addListener( ( observable, oldV, newV ) -> m_view.redraw() );
   }
 
   /****************************************** increment ******************************************/
@@ -61,7 +61,24 @@ public class TableScrollBar extends ScrollBar
   public void increment()
   {
     // increase scroll bar value to next table cell boundary
-    // TODO ###################################################################################################
+    if ( getOrientation() == Orientation.VERTICAL )
+    {
+      int rowPos = m_view.getRowPositionAtY( m_view.getColumnHeaderHeight() );
+      int y = m_view.getRowPositionYStart( ++rowPos );
+      while ( y < m_view.getColumnHeaderHeight() )
+        y = m_view.getRowPositionYStart( ++rowPos );
+      double value = getValue() + y - m_view.getColumnHeaderHeight();
+      m_view.animate( valueProperty(), (int) ( value < getMax() ? value : getMax() ), 100 );
+    }
+    else
+    {
+      int columnPos = m_view.getColumnPositionAtX( m_view.getRowHeaderWidth() );
+      int x = m_view.getColumnPositionXStart( ++columnPos );
+      while ( x < m_view.getColumnHeaderHeight() )
+        x = m_view.getColumnPositionXStart( ++columnPos );
+      double value = getValue() + x - m_view.getRowHeaderWidth();
+      m_view.animate( valueProperty(), (int) ( value < getMax() ? value : getMax() ), 100 );
+    }
   }
 
   /****************************************** decrement ******************************************/
@@ -69,7 +86,26 @@ public class TableScrollBar extends ScrollBar
   public void decrement()
   {
     // decrease scroll bar value to next table cell boundary
-    // TODO ###################################################################################################
+    if ( getOrientation() == Orientation.VERTICAL )
+    {
+      int rowPos = m_view.getRowPositionAtY( m_view.getColumnHeaderHeight() - 1 );
+      if ( rowPos >= 0 )
+      {
+        int y = m_view.getRowPositionYStart( rowPos );
+        double value = getValue() + y - m_view.getColumnHeaderHeight();
+        m_view.animate( valueProperty(), (int) ( value > 0.0 ? value : 0 ), 100 );
+      }
+    }
+    else
+    {
+      int columnPos = m_view.getColumnPositionAtX( m_view.getRowHeaderWidth() - 1 );
+      if ( columnPos >= 0 )
+      {
+        int x = m_view.getColumnPositionXStart( columnPos );
+        double value = getValue() + x - m_view.getRowHeaderWidth();
+        m_view.animate( valueProperty(), (int) ( value > 0.0 ? value : 0 ), 100 );
+      }
+    }
   }
 
   /****************************************** toString *******************************************/
@@ -78,14 +114,6 @@ public class TableScrollBar extends ScrollBar
   {
     return "VAL=" + getValue() + " MIN=" + getMin() + " MAX=" + getMax() + " VIS=" + getVisibleAmount() + " BLK"
         + getBlockIncrement() + " UNIT" + getUnitIncrement() + " ORIENT=" + getOrientation();
-  }
-
-  /****************************************** toString *******************************************/
-  public void layoutScrollBar()
-  {
-    // call layoutChildren
-    layoutChildren();
-    updateBounds();
   }
 
 }

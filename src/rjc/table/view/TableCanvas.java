@@ -49,6 +49,7 @@ public class TableCanvas extends Canvas
     setOnMouseReleased( event -> m_view.mouseReleased( event ) );
     setOnMousePressed( event -> m_view.mousePressed( event ) );
     setOnMouseClicked( event -> m_view.mouseClicked( event ) );
+    setOnScroll( event -> m_view.mouseScroll( event ) );
 
     // react to keyboard events
     setOnKeyPressed( event -> m_view.keyPressed( event ) );

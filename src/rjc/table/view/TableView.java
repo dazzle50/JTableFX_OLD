@@ -63,24 +63,6 @@ public class TableView extends TableDraw
     gc.setFontSmoothingType( FontSmoothingType.LCD );
   }
 
-  /****************************************** drawCell *******************************************/
-  protected void drawCell()
-  {
-    // clip drawing to cell boundaries
-    gc.save();
-    gc.beginPath();
-    gc.rect( x, y, w, h );
-    gc.clip();
-
-    // draw table body or header cell
-    drawCellBackground();
-    drawCellContent();
-    drawCellBorder();
-
-    // remove clip
-    gc.restore();
-  }
-
   /************************************ getCellTextAlignment *************************************/
   protected Pos getCellTextAlignment()
   {
@@ -113,8 +95,12 @@ public class TableView extends TableDraw
   protected Paint getCellBackgroundPaint()
   {
     // return cell background paint
-    if ( m_columnIndex == HEADER || m_rowIndex == HEADER )
-      return Color.gray( 0.95 );
+    if ( m_columnIndex == HEADER )
+      return isColumnSelected( m_columnPos ) ? Color.gray( 0.9 ) : Color.gray( 0.95 );
+    else if ( m_rowIndex == HEADER )
+      return isRowSelected( m_rowPos ) ? Color.gray( 0.9 ) : Color.gray( 0.95 );
+    else if ( isCellSelected( m_columnPos, m_rowPos ) )
+      return isTableFocused() ? Color.ALICEBLUE.saturate() : Color.ALICEBLUE;
     else
       return Color.WHITE;
   }
@@ -124,6 +110,16 @@ public class TableView extends TableDraw
   {
     // return cell text paint
     return Color.BLACK;
+  }
+
+  /************************************** getFocusCellPaint **************************************/
+  protected Paint getFocusCellPaint()
+  {
+    // return focus cell paint
+    if ( isTableFocused() )
+      return Color.CORNFLOWERBLUE;
+    else
+      return Color.CORNFLOWERBLUE.desaturate();
   }
 
 }

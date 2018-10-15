@@ -36,14 +36,14 @@ public class LargeView extends TableView
     super( data );
     setRowHeaderWidth( 60 );
 
-    // when mouse moved redraw old and new column to show highlighting
+    // when mouse moved redraw old and new column to move highlighting
     mouseColumnIndex.addListener( ( observable, oldColumn, newColumn ) ->
     {
       redrawColumn( oldColumn.intValue() );
       redrawColumn( newColumn.intValue() );
     } );
 
-    // when mouse moved redraw old and new row to show highlighting
+    // when mouse moved redraw old and new row to move highlighting
     mouseRowIndex.addListener( ( observable, oldRow, newRow ) ->
     {
       redrawRow( oldRow.intValue() );
@@ -58,11 +58,11 @@ public class LargeView extends TableView
     int columnIndex = mouseColumnIndex.get();
     int rowIndex = mouseRowIndex.get();
 
-    // highlight row and column light blue where mouse is positioned
+    // highlight cell blue where mouse is positioned
     if ( m_columnIndex == columnIndex && m_rowIndex == rowIndex )
       return Color.CORNFLOWERBLUE;
 
-    // highlight cell blue where mouse is positioned
+    // highlight row and column light blue where mouse is positioned
     if ( m_columnIndex == columnIndex || m_rowIndex == rowIndex )
       return Color.ALICEBLUE;
 

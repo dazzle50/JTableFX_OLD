@@ -36,14 +36,14 @@ public class TablePosition extends TableDisplay
   public final SimpleIntegerProperty mouseColumnPos   = new SimpleIntegerProperty( INVALID );
   public final SimpleIntegerProperty mouseRowPos      = new SimpleIntegerProperty( INVALID );
 
-  public final SimpleIntegerProperty mouseColumnIndex = new SimpleIntegerProperty();
-  public final SimpleIntegerProperty mouseRowIndex    = new SimpleIntegerProperty();
+  public final SimpleIntegerProperty mouseColumnIndex = new SimpleIntegerProperty( INVALID );
+  public final SimpleIntegerProperty mouseRowIndex    = new SimpleIntegerProperty( INVALID );
 
-  public final SimpleIntegerProperty focusColumnPos   = new SimpleIntegerProperty();
-  public final SimpleIntegerProperty focusRowPos      = new SimpleIntegerProperty();
+  public final SimpleIntegerProperty focusColumnPos   = new SimpleIntegerProperty( INVALID );
+  public final SimpleIntegerProperty focusRowPos      = new SimpleIntegerProperty( INVALID );
 
-  public final SimpleIntegerProperty selectColumnPos  = new SimpleIntegerProperty();
-  public final SimpleIntegerProperty selectRowPos     = new SimpleIntegerProperty();
+  public final SimpleIntegerProperty selectColumnPos  = new SimpleIntegerProperty( INVALID );
+  public final SimpleIntegerProperty selectRowPos     = new SimpleIntegerProperty( INVALID );
 
   /**************************************** constructor ******************************************/
   public TablePosition()
