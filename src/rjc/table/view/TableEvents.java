@@ -22,6 +22,7 @@ import javafx.scene.input.KeyEvent;
 import javafx.scene.input.MouseButton;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.input.ScrollEvent;
+import rjc.table.support.Utils;
 
 /*************************************************************************************************/
 /*************************** Handles canvas mouse and keyboard events ****************************/
@@ -48,7 +49,77 @@ public class TableEvents extends TableSelection
   /***************************************** keyPressed ******************************************/
   protected void keyPressed( KeyEvent event )
   {
-    // TODO Auto-generated method stub #########################################
+    // handle key presses
+    boolean shift = event.isShiftDown();
+    boolean ctrl = event.isControlDown();
+    boolean alt = event.isAltDown();
+    int pos = INVALID;
+    event.consume();
+
+    // handle arrow keys
+    if ( !alt )
+      switch ( event.getCode() )
+      {
+        case RIGHT: // right -> arrow key
+          if ( ctrl )
+            pos = getVisibleLast();
+          else
+            pos = getVisibleRight( selectColumnPos.get() );
+
+          select( focusColumnPos.get(), focusRowPos.get(), selectColumnPos.get(), selectRowPos.get(), false );
+          selectColumnPos.set( pos );
+          if ( !shift )
+            focusColumnPos.set( pos );
+          select( focusColumnPos.get(), focusRowPos.get(), selectColumnPos.get(), selectRowPos.get(), true );
+          redraw();
+          break;
+
+        case LEFT: // left <- arrow key
+          if ( ctrl )
+            pos = getVisibleFirst();
+          else
+            pos = getVisibleLeft( selectColumnPos.get() );
+
+          select( focusColumnPos.get(), focusRowPos.get(), selectColumnPos.get(), selectRowPos.get(), false );
+          selectColumnPos.set( pos );
+          if ( !shift )
+            focusColumnPos.set( pos );
+          select( focusColumnPos.get(), focusRowPos.get(), selectColumnPos.get(), selectRowPos.get(), true );
+          redraw();
+          break;
+
+        case DOWN: // down arrow key
+          if ( ctrl )
+            pos = getVisibleBottom();
+          else
+            pos = getVisibleDown( selectRowPos.get() );
+
+          select( focusColumnPos.get(), focusRowPos.get(), selectColumnPos.get(), selectRowPos.get(), false );
+          selectRowPos.set( pos );
+          if ( !shift )
+            focusRowPos.set( pos );
+          select( focusColumnPos.get(), focusRowPos.get(), selectColumnPos.get(), selectRowPos.get(), true );
+          redraw();
+          break;
+
+        case UP: // up arrow key
+          if ( ctrl )
+            pos = getVisibleTop();
+          else
+            pos = getVisibleUp( selectRowPos.get() );
+
+          select( focusColumnPos.get(), focusRowPos.get(), selectColumnPos.get(), selectRowPos.get(), false );
+          selectRowPos.set( pos );
+          if ( !shift )
+            focusRowPos.set( pos );
+          select( focusColumnPos.get(), focusRowPos.get(), selectColumnPos.get(), selectRowPos.get(), true );
+          redraw();
+          break;
+
+        default: // anything else
+          break;
+      }
+
   }
 
   /***************************************** mouseExited *****************************************/
@@ -85,14 +156,20 @@ public class TableEvents extends TableSelection
     MouseButton button = event.getButton();
     int x = (int) event.getX();
     int y = (int) event.getY();
+    boolean shift = event.isShiftDown();
     setMouseCellPosition( x, y );
     setMouseCursor( x, y );
 
     // check if cell selected
     if ( getCursor() == Cursors.CROSS )
     {
-      focusColumnPos.set( mouseColumnPos.get() );
-      focusRowPos.set( mouseRowPos.get() );
+      selectColumnPos.set( mouseColumnPos.get() );
+      selectRowPos.set( mouseRowPos.get() );
+      if ( !shift )
+      {
+        focusColumnPos.set( mouseColumnPos.get() );
+        focusRowPos.set( mouseRowPos.get() );
+      }
       redraw = true;
     }
 

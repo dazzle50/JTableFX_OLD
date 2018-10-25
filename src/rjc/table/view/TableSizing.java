@@ -492,4 +492,102 @@ public class TableSizing extends TablePosition
     return getRowPositionYStart( rowPos );
   }
 
+  /**************************************** getVisibleUp *****************************************/
+  public int getVisibleUp( int rowPos )
+  {
+    // return non-hidden row above, or if none, this one
+    int above = rowPos - 1;
+    while ( isRowPositionHidden( above ) )
+      above--;
+
+    if ( above >= 0 )
+      return above;
+
+    return rowPos;
+  }
+
+  /*************************************** getVisibleDown ****************************************/
+  public int getVisibleDown( int rowPos )
+  {
+    // return non-hidden row below, or if none, this one
+    int below = rowPos + 1;
+    while ( isRowPositionHidden( below ) )
+      below++;
+
+    if ( below < m_data.getRowCount() )
+      return below;
+
+    return rowPos;
+  }
+
+  /**************************************** getVisibleTop ****************************************/
+  public int getVisibleTop()
+  {
+    // return top non-hidden row position
+    return getVisibleDown( HEADER );
+  }
+
+  /************************************** getVisibleBottom ***************************************/
+  public int getVisibleBottom()
+  {
+    // return bottom non-hidden row position
+    return getVisibleUp( m_data.getRowCount() );
+  }
+
+  /*************************************** getVisibleLeft ****************************************/
+  public int getVisibleLeft( int columnPos )
+  {
+    // return non-hidden column-position to left, or if none, this one
+    int left = columnPos - 1;
+    while ( isColumnPositionHidden( left ) )
+      left--;
+
+    if ( left >= 0 )
+      return left;
+
+    return columnPos;
+  }
+
+  /*************************************** getVisibleRight ***************************************/
+  public int getVisibleRight( int columnPos )
+  {
+    // return non-hidden column-position to right, or if none, this one
+    int right = columnPos + 1;
+    while ( isColumnPositionHidden( right ) )
+      right++;
+
+    if ( right < m_data.getColumnCount() )
+      return right;
+
+    return columnPos;
+  }
+
+  /*************************************** getVisibleFirst ***************************************/
+  public int getVisibleFirst()
+  {
+    // return first non-hidden column position
+    return getVisibleRight( HEADER );
+  }
+
+  /*************************************** getVisibleLast ****************************************/
+  public int getVisibleLast()
+  {
+    // return last non-hidden column position
+    return getVisibleLeft( m_data.getColumnCount() );
+  }
+
+  /*********************************** isColumnPositionHidden ************************************/
+  public boolean isColumnPositionHidden( int columnPos )
+  {
+    // return if column position is hidden 
+    return getColumnIndexWidth( getColumnIndexFromPosition( columnPos ) ) <= 0;
+  }
+
+  /************************************ isRowPositionHidden **************************************/
+  public boolean isRowPositionHidden( int rowPos )
+  {
+    // return if row position is hidden 
+    return getRowIndexHeight( getRowIndexFromPosition( rowPos ) ) <= 0;
+  }
+
 }
