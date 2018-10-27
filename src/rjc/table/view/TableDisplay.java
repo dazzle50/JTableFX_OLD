@@ -131,7 +131,57 @@ public class TableDisplay extends TableParent
   public void redraw()
   {
     // request complete redraw of table canvas
-    m_canvas.redraw();
+    widthChange( 0, (int) getWidth() );
+  }
+
+  /***************************************** widthChange *****************************************/
+  public void widthChange( int oldW, int newW )
+  {
+    // only need to draw if new width is larger than old width
+    if ( newW > oldW && m_view.draw.get() && oldW < m_view.getTableWidth() )
+    {
+      // clear background
+      m_canvas.getGraphicsContext2D().clearRect( oldW + 0.5, 0.0, newW, getHeight() );
+
+      // calculate which columns need to be redrawn
+      int minColumnPos = m_view.getColumnPositionAtX( oldW );
+      if ( minColumnPos == TableView.HEADER )
+        minColumnPos = m_view.getColumnPositionAtX( m_view.getRowHeaderWidth() );
+      int maxColumnPos = m_view.getColumnPositionAtX( newW );
+      m_view.redrawColumns( minColumnPos, maxColumnPos );
+
+      // check if row header needs to be redrawn
+      if ( oldW < m_view.getRowHeaderWidth() )
+        m_view.redrawColumn( TableView.HEADER );
+
+      // draw table overlay
+      m_view.redrawOverlay();
+    }
+  }
+
+  /**************************************** heightChange *****************************************/
+  public void heightChange( int oldH, int newH )
+  {
+    // only need to draw if new height is larger than old height
+    if ( newH > oldH && m_view.draw.get() && oldH < m_view.getTableHeight() )
+    {
+      // clear background
+      m_canvas.getGraphicsContext2D().clearRect( 0.0, oldH + 0.5, getWidth(), newH );
+
+      // calculate which rows need to be redrawn, and redraw them
+      int minRowPos = m_view.getRowPositionAtY( oldH );
+      if ( minRowPos == TableView.HEADER )
+        minRowPos = m_view.getRowPositionAtY( m_view.getColumnHeaderHeight() );
+      int maxRowPos = m_view.getRowPositionAtY( newH );
+      m_view.redrawRows( minRowPos, maxRowPos );
+
+      // check if column header needs to be redrawn
+      if ( oldH < m_view.getColumnHeaderHeight() )
+        m_view.redrawRow( TableView.HEADER );
+
+      // draw table overlay
+      m_view.redrawOverlay();
+    }
   }
 
   /***************************************** getXOffset ******************************************/

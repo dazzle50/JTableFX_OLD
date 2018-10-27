@@ -19,7 +19,11 @@
 package rjc.table.view;
 
 import javafx.beans.property.SimpleBooleanProperty;
+import javafx.geometry.Insets;
+import javafx.geometry.Pos;
 import javafx.scene.canvas.GraphicsContext;
+import javafx.scene.paint.Color;
+import javafx.scene.text.Font;
 import rjc.table.support.Utils;
 
 /*************************************************************************************************/
@@ -199,21 +203,6 @@ public class TableDraw extends TableXML
     }
   }
 
-  /**************************************** getCellText ******************************************/
-  protected String getCellText()
-  {
-    // return cell value as string
-    if ( m_rowIndex == HEADER && m_columnIndex == HEADER )
-      return null;
-    if ( m_rowIndex == HEADER )
-      return m_data.getColumnTitle( m_columnIndex );
-    if ( m_columnIndex == HEADER )
-      return m_data.getRowTitle( m_rowIndex );
-
-    Object value = m_data.getValue( m_columnIndex, m_rowIndex );
-    return value == null ? null : value.toString();
-  }
-
   /****************************************** drawCell *******************************************/
   protected void drawCell()
   {
@@ -230,16 +219,24 @@ public class TableDraw extends TableXML
 
     // remove clip
     gc.restore();
-    highlightFocusCell();
   }
 
-  /************************************* highlightFocusCell **************************************/
-  protected void highlightFocusCell()
+  /**************************************** redrawOverlay ****************************************/
+  public void redrawOverlay()
   {
     // highlight focus cell with special border
-    if ( m_columnPos == focusColumnPos.get() && m_rowPos == focusRowPos.get() )
+    if ( focusColumnPos.get() >= 0 && focusRowPos.get() >= 0 )
     {
-      gc.setStroke( m_view.getFocusCellPaint() );
+      if ( isTableFocused() )
+        gc.setStroke( Color.CORNFLOWERBLUE );
+      else
+        gc.setStroke( Color.CORNFLOWERBLUE.desaturate() );
+
+      x = getColumnPositionXStart( focusColumnPos.get() );
+      y = getRowPositionYStart( focusRowPos.get() );
+      w = getColumnIndexWidth( getColumnIndexFromPosition( focusColumnPos.get() ) );
+      h = getRowIndexHeight( getRowIndexFromPosition( focusRowPos.get() ) );
+
       gc.strokeRect( x - 0.5, y - 0.5, w, h );
       gc.strokeRect( x + 0.5, y + 0.5, w - 2, h - 2 );
     }
@@ -266,16 +263,20 @@ public class TableDraw extends TableXML
   protected void drawCellContent()
   {
     // draw cell contents
-    drawCellText( getCellText() );
+    drawCellText( m_view.getCellText() );
   }
 
   /**************************************** drawCellText *****************************************/
   protected void drawCellText( String cellText )
   {
     // convert string into text lines
-    CellText lines = new CellText( cellText, m_view, w, h );
+    Font font = m_view.getCellTextFont();
+    Insets insets = m_view.getCellTextInsets();
+    Pos alignment = m_view.getCellTextAlignment();
+    CellText lines = new CellText( cellText, font, insets, alignment, w, h );
 
     // draw the lines on cell
+    gc.setFont( font );
     int line = 0;
     while ( lines.getText( line ) != null )
     {

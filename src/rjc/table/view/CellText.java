@@ -57,14 +57,10 @@ public class CellText
   static final String     ELLIPSIS = "...";                // ellipsis to show text has been truncated
 
   /**************************************** constructor ******************************************/
-  public CellText( String cellText, TableView m_view, double width, double height )
+  public CellText( String cellText, Font font, Insets insets, Pos alignment, double width, double height )
   {
     // prepare Text node for measuring string boundaries
-    Font font = m_view.getCellTextFont();
     node.setFont( font );
-    m_view.gc.setFont( font );
-
-    Insets insets = m_view.getCellTextInsets();
     width = width - insets.getLeft() - insets.getRight();
     height = height - insets.getTop() - insets.getBottom();
 
@@ -100,7 +96,6 @@ public class CellText
     // position the lines depending on the cell text alignment
     if ( bounds != null )
     {
-      Pos alignment = m_view.getCellTextAlignment();
       int numberOfLines = m_lines.size();
       for ( int index = 0; index < numberOfLines; index++ )
       {

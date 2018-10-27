@@ -22,7 +22,6 @@ import javafx.scene.input.KeyEvent;
 import javafx.scene.input.MouseButton;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.input.ScrollEvent;
-import rjc.table.support.Utils;
 
 /*************************************************************************************************/
 /*************************** Handles canvas mouse and keyboard events ****************************/
@@ -221,7 +220,7 @@ public class TableEvents extends TableSelection
     {
       setColumnIndexWidth( m_resizeIndex, x - m_resizeOffset );
       m_cellXend = INVALID;
-      m_canvas.widthChange( getColumnIndexXStart( m_resizeIndex ), (int) m_canvas.getWidth() );
+      widthChange( getColumnIndexXStart( m_resizeIndex ), (int) m_canvas.getWidth() );
       layoutDisplay();
       return;
     }
@@ -231,7 +230,7 @@ public class TableEvents extends TableSelection
     {
       setRowIndexHeight( m_resizeIndex, y - m_resizeOffset );
       m_cellYend = INVALID;
-      m_canvas.heightChange( getRowIndexYStart( m_resizeIndex ), (int) m_canvas.getWidth() );
+      heightChange( getRowIndexYStart( m_resizeIndex ), (int) m_canvas.getWidth() );
       layoutDisplay();
       return;
     }

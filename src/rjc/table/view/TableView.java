@@ -63,6 +63,21 @@ public class TableView extends TableDraw
     gc.setFontSmoothingType( FontSmoothingType.LCD );
   }
 
+  /**************************************** getCellText ******************************************/
+  protected String getCellText()
+  {
+    // return cell value as string
+    if ( m_rowIndex == HEADER && m_columnIndex == HEADER )
+      return null;
+    if ( m_rowIndex == HEADER )
+      return m_data.getColumnTitle( m_columnIndex );
+    if ( m_columnIndex == HEADER )
+      return m_data.getRowTitle( m_rowIndex );
+
+    Object value = m_data.getValue( m_columnIndex, m_rowIndex );
+    return value == null ? null : value.toString();
+  }
+
   /************************************ getCellTextAlignment *************************************/
   protected Pos getCellTextAlignment()
   {
@@ -110,16 +125,6 @@ public class TableView extends TableDraw
   {
     // return cell text paint
     return Color.BLACK;
-  }
-
-  /************************************** getFocusCellPaint **************************************/
-  protected Paint getFocusCellPaint()
-  {
-    // return focus cell paint
-    if ( isTableFocused() )
-      return Color.CORNFLOWERBLUE;
-    else
-      return Color.CORNFLOWERBLUE.desaturate();
   }
 
 }

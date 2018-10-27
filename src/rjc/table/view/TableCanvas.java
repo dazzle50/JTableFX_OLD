@@ -36,11 +36,12 @@ public class TableCanvas extends Canvas
     m_view = view;
 
     // when size changes draw new bits
-    widthProperty().addListener( ( observable, oldW, newW ) -> widthChange( oldW.intValue(), newW.intValue() ) );
-    heightProperty().addListener( ( observable, oldH, newH ) -> heightChange( oldH.intValue(), newH.intValue() ) );
+    widthProperty().addListener( ( observable, oldW, newW ) -> m_view.widthChange( oldW.intValue(), newW.intValue() ) );
+    heightProperty()
+        .addListener( ( observable, oldH, newH ) -> m_view.heightChange( oldH.intValue(), newH.intValue() ) );
 
     // redraw table when focus changes
-    focusedProperty().addListener( ( observable, oldF, newF ) -> redraw() );
+    focusedProperty().addListener( ( observable, oldF, newF ) -> m_view.redraw() );
 
     // react to mouse events
     setOnMouseExited( event -> m_view.mouseExited( event ) );
@@ -54,57 +55,6 @@ public class TableCanvas extends Canvas
     // react to keyboard events
     setOnKeyPressed( event -> m_view.keyPressed( event ) );
     setOnKeyTyped( event -> m_view.keyTyped( event ) );
-  }
-
-  /******************************************* redraw ********************************************/
-  public void redraw()
-  {
-    // return entire canvas
-    widthChange( 0, (int) getWidth() );
-  }
-
-  /***************************************** widthChange *****************************************/
-  public void widthChange( int oldW, int newW )
-  {
-    // only need to draw if new width is larger than old width
-    if ( newW > oldW && m_view.draw.get() && oldW < m_view.getTableWidth() )
-    {
-      // clear background
-      getGraphicsContext2D().clearRect( oldW + 0.5, 0.0, newW, getHeight() );
-
-      // calculate which columns need to be redrawn
-      int minColumnPos = m_view.getColumnPositionAtX( oldW );
-      if ( minColumnPos == TableView.HEADER )
-        minColumnPos = m_view.getColumnPositionAtX( m_view.getRowHeaderWidth() );
-      int maxColumnPos = m_view.getColumnPositionAtX( newW );
-      m_view.redrawColumns( minColumnPos, maxColumnPos );
-
-      // check if row header needs to be redrawn
-      if ( oldW < m_view.getRowHeaderWidth() )
-        m_view.redrawColumn( TableView.HEADER );
-    }
-  }
-
-  /**************************************** heightChange *****************************************/
-  public void heightChange( int oldH, int newH )
-  {
-    // only need to draw if new height is larger than old height
-    if ( newH > oldH && m_view.draw.get() && oldH < m_view.getTableHeight() )
-    {
-      // clear background
-      getGraphicsContext2D().clearRect( 0.0, oldH + 0.5, getWidth(), newH );
-
-      // calculate which rows need to be redrawn, and redraw them
-      int minRowPos = m_view.getRowPositionAtY( oldH );
-      if ( minRowPos == TableView.HEADER )
-        minRowPos = m_view.getRowPositionAtY( m_view.getColumnHeaderHeight() );
-      int maxRowPos = m_view.getRowPositionAtY( newH );
-      m_view.redrawRows( minRowPos, maxRowPos );
-
-      // check if column header needs to be redrawn
-      if ( oldH < m_view.getColumnHeaderHeight() )
-        m_view.redrawRow( TableView.HEADER );
-    }
   }
 
 }

@@ -429,6 +429,7 @@ public class TableSizing extends TablePosition
 
       int size = m_columnPosXStartCached.size();
       int x = m_columnPosXStartCached.get( size - 1 );
+      count = Math.min( columnPos + 100, count );
       for ( int pos = size - 1; pos < count; pos++ )
       {
         x += getColumnIndexWidth( getColumnIndexFromPosition( pos ) );
@@ -460,6 +461,7 @@ public class TableSizing extends TablePosition
 
       int size = m_rowPosYStartCached.size();
       int y = m_rowPosYStartCached.get( size - 1 );
+      count = Math.min( rowPos + 100, count );
       for ( int pos = size - 1; pos < count; pos++ )
       {
         y += getRowIndexHeight( getRowIndexFromPosition( pos ) );
