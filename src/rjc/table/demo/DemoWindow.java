@@ -28,8 +28,8 @@ import javafx.scene.control.TextField;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.Priority;
 import javafx.stage.Stage;
+import rjc.table.Utils;
 import rjc.table.data.TableData;
-import rjc.table.support.Utils;
 import rjc.table.view.TableView;
 
 /*************************************************************************************************/

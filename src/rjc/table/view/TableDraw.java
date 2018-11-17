@@ -24,7 +24,7 @@ import javafx.geometry.Pos;
 import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.paint.Color;
 import javafx.scene.text.Font;
-import rjc.table.support.Utils;
+import rjc.table.Utils;
 
 /*************************************************************************************************/
 /****************************** Table body and header cells drawing ******************************/

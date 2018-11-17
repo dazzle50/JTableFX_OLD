@@ -16,7 +16,7 @@
  *  along with this program.  If not, see http://www.gnu.org/licenses/    *
  **************************************************************************/
 
-package rjc.table.support;
+package rjc.table;
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
@@ -145,6 +145,13 @@ public class Utils
   {
     // return if control in error state
     return control == null || control.getId() == STYLE_ERROR;
+  }
+
+  /******************************************** clamp ********************************************/
+  public static int clamp( int val, int min, int max )
+  {
+    // return integer clamped between supplied min and max
+    return Math.max( min, Math.min( max, val ) );
   }
 
 }

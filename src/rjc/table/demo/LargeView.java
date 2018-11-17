@@ -28,6 +28,8 @@ import rjc.table.view.TableView;
 
 public class LargeView extends TableView
 {
+  private int m_mouseColumnIndex = INVALID;
+  private int m_mouseRowIndex    = INVALID;
 
   /**************************************** constructor ******************************************/
   public LargeView( LargeData data )
@@ -37,17 +39,23 @@ public class LargeView extends TableView
     setRowHeaderWidth( 60 );
 
     // when mouse moved redraw old and new column to move highlighting
-    mouseColumnIndex.addListener( ( observable, oldColumn, newColumn ) ->
+    mouseColumnPos.addListener( ( observable, oldColumn, newColumn ) ->
     {
-      redrawColumn( oldColumn.intValue() );
-      redrawColumn( newColumn.intValue() );
+      int old_index = m_mouseColumnIndex;
+      m_mouseColumnIndex = getColumnIndexFromPosition( newColumn.intValue() );
+      redrawColumn( old_index );
+      redrawColumn( m_mouseColumnIndex );
+      redrawOverlay();
     } );
 
     // when mouse moved redraw old and new row to move highlighting
-    mouseRowIndex.addListener( ( observable, oldRow, newRow ) ->
+    mouseRowPos.addListener( ( observable, oldRow, newRow ) ->
     {
-      redrawRow( oldRow.intValue() );
-      redrawRow( newRow.intValue() );
+      int old_index = m_mouseRowIndex;
+      m_mouseRowIndex = getRowIndexFromPosition( newRow.intValue() );
+      redrawRow( old_index );
+      redrawRow( m_mouseRowIndex );
+      redrawOverlay();
     } );
   }
 
@@ -55,16 +63,13 @@ public class LargeView extends TableView
   @Override
   protected Paint getCellBackgroundPaint()
   {
-    int columnIndex = mouseColumnIndex.get();
-    int rowIndex = mouseRowIndex.get();
-
     // highlight cell blue where mouse is positioned
-    if ( m_columnIndex == columnIndex && m_rowIndex == rowIndex )
-      return Color.CORNFLOWERBLUE;
+    if ( m_columnIndex == m_mouseColumnIndex && m_rowIndex == m_mouseRowIndex )
+      return Color.PALEGREEN;
 
     // highlight row and column light blue where mouse is positioned
-    if ( m_columnIndex == columnIndex || m_rowIndex == rowIndex )
-      return Color.ALICEBLUE;
+    if ( m_columnIndex == m_mouseColumnIndex || m_rowIndex == m_mouseRowIndex )
+      return Color.PALEGREEN.desaturate().desaturate().desaturate().desaturate();
 
     // otherwise default
     return super.getCellBackgroundPaint();

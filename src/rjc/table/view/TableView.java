@@ -109,22 +109,45 @@ public class TableView extends TableDraw
   /*********************************** getCellBackgroundPaint ************************************/
   protected Paint getCellBackgroundPaint()
   {
-    // return cell background paint
+    // return cell background paint, for header cells
+    if ( m_rowIndex == HEADER )
+    {
+      if ( m_columnPos == focusColumnPos.get() )
+        return Color.YELLOW;
+      else
+        return isColumnSelected( m_columnPos ) ? Color.gray( 0.7 ) : Color.gray( 0.95 );
+    }
     if ( m_columnIndex == HEADER )
-      return isColumnSelected( m_columnPos ) ? Color.gray( 0.9 ) : Color.gray( 0.95 );
-    else if ( m_rowIndex == HEADER )
-      return isRowSelected( m_rowPos ) ? Color.gray( 0.9 ) : Color.gray( 0.95 );
-    else if ( isCellSelected( m_columnPos, m_rowPos ) )
-      return isTableFocused() ? Color.ALICEBLUE.saturate() : Color.ALICEBLUE;
-    else
-      return Color.WHITE;
+    {
+      if ( m_rowPos == focusRowPos.get() )
+        return Color.YELLOW;
+      else
+        return isRowSelected( m_rowPos ) ? Color.gray( 0.7 ) : Color.gray( 0.95 );
+    }
+
+    // for selected cells, excluding focused cell
+    if ( isCellSelected( m_columnPos, m_rowPos )
+        && !( m_rowPos == focusRowPos.get() && m_columnPos == focusColumnPos.get() ) )
+    {
+      Color selected = Color.rgb( 51, 153, 255 );
+      if ( m_rowPos == selectRowPos.get() && m_columnPos == selectColumnPos.get() )
+        selected = selected.desaturate();
+      return isTableFocused() ? selected : selected.desaturate();
+    }
+
+    // otherwise default background
+    return Color.WHITE;
   }
 
   /************************************** getCellTextPaint ***************************************/
   protected Paint getCellTextPaint()
   {
     // return cell text paint
-    return Color.BLACK;
+    if ( isCellSelected( m_columnPos, m_rowPos )
+        && !( m_rowPos == focusRowPos.get() && m_columnPos == focusColumnPos.get() ) )
+      return Color.WHITE;
+    else
+      return Color.BLACK;
   }
 
 }

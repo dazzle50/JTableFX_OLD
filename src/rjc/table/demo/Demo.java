@@ -22,7 +22,7 @@ import java.util.TreeSet;
 
 import javafx.application.Application;
 import javafx.stage.Stage;
-import rjc.table.support.Utils;
+import rjc.table.Utils;
 
 /*************************************************************************************************/
 /******************* Application to demonstrate JTableFX use and capabilities ********************/

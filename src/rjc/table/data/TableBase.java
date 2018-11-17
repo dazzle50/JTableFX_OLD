@@ -20,7 +20,7 @@ package rjc.table.data;
 
 import java.util.ArrayList;
 
-import rjc.table.support.Utils;
+import rjc.table.Utils;
 import rjc.table.view.TableView;
 
 /*************************************************************************************************/

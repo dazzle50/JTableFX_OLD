@@ -21,6 +21,8 @@ package rjc.table.view;
 import java.util.HashSet;
 import java.util.Set;
 
+import rjc.table.Utils;
+
 /*************************************************************************************************/
 /******************************** Table cell/row/column selection ********************************/
 /*************************************************************************************************/
@@ -34,13 +36,8 @@ public class TableSelection extends TableSizing
   private Set<Integer> m_selectedRows    = new HashSet<>();
   private Set<Integer> m_selectedColumns = new HashSet<>();
 
-  private static int clamp( int val, int min, int max )
-  {
-    return Math.max( min, Math.min( max, val ) );
-  }
-
-  /*************************************** clearSelection ****************************************/
-  public void clearSelection()
+  /************************************** clearAllSelection **************************************/
+  public void clearAllSelection()
   {
     // clear selection from all cells
     m_selectedCells.clear();
@@ -89,7 +86,7 @@ public class TableSelection extends TableSizing
     // return false if any visible column cell in row is not selected
     int columns = m_data.getColumnCount();
     for ( int columnPos = 0; columnPos < columns; columnPos++ )
-      if ( !isColumnPositionHidden( columnPos ) && !isCellSelected( columnPos, columnPos ) )
+      if ( !isColumnPositionHidden( columnPos ) && !isCellSelected( columnPos, rowPos ) )
         return false;
 
     return true;
@@ -133,10 +130,10 @@ public class TableSelection extends TableSizing
   public void select( int columnPos1, int rowPos1, int columnPos2, int rowPos2, boolean selected )
   {
     // ensure column and row positions are within bounds
-    columnPos1 = clamp( columnPos1, 0, m_data.getColumnCount() - 1 );
-    columnPos2 = clamp( columnPos2, 0, m_data.getColumnCount() - 1 );
-    rowPos1 = clamp( rowPos1, 0, m_data.getRowCount() - 1 );
-    rowPos2 = clamp( rowPos2, 0, m_data.getRowCount() - 1 );
+    columnPos1 = Utils.clamp( columnPos1, 0, m_data.getColumnCount() - 1 );
+    columnPos2 = Utils.clamp( columnPos2, 0, m_data.getColumnCount() - 1 );
+    rowPos1 = Utils.clamp( rowPos1, 0, m_data.getRowCount() - 1 );
+    rowPos2 = Utils.clamp( rowPos2, 0, m_data.getRowCount() - 1 );
 
     // determine min & max positions
     int c1 = Math.min( columnPos1, columnPos2 );
@@ -154,8 +151,8 @@ public class TableSelection extends TableSizing
   public void selectRows( int row1, int row2, boolean selected )
   {
     // ensure row positions are within bounds
-    row1 = clamp( row1, 0, m_data.getRowCount() - 1 );
-    row2 = clamp( row2, 0, m_data.getRowCount() - 1 );
+    row1 = Utils.clamp( row1, 0, m_data.getRowCount() - 1 );
+    row2 = Utils.clamp( row2, 0, m_data.getRowCount() - 1 );
 
     // determine min & max positions
     int r1 = Math.min( row1, row2 );
@@ -170,8 +167,8 @@ public class TableSelection extends TableSizing
   public void selectColumns( int columnPos1, int columnPos2, boolean selected )
   {
     // ensure column positions are within bounds
-    columnPos1 = clamp( columnPos1, 0, m_data.getColumnCount() - 1 );
-    columnPos2 = clamp( columnPos2, 0, m_data.getColumnCount() - 1 );
+    columnPos1 = Utils.clamp( columnPos1, 0, m_data.getColumnCount() - 1 );
+    columnPos2 = Utils.clamp( columnPos2, 0, m_data.getColumnCount() - 1 );
 
     // determine min & max positions
     int c1 = Math.min( columnPos1, columnPos2 );
