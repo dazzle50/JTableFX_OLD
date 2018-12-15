@@ -63,16 +63,23 @@ public class LargeView extends TableView
   @Override
   protected Paint getCellBackgroundPaint()
   {
-    // highlight cell blue where mouse is positioned
-    if ( m_columnIndex == m_mouseColumnIndex && m_rowIndex == m_mouseRowIndex )
-      return Color.PALEGREEN;
+    // get default background paint
+    Paint paint = super.getCellBackgroundPaint();
 
-    // highlight row and column light blue where mouse is positioned
-    if ( m_columnIndex == m_mouseColumnIndex || m_rowIndex == m_mouseRowIndex )
-      return Color.PALEGREEN.desaturate().desaturate().desaturate().desaturate();
+    // if white background
+    if ( paint == Color.WHITE )
+    {
+      // highlight cell green where mouse is positioned
+      if ( m_columnIndex == m_mouseColumnIndex && m_rowIndex == m_mouseRowIndex )
+        return Color.PALEGREEN;
+
+      // highlight row and column pale green where mouse is positioned
+      if ( m_columnIndex == m_mouseColumnIndex || m_rowIndex == m_mouseRowIndex )
+        return Color.PALEGREEN.desaturate().desaturate().desaturate().desaturate();
+    }
 
     // otherwise default
-    return super.getCellBackgroundPaint();
+    return paint;
   }
 
 }

@@ -497,7 +497,7 @@ public class TableSizing extends TablePosition
   /**************************************** getVisibleUp *****************************************/
   public int getVisibleUp( int rowPos )
   {
-    // return non-hidden row above, or if none, this one
+    // return non-hidden row above, or if none, the top
     int above = rowPos - 1;
     while ( isRowPositionHidden( above ) )
       above--;
@@ -505,13 +505,13 @@ public class TableSizing extends TablePosition
     if ( above >= 0 )
       return above;
 
-    return rowPos;
+    return getVisibleTop();
   }
 
   /*************************************** getVisibleDown ****************************************/
   public int getVisibleDown( int rowPos )
   {
-    // return non-hidden row below, or if none, this one
+    // return non-hidden row below, or if none, the bottom
     int below = rowPos + 1;
     while ( isRowPositionHidden( below ) )
       below++;
@@ -519,7 +519,7 @@ public class TableSizing extends TablePosition
     if ( below < m_data.getRowCount() )
       return below;
 
-    return rowPos;
+    return getVisibleBottom();
   }
 
   /**************************************** getVisibleTop ****************************************/
@@ -539,7 +539,7 @@ public class TableSizing extends TablePosition
   /*************************************** getVisibleLeft ****************************************/
   public int getVisibleLeft( int columnPos )
   {
-    // return non-hidden column-position to left, or if none, this one
+    // return non-hidden column-position to left, or if none, the first
     int left = columnPos - 1;
     while ( isColumnPositionHidden( left ) )
       left--;
@@ -547,13 +547,13 @@ public class TableSizing extends TablePosition
     if ( left >= 0 )
       return left;
 
-    return columnPos;
+    return getVisibleFirst();
   }
 
   /*************************************** getVisibleRight ***************************************/
   public int getVisibleRight( int columnPos )
   {
-    // return non-hidden column-position to right, or if none, this one
+    // return non-hidden column-position to right, or if none, the last
     int right = columnPos + 1;
     while ( isColumnPositionHidden( right ) )
       right++;
@@ -561,7 +561,7 @@ public class TableSizing extends TablePosition
     if ( right < m_data.getColumnCount() )
       return right;
 
-    return columnPos;
+    return getVisibleLast();
   }
 
   /*************************************** getVisibleFirst ***************************************/
@@ -578,17 +578,63 @@ public class TableSizing extends TablePosition
     return getVisibleLeft( m_data.getColumnCount() );
   }
 
+  /************************************** ensureColumnShown **************************************/
+  public int ensureColumnShown( int columnPos )
+  {
+    // if column is hidden, return next non-hidden column, and scroll view so visible
+    if ( columnPos < 0 )
+      columnPos = getVisibleFirst();
+    else if ( columnPos >= m_data.getColumnCount() || isColumnPositionHidden( columnPos ) )
+      columnPos = getVisibleRight( columnPos );
+
+    // determine if any horizontal scrolling needed
+    int leftEdge = getColumnPositionXStart( columnPos ) - getRowHeaderWidth();
+    if ( leftEdge < 0 )
+      animateToXOffset( getXOffset() + leftEdge );
+    else
+    {
+      int rightEdge = leftEdge + getColumnIndexWidth( getColumnIndexFromPosition( columnPos ) ) + getRowHeaderWidth();
+      if ( rightEdge > getCanvasWidth() )
+        animateToXOffset( getXOffset() + rightEdge - getCanvasWidth() );
+    }
+
+    return columnPos;
+  }
+
+  /*************************************** ensureRowShown ****************************************/
+  public int ensureRowShown( int rowPos )
+  {
+    // if row is hidden, return next non-hidden row, and scroll view so visible
+    if ( rowPos < 0 )
+      rowPos = getVisibleDown( rowPos );
+    else if ( rowPos >= m_data.getRowCount() || isRowPositionHidden( rowPos ) )
+      rowPos = getVisibleDown( rowPos );
+
+    // determine if any vertical scrolling needed
+    int topEdge = getRowPositionYStart( rowPos ) - getColumnHeaderHeight();
+    if ( topEdge < 0 )
+      animateToYOffset( getYOffset() + topEdge );
+    else
+    {
+      int bottomEdge = topEdge + getRowIndexHeight( getRowIndexFromPosition( rowPos ) ) + getColumnHeaderHeight();
+      if ( bottomEdge > getCanvasHeight() )
+        animateToYOffset( getYOffset() + bottomEdge - getCanvasHeight() );
+    }
+
+    return rowPos;
+  }
+
   /*********************************** isColumnPositionHidden ************************************/
   public boolean isColumnPositionHidden( int columnPos )
   {
-    // return if column position is hidden 
+    // return if column position is hidden (out of bound columns are not hidden)
     return getColumnIndexWidth( getColumnIndexFromPosition( columnPos ) ) <= 0;
   }
 
   /************************************ isRowPositionHidden **************************************/
   public boolean isRowPositionHidden( int rowPos )
   {
-    // return if row position is hidden 
+    // return if row position is hidden (out of bound rows are not hidden)
     return getRowIndexHeight( getRowIndexFromPosition( rowPos ) ) <= 0;
   }
 

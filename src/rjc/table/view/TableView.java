@@ -109,20 +109,20 @@ public class TableView extends TableDraw
   /*********************************** getCellBackgroundPaint ************************************/
   protected Paint getCellBackgroundPaint()
   {
-    // return cell background paint, for header cells
+    // return cell background paint, starting with header cells
     if ( m_rowIndex == HEADER )
     {
       if ( m_columnPos == focusColumnPos.get() )
-        return Color.YELLOW;
+        return Color.LIGHTYELLOW;
       else
-        return isColumnSelected( m_columnPos ) ? Color.gray( 0.7 ) : Color.gray( 0.95 );
+        return hasColumnSelection( m_columnPos ) ? Color.gray( 0.85 ) : Color.gray( 0.95 );
     }
     if ( m_columnIndex == HEADER )
     {
       if ( m_rowPos == focusRowPos.get() )
-        return Color.YELLOW;
+        return Color.LIGHTYELLOW;
       else
-        return isRowSelected( m_rowPos ) ? Color.gray( 0.7 ) : Color.gray( 0.95 );
+        return hasRowSelection( m_rowPos ) ? Color.gray( 0.85 ) : Color.gray( 0.95 );
     }
 
     // for selected cells, excluding focused cell

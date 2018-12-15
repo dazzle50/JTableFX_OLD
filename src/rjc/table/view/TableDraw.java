@@ -81,7 +81,7 @@ public class TableDraw extends TableXML
 
       // calculate which rows are visible
       int minRowPos = getRowPositionAtY( getColumnHeaderHeight() );
-      int maxRowPos = getRowPositionAtY( (int) m_canvas.getHeight() );
+      int maxRowPos = getRowPositionAtY( getCanvasHeight() );
       x = getColumnIndexXStart( m_columnIndex );
       w = getColumnIndexWidth( m_columnIndex );
 
@@ -127,7 +127,7 @@ public class TableDraw extends TableXML
 
       // calculate which columns are visible
       int minColumnPos = getColumnPositionAtX( getRowHeaderWidth() );
-      int maxColumnPos = getColumnPositionAtX( (int) m_canvas.getWidth() );
+      int maxColumnPos = getColumnPositionAtX( getCanvasWidth() );
       y = getRowIndexYStart( m_rowIndex );
       h = getRowIndexHeight( m_rowIndex );
 

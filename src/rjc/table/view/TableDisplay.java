@@ -198,4 +198,42 @@ public class TableDisplay extends TableParent
     return (int) m_vScrollBar.getValue();
   }
 
+  /*************************************** getCanvasWidth ****************************************/
+  public int getCanvasWidth()
+  {
+    // return width of canvas
+    return (int) m_canvas.getWidth();
+  }
+
+  /*************************************** getCanvasHeight ***************************************/
+  public int getCanvasHeight()
+  {
+    // return height of canvas
+    return (int) m_canvas.getHeight();
+  }
+
+  /************************************** animateToXOffset ***************************************/
+  public void animateToXOffset( int endValue )
+  {
+    // create scroll horizontal animation
+    if ( endValue < m_hScrollBar.getMin() )
+      endValue = (int) m_vScrollBar.getMin();
+    if ( endValue > m_hScrollBar.getMax() )
+      endValue = (int) m_vScrollBar.getMax();
+    finishAnimation();
+    animate( m_hScrollBar.valueProperty(), endValue, 200 );
+  }
+
+  /************************************** animateToYOffset ***************************************/
+  public void animateToYOffset( int endValue )
+  {
+    // create scroll vertical animation
+    if ( endValue < m_vScrollBar.getMin() )
+      endValue = (int) m_vScrollBar.getMin();
+    if ( endValue > m_vScrollBar.getMax() )
+      endValue = (int) m_vScrollBar.getMax();
+    finishAnimation();
+    animate( m_vScrollBar.valueProperty(), endValue, 200 );
+  }
+
 }

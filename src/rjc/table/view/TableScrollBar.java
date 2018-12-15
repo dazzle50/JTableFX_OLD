@@ -53,7 +53,11 @@ public class TableScrollBar extends ScrollBar
     }
 
     // redraw table when scroll bar position value changes
-    valueProperty().addListener( ( observable, oldV, newV ) -> m_view.redraw() );
+    valueProperty().addListener( ( observable, oldV, newV ) ->
+    {
+      m_view.redraw();
+      m_view.resetMousePosition();
+    } );
   }
 
   /****************************************** increment ******************************************/
