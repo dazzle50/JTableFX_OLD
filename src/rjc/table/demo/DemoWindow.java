@@ -89,10 +89,18 @@ public class DemoWindow
     largeTab.setContent( largeTable );
     largeTable.draw.bind( largeTab.selectedProperty() );
 
+    // create editable table in tab
+    TableView editTable = new EditView( new EditData() );
+    Tab editTab = new Tab();
+    editTab.setText( "Edit" );
+    editTab.setClosable( false );
+    editTab.setContent( editTable );
+    editTable.draw.bind( editTab.selectedProperty() );
+
     // create demo tab pane
     TabPane tabs = new TabPane();
-    tabs.getTabs().add( defaultTab );
-    tabs.getTabs().add( largeTab );
+    tabs.getTabs().addAll( defaultTab, largeTab, editTab );
+    tabs.getSelectionModel().select( editTab );
 
     return tabs;
   }

@@ -130,8 +130,8 @@ public class TableDisplay extends TableParent
   /******************************************* redraw ********************************************/
   public void redraw()
   {
-    // request complete redraw of table canvas
-    widthChange( 0, (int) getWidth() );
+    // request complete redraw of table canvas (-1 and +1 to ensure canvas graphics context does a reset)
+    widthChange( -1, (int) getWidth() + 1 );
   }
 
   /***************************************** widthChange *****************************************/
@@ -140,7 +140,7 @@ public class TableDisplay extends TableParent
     // only need to draw if new width is larger than old width
     if ( newW > oldW && m_view.draw.get() && oldW < m_view.getTableWidth() )
     {
-      // clear background
+      // clear background (+0.5 needed so anti-aliasing doesn't impact previous column)
       m_canvas.getGraphicsContext2D().clearRect( oldW + 0.5, 0.0, newW, getHeight() );
 
       // calculate which columns need to be redrawn

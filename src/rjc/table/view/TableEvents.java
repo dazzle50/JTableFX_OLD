@@ -268,7 +268,7 @@ public class TableEvents extends TableSelection
     }
 
     // clear previous selections
-    if ( clearSelection && selectionCount() > 1 )
+    if ( clearSelection )
     {
       clearAllSelection();
       m_selection = null;

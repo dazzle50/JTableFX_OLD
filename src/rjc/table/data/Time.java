@@ -195,7 +195,7 @@ public class Time
   public static Time now()
   {
     // return a new Time from current system clock
-    return new Time( (int) ( System.currentTimeMillis() + TZ_MS_OFFSET ) % MILLISECONDS_IN_DAY );
+    return new Time( (int) ( ( System.currentTimeMillis() + TZ_MS_OFFSET ) % MILLISECONDS_IN_DAY ) );
   }
 
   /****************************************** getHours *******************************************/
@@ -250,6 +250,11 @@ public class Time
   {
     // add milliseconds to this time
     m_milliseconds += ms;
+    if ( m_milliseconds < 0 )
+      m_milliseconds = m_milliseconds % MILLISECONDS_IN_DAY + MILLISECONDS_IN_DAY;
+    if ( m_milliseconds > MILLISECONDS_IN_DAY )
+      m_milliseconds = m_milliseconds % MILLISECONDS_IN_DAY;
+
     return this;
   }
 

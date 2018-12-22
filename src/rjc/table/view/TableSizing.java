@@ -30,7 +30,7 @@ public class TableSizing extends TablePosition
 {
   private int                   m_columnDefaultWidth         = 100;
   private int                   m_rowDefaultHeight           = 20;
-  private int                   m_columnMinimumWidth         = 40;
+  private int                   m_columnMinimumWidth         = 30;
   private int                   m_rowMinimumHeight           = 17;
   private int                   m_rowHeaderWidth             = 40;
   private int                   m_columnHeaderHeight         = 20;
@@ -256,16 +256,19 @@ public class TableSizing extends TablePosition
     int oldWidth = getColumnIndexWidth( columnIndex );
     if ( newWidth != oldWidth )
     {
-      m_bodyWidthCached = m_bodyWidthCached - oldWidth + newWidth;
       if ( newWidth == m_columnDefaultWidth )
         m_columnIndexWidthExceptions.remove( columnIndex );
       else
         m_columnIndexWidthExceptions.put( columnIndex, newWidth );
 
       int size = m_columnPosXStartCached.size();
-      int pos = getColumnPositionFromIndex( columnIndex );
-      if ( pos < size )
-        m_columnPosXStartCached.subList( pos, size ).clear();
+      if ( size > 0 )
+      {
+        m_bodyWidthCached = m_bodyWidthCached - oldWidth + newWidth;
+        int pos = getColumnPositionFromIndex( columnIndex );
+        if ( pos < size )
+          m_columnPosXStartCached.subList( pos, size ).clear();
+      }
     }
   }
 
@@ -294,16 +297,19 @@ public class TableSizing extends TablePosition
     int oldHeight = getRowIndexHeight( rowIndex );
     if ( newHeight != oldHeight )
     {
-      m_bodyHeightCached = m_bodyHeightCached - oldHeight + newHeight;
       if ( newHeight == m_rowDefaultHeight )
         m_rowIndexHeightExceptions.remove( rowIndex );
       else
         m_rowIndexHeightExceptions.put( rowIndex, newHeight );
 
       int size = m_rowPosYStartCached.size();
-      int pos = getRowPositionFromIndex( rowIndex );
-      if ( pos < size )
-        m_rowPosYStartCached.subList( pos, size ).clear();
+      if ( size > 0 )
+      {
+        m_bodyHeightCached = m_bodyHeightCached - oldHeight + newHeight;
+        int pos = getRowPositionFromIndex( rowIndex );
+        if ( pos < size && size > 0 )
+          m_rowPosYStartCached.subList( pos, size ).clear();
+      }
     }
   }
 
