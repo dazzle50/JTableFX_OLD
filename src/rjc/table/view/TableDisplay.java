@@ -102,7 +102,10 @@ public class TableDisplay extends TableParent
         m_vScrollBar.setValue( max );
     }
     else
+    {
       m_vScrollBar.setValue( 0.0 );
+      m_vScrollBar.setMax( 0.0 );
+    }
 
     // update horizontal scroll bar
     m_hScrollBar.setVisible( isHSBvisible );
@@ -120,7 +123,10 @@ public class TableDisplay extends TableParent
         m_hScrollBar.setValue( max );
     }
     else
+    {
       m_hScrollBar.setValue( 0.0 );
+      m_hScrollBar.setMax( 0.0 );
+    }
 
     // update canvas
     m_canvas.setWidth( visibleWidth );
@@ -196,6 +202,20 @@ public class TableDisplay extends TableParent
   {
     // return table vertical offset due to scroll bar
     return (int) m_vScrollBar.getValue();
+  }
+
+  /**************************************** getXOffsetMax ****************************************/
+  public int getXOffsetMax()
+  {
+    // return table horizontal scroll bar maximum valid offset
+    return (int) m_hScrollBar.getMax();
+  }
+
+  /**************************************** getYOffsetMax ****************************************/
+  public int getYOffsetMax()
+  {
+    // return table vertical scroll bar maximum valid offset 
+    return (int) m_vScrollBar.getMax();
   }
 
   /*************************************** getCanvasWidth ****************************************/

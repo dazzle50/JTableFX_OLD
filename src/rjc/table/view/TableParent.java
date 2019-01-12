@@ -150,4 +150,11 @@ class TableParent extends Parent
     m_animation = null;
   }
 
+  /************************************* isAnimationFinished *************************************/
+  public boolean isAnimationFinished()
+  {
+    // return true if no animation is in progress
+    return m_animation == null;
+  }
+
 }

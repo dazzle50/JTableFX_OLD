@@ -22,6 +22,8 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 
+import rjc.table.Utils;
+
 /*************************************************************************************************/
 /****************** Table header + cell column and row sizing including hiding *******************/
 /*************************************************************************************************/
@@ -421,6 +423,10 @@ public class TableSizing extends TablePosition
     // return column pos start x
     try
     {
+      if ( columnPos < 0 )
+        return -getXOffset() + getRowHeaderWidth();
+      if ( columnPos >= m_data.getColumnCount() )
+        return getBodyWidth() - getXOffset() + getRowHeaderWidth();
       return m_columnPosXStartCached.get( columnPos ) - getXOffset() + getRowHeaderWidth();
     }
     catch ( IndexOutOfBoundsException exception )
@@ -453,6 +459,10 @@ public class TableSizing extends TablePosition
     // return row pos start y
     try
     {
+      if ( rowPos < 0 )
+        return -getYOffset() + getColumnHeaderHeight();
+      if ( rowPos >= m_data.getRowCount() )
+        return getBodyHeight() - getYOffset() + getColumnHeaderHeight();
       return m_rowPosYStartCached.get( rowPos ) - getYOffset() + getColumnHeaderHeight();
     }
     catch ( IndexOutOfBoundsException exception )
@@ -612,7 +622,7 @@ public class TableSizing extends TablePosition
   {
     // if row is hidden, return next non-hidden row, and scroll view so visible
     if ( rowPos < 0 )
-      rowPos = getVisibleDown( rowPos );
+      rowPos = getVisibleTop();
     else if ( rowPos >= m_data.getRowCount() || isRowPositionHidden( rowPos ) )
       rowPos = getVisibleDown( rowPos );
 
@@ -642,6 +652,20 @@ public class TableSizing extends TablePosition
   {
     // return if row position is hidden (out of bound rows are not hidden)
     return getRowIndexHeight( getRowIndexFromPosition( rowPos ) ) <= 0;
+  }
+
+  /************************************** autofitRowHeight ***************************************/
+  public void autofitRowHeight( int rowPos )
+  {
+    // autofit column width to avoid text ellipsis
+    Utils.trace( "DOUBLE CLICK to autofit row position " + rowPos );
+  }
+
+  /************************************* autofitColumnWidth **************************************/
+  public void autofitColumnWidth( int columnPos )
+  {
+    // autofit row height to avoid text ellipsis
+    Utils.trace( "DOUBLE CLICK to autofit column position " + columnPos );
   }
 
 }
