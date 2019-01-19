@@ -72,24 +72,28 @@ public class TableEvents extends TableSelection
       switch ( event.getCode() )
       {
         case RIGHT: // right -> arrow key
+        case KP_RIGHT:
           pos = ctrl ? getVisibleLast() : getVisibleRight( selectColumnPos.get() );
           setSelectFocusPosition( pos, selectRowPos.get(), !shift, !shift );
           redraw();
           break;
 
         case LEFT: // left <- arrow key
+        case KP_LEFT:
           pos = ctrl ? getVisibleFirst() : getVisibleLeft( selectColumnPos.get() );
           setSelectFocusPosition( pos, selectRowPos.get(), !shift, !shift );
           redraw();
           break;
 
         case DOWN: // down arrow key
+        case KP_DOWN:
           pos = ctrl ? getVisibleBottom() : getVisibleDown( selectRowPos.get() );
           setSelectFocusPosition( selectColumnPos.get(), pos, !shift, !shift );
           redraw();
           break;
 
         case UP: // up arrow key
+        case KP_UP:
           pos = ctrl ? getVisibleTop() : getVisibleUp( selectRowPos.get() );
           setSelectFocusPosition( selectColumnPos.get(), pos, !shift, !shift );
           redraw();
@@ -137,6 +141,30 @@ public class TableEvents extends TableSelection
           insertKeyPressed();
           break;
 
+        case X:
+          // cut cells contents (Ctrl-X)
+          if ( ctrl )
+            controlXPressed();
+          break;
+
+        case C:
+          // copy cells contents (Ctrl-C)
+          if ( ctrl )
+            controlCPressed();
+          break;
+
+        case V:
+          // paste cells contents (Ctrl-V)
+          if ( ctrl )
+            controlVPressed();
+          break;
+
+        case D:
+          // fill-down cells contents (Ctrl-D)
+          if ( ctrl )
+            controlDPressed();
+          break;
+
         case F2: // F2 key - open cell editor with current focus cell contents
           int columnIndex = getColumnIndexFromPosition( focusColumnPos.get() );
           int rowIndex = getRowIndexFromPosition( focusRowPos.get() );
@@ -150,27 +178,52 @@ public class TableEvents extends TableSelection
   }
 
   /***************************************** openEditor ******************************************/
-  private void openEditor( Object value )
+  protected void openEditor( Object value )
   {
     // open editor at focus cell
-    Utils.trace( "NOT YET IMPLEMENTED !!! value = ", value, "at cell position " );
-    redraw();
+    Utils.trace( "EDIT - NOT YET IMPLEMENTED !!! value = ", value );
   }
 
   /************************************** insertKeyPressed ***************************************/
-  private void insertKeyPressed()
+  protected void insertKeyPressed()
   {
     // insert key pressed - TODO
-    Utils.trace( "NOT YET IMPLEMENTED !!!" );
-    redraw();
+    Utils.trace( "INSERT - NOT YET IMPLEMENTED !!!" );
   }
 
   /************************************** deleteKeyPressed ***************************************/
-  private void deleteKeyPressed()
+  protected void deleteKeyPressed()
   {
     // insert key pressed - TODO
-    Utils.trace( "NOT YET IMPLEMENTED !!!" );
-    redraw();
+    Utils.trace( "DELETE - NOT YET IMPLEMENTED !!!" );
+  }
+
+  /*************************************** controlXPressed ***************************************/
+  protected void controlXPressed()
+  {
+    // cut cells contents (Ctrl-X) - TODO
+    Utils.trace( "CUT - NOT YET IMPLEMENTED !!!" );
+  }
+
+  /*************************************** controlCPressed ***************************************/
+  protected void controlCPressed()
+  {
+    // copy cells contents (Ctrl-C) - TODO
+    Utils.trace( "COPY - NOT YET IMPLEMENTED !!!" );
+  }
+
+  /*************************************** controlVPressed ***************************************/
+  protected void controlVPressed()
+  {
+    // paste cells contents (Ctrl-V) - TODO
+    Utils.trace( "PASTE - NOT YET IMPLEMENTED !!!" );
+  }
+
+  /*************************************** controlDPressed ***************************************/
+  protected void controlDPressed()
+  {
+    // fill-down cells contents (Ctrl-D) - TODO
+    Utils.trace( "FILL-DOWN - NOT YET IMPLEMENTED !!!" );
   }
 
   /***************************************** mouseExited *****************************************/
@@ -302,6 +355,20 @@ public class TableEvents extends TableSelection
 
       m_resizeOffset = m_y - getRowIndexHeight( m_resizeIndex );
     }
+
+    // check if whole table selected
+    if ( getCursor() == Cursors.DEFAULT && mouseColumnPos.get() == HEADER && mouseRowPos.get() == HEADER )
+    {
+      int columnPos = getColumnPositionAtX( getRowHeaderWidth() );
+      int rowPos = getRowPositionAtY( getColumnHeaderHeight() );
+      m_selection = null;
+      setSelectFocusPosition( columnPos, rowPos, !shift, !ctrl );
+      m_selection.set( getVisibleFirst(), getVisibleTop(), getVisibleLast(), getVisibleBottom() );
+      selectColumnPos.set( getVisibleLast() );
+      selectRowPos.set( getVisibleBottom() );
+      redraw();
+      return;
+    }
   }
 
   /*************************************** mouseReleased *****************************************/
@@ -333,6 +400,7 @@ public class TableEvents extends TableSelection
       m_selection.set( focusColumnPos.get(), m_selection.r1, mouseColumnPos.get(), m_selection.r2 );
       if ( isAnimationFinished() )
         ensureColumnShown( mouseColumnPos.get() );
+      selectColumnPos.set( mouseColumnPos.get() );
       redraw();
       return;
     }
@@ -343,6 +411,7 @@ public class TableEvents extends TableSelection
       m_selection.set( m_selection.c1, focusRowPos.get(), m_selection.c2, mouseRowPos.get() );
       if ( isAnimationFinished() )
         ensureRowShown( mouseRowPos.get() );
+      selectRowPos.set( mouseRowPos.get() );
       redraw();
       return;
     }

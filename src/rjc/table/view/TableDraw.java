@@ -106,6 +106,7 @@ public class TableDraw extends TableXML
 
       // redraw column header
       m_rowIndex = HEADER;
+      m_rowPos = HEADER;
       y = 0.0;
       h = getColumnHeaderHeight();
       drawCell();
@@ -152,6 +153,7 @@ public class TableDraw extends TableXML
 
       // redraw row header
       m_columnIndex = HEADER;
+      m_columnPos = HEADER;
       x = 0.0;
       w = getRowHeaderWidth();
       drawCell();
@@ -237,8 +239,18 @@ public class TableDraw extends TableXML
       w = getColumnIndexWidth( getColumnIndexFromPosition( focusColumnPos.get() ) );
       h = getRowIndexHeight( getRowIndexFromPosition( focusRowPos.get() ) );
 
+      // clip drawing to table body
+      gc.save();
+      gc.beginPath();
+      gc.rect( getRowHeaderWidth(), getColumnHeaderHeight(), getCanvasWidth(), getCanvasHeight() );
+      gc.clip();
+
+      // draw special border
       gc.strokeRect( x - 0.5, y - 0.5, w, h );
       gc.strokeRect( x + 0.5, y + 0.5, w - 2, h - 2 );
+
+      // remove clip
+      gc.restore();
     }
   }
 
@@ -277,10 +289,10 @@ public class TableDraw extends TableXML
 
     // draw the lines on cell
     gc.setFont( font );
+    gc.setFill( m_view.getCellTextPaint() );
     int line = 0;
     while ( lines.getText( line ) != null )
     {
-      gc.setFill( m_view.getCellTextPaint() );
       gc.fillText( lines.getText( line ), x + lines.getX( line ), y + lines.getY( line ) );
       line++;
     }
