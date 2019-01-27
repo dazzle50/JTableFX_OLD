@@ -1,5 +1,5 @@
 /**************************************************************************
- *  Copyright (C) 2018 by Richard Crook                                   *
+ *  Copyright (C) 2019 by Richard Crook                                   *
  *  https://github.com/dazzle50/JTableFX                                  *
  *                                                                        *
  *  This program is free software: you can redistribute it and/or modify  *
@@ -54,11 +54,14 @@ public class TableSelection extends TableSizing
   // list of selected areas for this table view
   private ArrayList<Selected> m_selected = new ArrayList<>();
 
+  private Selected            m_currentSelection;            // current selection area
+
   /************************************** clearAllSelection **************************************/
   public void clearAllSelection()
   {
     // remove all selected areas
     m_selected.clear();
+    m_currentSelection = null;
   }
 
   /*************************************** selectionCount ****************************************/
@@ -66,6 +69,79 @@ public class TableSelection extends TableSizing
   {
     // return number of selected areas
     return m_selected.size();
+  }
+
+  /***************************************** selectTable *****************************************/
+  public void selectTable()
+  {
+    // select entire table
+    clearAllSelection();
+    setCurrentSelection( getVisibleFirst(), getVisibleTop(), getVisibleLast(), getVisibleBottom() );
+  }
+
+  /************************************** startNewSelection **************************************/
+  public void startNewSelection()
+  {
+    // start new selection by stop having a current selection 
+    m_currentSelection = null;
+  }
+
+  /************************************* setCurrentSelection *************************************/
+  public void setCurrentSelection( int columnPos1, int rowPos1, int columnPos2, int rowPos2 )
+  {
+    // check column & row positions are zero or positive
+    if ( columnPos1 < 0 || rowPos1 < 0 || columnPos2 < 0 || rowPos2 < 0 )
+      throw new IllegalArgumentException(
+          "Negative positions not allowed " + columnPos1 + " " + rowPos1 + " " + columnPos2 + " " + rowPos2 );
+
+    // if no current selection, start new selection area
+    if ( m_currentSelection == null )
+    {
+      m_currentSelection = new Selected();
+      m_selected.add( m_currentSelection );
+    }
+
+    // set current selection area
+    m_currentSelection.set( columnPos1, rowPos1, columnPos2, rowPos2 );
+  }
+
+  /************************************* getCurrentSelection *************************************/
+  public Selected getCurrentSelection()
+  {
+    // return current selection area
+    return m_currentSelection;
+  }
+
+  /*********************************** setSelectFocusPosition ************************************/
+  protected void setSelectFocusPosition( int columnPos, int rowPos, boolean setFocus, boolean clearSelection )
+  {
+    // ensure column and row positions are visible
+    if ( columnPos < Integer.MAX_VALUE )
+      columnPos = ensureColumnShown( columnPos );
+    if ( rowPos < Integer.MAX_VALUE )
+      rowPos = ensureRowShown( rowPos );
+
+    // set table select & focus cell position properties
+    selectColumnPos.set( columnPos );
+    selectRowPos.set( rowPos );
+    if ( setFocus )
+    {
+      focusColumnPos.set( columnPos );
+      focusRowPos.set( rowPos );
+    }
+
+    // clear previous selections
+    if ( clearSelection )
+      clearAllSelection();
+
+    // update current selection area
+    setCurrentSelection( focusColumnPos.get(), focusRowPos.get(), selectColumnPos.get(), selectRowPos.get() );
+
+    // ensure selection starts first column/row if selecting column(s)/row(s)
+    if ( selectColumnPos.get() == Integer.MAX_VALUE )
+      m_currentSelection.c1 = 0;
+    if ( selectRowPos.get() == Integer.MAX_VALUE )
+      m_currentSelection.r1 = 0;
   }
 
   /*************************************** isCellSelected ****************************************/
@@ -141,15 +217,6 @@ public class TableSelection extends TableSizing
         return true;
 
     return false;
-  }
-
-  /*************************************** startSelection ****************************************/
-  public Selected startSelection()
-  {
-    // add a new selection to this tables list of selected areas
-    Selected selected = new Selected();
-    m_selected.add( selected );
-    return selected;
   }
 
   /****************************************** toString *******************************************/

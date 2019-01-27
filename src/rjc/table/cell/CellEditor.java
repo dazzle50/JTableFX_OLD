@@ -16,52 +16,52 @@
  *  along with this program.  If not, see http://www.gnu.org/licenses/    *
  **************************************************************************/
 
-package rjc.table.demo;
+package rjc.table.cell;
 
-import javafx.geometry.Insets;
-import javafx.geometry.Pos;
+import javafx.beans.property.SimpleStringProperty;
 import rjc.table.view.TableView;
 
 /*************************************************************************************************/
-/*********************** Example customised table view for editable table ************************/
+/****************************** Base class for a table cell editor *******************************/
 /*************************************************************************************************/
 
-public class EditView extends TableView
+public class CellEditor
 {
-  protected final static Insets CELL_TEXT_INSERTS = new Insets( 0.0, 5.0, 1.0, 4.0 );
+  private static CellEditor           m_cellEditorInProgress;
+  private static SimpleStringProperty m_errorMessage = new SimpleStringProperty();
 
-  /**************************************** constructor ******************************************/
-  public EditView( EditData data )
+  /***************************************** constructor *****************************************/
+  public CellEditor()
   {
-    // construct customised table view
-    super( data );
-
-    setColumnIndexWidth( EditData.SECTION_READONLY, 120 );
-    setColumnIndexWidth( EditData.SECTION_TEXT, 120 );
-    setColumnIndexWidth( EditData.SECTION_INTEGER, 80 );
-    setColumnIndexWidth( EditData.SECTION_DOUBLE, 80 );
-    setColumnIndexWidth( EditData.SECTION_DATETIME, 200 );
+    // initialise private variables
   }
 
-  /************************************ getCellTextAlignment *************************************/
-  @Override
-  protected Pos getCellTextAlignment()
+  /***************************************** endEditing ******************************************/
+  public static void endEditing()
   {
-    // return left alignment for the two text columns
-    if ( m_rowIndex > HEADER )
-      if ( m_columnIndex == EditData.SECTION_READONLY || m_columnIndex == EditData.SECTION_TEXT )
-        return Pos.CENTER_LEFT;
-
-    // otherwise centre alignment
-    return Pos.CENTER;
+    // if there is a currently active editor, close it
+    if ( m_cellEditorInProgress != null )
+      m_cellEditorInProgress.close( !m_cellEditorInProgress.isError() );
   }
 
-  /************************************** getCellTextInsets **************************************/
-  @Override
-  protected Insets getCellTextInsets()
+  /******************************************* isError *******************************************/
+  public Boolean isError()
   {
-    // return cell text insets
-    return CELL_TEXT_INSERTS;
+    // return if editor in error state
+    return m_errorMessage.get() == null;
+  }
+
+  /******************************************** close ********************************************/
+  public void close( boolean commit )
+  {
+    // clear any error message, remove control from table, and give focus back to table
+    m_cellEditorInProgress = null;
+    m_errorMessage.set( null );
+  }
+
+  /********************************************* open ********************************************/
+  public void open( Object value, TableView view, int columnPos, int rowPos )
+  {
   }
 
 }

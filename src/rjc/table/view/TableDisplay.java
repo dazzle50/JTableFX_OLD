@@ -1,5 +1,5 @@
 /**************************************************************************
- *  Copyright (C) 2018 by Richard Crook                                   *
+ *  Copyright (C) 2019 by Richard Crook                                   *
  *  https://github.com/dazzle50/JTableFX                                  *
  *                                                                        *
  *  This program is free software: you can redistribute it and/or modify  *
@@ -256,4 +256,31 @@ public class TableDisplay extends TableParent
     animate( m_vScrollBar.valueProperty(), endValue, 200 );
   }
 
+  /************************************* animateScrollToTop **************************************/
+  public void animateScrollToTop()
+  {
+    // create scroll up animation
+    animate( m_vScrollBar.valueProperty(), 0, 5 * getYOffset() );
+  }
+
+  /************************************ animateScrollToBottom ************************************/
+  public void animateScrollToBottom()
+  {
+    // create scroll down animation
+    animate( m_vScrollBar.valueProperty(), getYOffsetMax(), 5 * ( getYOffsetMax() - getYOffset() ) );
+  }
+
+  /********************************** animateScrollToRightEdge ***********************************/
+  public void animateScrollToRightEdge()
+  {
+    // create scroll right animation
+    animate( m_hScrollBar.valueProperty(), getXOffsetMax(), 5 * ( getXOffsetMax() - getXOffset() ) );
+  }
+
+  /*********************************** animateScrollToLeftEdge ***********************************/
+  public void animateScrollToLeftEdge()
+  {
+    // create scroll left animation
+    animate( m_hScrollBar.valueProperty(), 0, 5 * getXOffset() );
+  }
 }

@@ -1,5 +1,5 @@
 /**************************************************************************
- *  Copyright (C) 2018 by Richard Crook                                   *
+ *  Copyright (C) 2019 by Richard Crook                                   *
  *  https://github.com/dazzle50/JTableFX                                  *
  *                                                                        *
  *  This program is free software: you can redistribute it and/or modify  *
@@ -39,8 +39,6 @@ public class TableEvents extends TableSelection
 
   private int              m_resizeIndex  = INVALID; // column or row index being resized or INVALID
   private int              m_resizeOffset = INVALID; // column or row resize offset
-
-  private Selected         m_selection;              // current selection area
 
   private static final int PROXIMITY      = 4;       // used to distinguish resize from reorder
 
@@ -141,6 +139,12 @@ public class TableEvents extends TableSelection
           insertKeyPressed();
           break;
 
+        case A:
+          // select whole table (Ctrl-A)
+          if ( ctrl )
+            controlAPressed();
+          break;
+
         case X:
           // cut cells contents (Ctrl-X)
           if ( ctrl )
@@ -196,6 +200,14 @@ public class TableEvents extends TableSelection
   {
     // insert key pressed - TODO
     Utils.trace( "DELETE - NOT YET IMPLEMENTED !!!" );
+  }
+
+  /*************************************** controlAPressed ***************************************/
+  protected void controlAPressed()
+  {
+    // select whole table (Ctrl-A)
+    selectTable();
+    redraw();
   }
 
   /*************************************** controlXPressed ***************************************/
@@ -298,7 +310,7 @@ public class TableEvents extends TableSelection
     // check if cell selected
     if ( getCursor() == Cursors.CROSS )
     {
-      m_selection = null;
+      startNewSelection();
       setSelectFocusPosition( mouseColumnPos.get(), mouseRowPos.get(), !shift, !ctrl );
       redraw();
       return;
@@ -309,9 +321,9 @@ public class TableEvents extends TableSelection
     {
       int columnPos = mouseColumnPos.get();
       int rowPos = getRowPositionAtY( getColumnHeaderHeight() );
-      m_selection = null;
+      startNewSelection();
       setSelectFocusPosition( columnPos, rowPos, !shift, !ctrl );
-      m_selection.set( m_selection.c1, 0, m_selection.c2, m_data.getRowCount() - 1 );
+      setCurrentSelection( getCurrentSelection().c1, 0, getCurrentSelection().c2, m_data.getRowCount() - 1 );
 
       // setting selectRowPos to max int indicates column being selected
       selectRowPos.set( Integer.MAX_VALUE );
@@ -324,9 +336,9 @@ public class TableEvents extends TableSelection
     {
       int columnPos = getColumnPositionAtX( getRowHeaderWidth() );
       int rowPos = mouseRowPos.get();
-      m_selection = null;
+      startNewSelection();
       setSelectFocusPosition( columnPos, rowPos, !shift, !ctrl );
-      m_selection.set( 0, m_selection.r1, m_data.getColumnCount() - 1, m_selection.r2 );
+      setCurrentSelection( 0, getCurrentSelection().r1, m_data.getColumnCount() - 1, getCurrentSelection().r2 );
 
       // setting selectColumnPos to max int indicates row being selected
       selectColumnPos.set( Integer.MAX_VALUE );
@@ -361,9 +373,8 @@ public class TableEvents extends TableSelection
     {
       int columnPos = getColumnPositionAtX( getRowHeaderWidth() );
       int rowPos = getRowPositionAtY( getColumnHeaderHeight() );
-      m_selection = null;
       setSelectFocusPosition( columnPos, rowPos, !shift, !ctrl );
-      m_selection.set( getVisibleFirst(), getVisibleTop(), getVisibleLast(), getVisibleBottom() );
+      selectTable();
       selectColumnPos.set( getVisibleLast() );
       selectRowPos.set( getVisibleBottom() );
       redraw();
@@ -397,7 +408,8 @@ public class TableEvents extends TableSelection
     // check if column selecting
     if ( getCursor() == Cursors.DOWNARROW )
     {
-      m_selection.set( focusColumnPos.get(), m_selection.r1, mouseColumnPos.get(), m_selection.r2 );
+      setCurrentSelection( focusColumnPos.get(), getCurrentSelection().r1, mouseColumnPos.get(),
+          getCurrentSelection().r2 );
       if ( isAnimationFinished() )
         ensureColumnShown( mouseColumnPos.get() );
       selectColumnPos.set( mouseColumnPos.get() );
@@ -408,7 +420,7 @@ public class TableEvents extends TableSelection
     // check if row selecting
     if ( getCursor() == Cursors.RIGHTARROW )
     {
-      m_selection.set( m_selection.c1, focusRowPos.get(), m_selection.c2, mouseRowPos.get() );
+      setCurrentSelection( getCurrentSelection().c1, focusRowPos.get(), getCurrentSelection().c2, mouseRowPos.get() );
       if ( isAnimationFinished() )
         ensureRowShown( mouseRowPos.get() );
       selectRowPos.set( mouseRowPos.get() );
@@ -464,43 +476,6 @@ public class TableEvents extends TableSelection
         m_vScrollBar.increment();
       finishAnimation();
     }
-  }
-
-  /*********************************** setSelectFocusPosition ************************************/
-  protected void setSelectFocusPosition( int columnPos, int rowPos, boolean setFocus, boolean clearSelection )
-  {
-    // ensure column and row positions are visible
-    if ( columnPos < Integer.MAX_VALUE )
-      columnPos = ensureColumnShown( columnPos );
-    if ( rowPos < Integer.MAX_VALUE )
-      rowPos = ensureRowShown( rowPos );
-
-    // set table select & focus cell position properties
-    selectColumnPos.set( columnPos );
-    selectRowPos.set( rowPos );
-    if ( setFocus )
-    {
-      focusColumnPos.set( columnPos );
-      focusRowPos.set( rowPos );
-    }
-
-    // clear previous selections
-    if ( clearSelection )
-    {
-      clearAllSelection();
-      m_selection = null;
-    }
-
-    // update current selection area
-    if ( m_selection == null )
-      m_selection = startSelection();
-    m_selection.set( focusColumnPos.get(), focusRowPos.get(), selectColumnPos.get(), selectRowPos.get() );
-
-    // ensure selection starts first column/row if selecting column(s)/row(s)
-    if ( selectColumnPos.get() == Integer.MAX_VALUE )
-      m_selection.c1 = 0;
-    if ( selectRowPos.get() == Integer.MAX_VALUE )
-      m_selection.r1 = 0;
   }
 
   /************************************* resetMousePosition **************************************/

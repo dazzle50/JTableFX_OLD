@@ -1,5 +1,5 @@
 /**************************************************************************
- *  Copyright (C) 2018 by Richard Crook                                   *
+ *  Copyright (C) 2019 by Richard Crook                                   *
  *  https://github.com/dazzle50/JTableFX                                  *
  *                                                                        *
  *  This program is free software: you can redistribute it and/or modify  *
@@ -16,7 +16,7 @@
  *  along with this program.  If not, see http://www.gnu.org/licenses/    *
  **************************************************************************/
 
-package rjc.table.view;
+package rjc.table.cell;
 
 import java.util.ArrayList;
 

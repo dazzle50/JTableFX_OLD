@@ -1,5 +1,5 @@
 /**************************************************************************
- *  Copyright (C) 2018 by Richard Crook                                   *
+ *  Copyright (C) 2019 by Richard Crook                                   *
  *  https://github.com/dazzle50/JTableFX                                  *
  *                                                                        *
  *  This program is free software: you can redistribute it and/or modify  *
