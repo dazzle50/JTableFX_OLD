@@ -5,27 +5,26 @@ An open source project for JavaFX that aims to provide a flexible and configurab
 
 * User interface control implemented using model-view-controller architecture pattern
 * Highly configurable look and behaviour via method overloading
-* Memory efficient for extremely large tables
+* Memory efficient for large tables
 * Navigation and interaction by mouse and keyboard
 * Data model defines row and column count plus getting and setting values
-* View implementation supports
-    * Default display characteristics for different cell value data types
-    * Default editors for different cell value data types
-    * Cell selection
-    * Row & column selection
-    * Row & column resizing
-    * Row & column re-ordering
+* Default table view implementation supports
+    * Display of different cell value data types
+    * Editors for different cell value data types
+    * Cell, column, and row selection
+    * Column and row resizing and hiding
+    * Column and row re-ordering
 * Utility support methods 
 
 ## Demo application
 
-The project includes a demonstration application that contains multiple examples to show features and how to configure them. 
+The project includes a demonstration application that contains multiple examples to exhibit features and how to configure them. 
 
-![Demo](images\Demo-app.png "Demo application")
+![Demo](images/Demo-app.png "Demo application")
 
 ## Running the demo application from command line
 
-The demo application can be executed by downloading the latest JAR from the project releases page and launching from a command-line window.
+The demo application can be executed by downloading the latest JAR from the project releases page and launching from the command-line.
 As JavaFX is no longer bundled with the latest Java, some extra command-line parameters are needed to include the JavaFX library.
 
 ```
@@ -59,10 +58,10 @@ Below is some guidance for Eclipse on Windows users.
     * In Eclipse create a new *User Library* under **Eclipse -> Window -> Preferences -> Java -> Build Path -> User Libraries -> New**, name it **JavaFX** and include the jars under the lib folder from JavaFX SDK
     * In Eclipse, include this new user library in the project *Modulepath* under **Eclipse -> Project -> Properties -> Java Build Path -> Libraries -> Add Library...**
 
-After importing into Eclipse, the project should now compile and run with no problems.
+After importing the source code into Eclipse, the project should now compile and run with no problems.
 
 ## Built with
 
-* [Java](https://en.wikipedia.org/wiki/Java_(programming_language%29) - General-purpose computer programming language
+* [Java](https://en.wikipedia.org/wiki/Java_(programming_language)) - General-purpose computer programming language
 * [JavaFX](https://en.wikipedia.org/wiki/JavaFX) - Java software library used to generate the application's interactive graphical user interface 
 * [Eclipse](https://www.eclipse.org/ide/) - Integrated development environment (IDE) used to develop the project

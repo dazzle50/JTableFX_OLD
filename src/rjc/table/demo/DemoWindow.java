@@ -64,8 +64,8 @@ public class DemoWindow
     stage.setTitle( "JTableFX " + Utils.VERSION + " demo application" );
 
     // TEMP placing and sizing for my convenience #############
-    //stage.setX( -1100 );
-    //stage.setY( 700 );
+    stage.setX( -1100 );
+    stage.setY( 700 );
     stage.setWidth( 1000 );
     stage.show();
   }

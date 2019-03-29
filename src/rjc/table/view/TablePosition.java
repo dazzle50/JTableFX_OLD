@@ -42,6 +42,22 @@ public class TablePosition extends TableDisplay
   public final SimpleIntegerProperty selectColumnPos = new SimpleIntegerProperty( INVALID );
   public final SimpleIntegerProperty selectRowPos    = new SimpleIntegerProperty( INVALID );
 
+  /************************************** setSelectPosition **************************************/
+  public void setSelectPosition( int columnPos, int rowPos )
+  {
+    // set select position (and nothing else)
+    selectColumnPos.set( columnPos );
+    selectRowPos.set( rowPos );
+  }
+
+  /************************************** setFocusPosition ***************************************/
+  public void setFocusPosition( int columnPos, int rowPos )
+  {
+    // set focus position (and nothing else)
+    focusColumnPos.set( columnPos );
+    focusRowPos.set( rowPos );
+  }
+
   /********************************* getColumnIndexFromPosition **********************************/
   public int getColumnIndexFromPosition( int columnPos )
   {
@@ -105,7 +121,7 @@ public class TablePosition extends TableDisplay
   /*************************************** resetPositions ****************************************/
   public void resetPositions()
   {
-    // reset column and row position to index mapping
+    // reset column and row position to index mapping (i.e. remove any re-ordering)
     m_columnIndexes.clear();
     m_rowIndexes.clear();
   }

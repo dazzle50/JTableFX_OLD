@@ -45,7 +45,26 @@ public class TableEvents extends TableSelection
   /****************************************** keyTyped *******************************************/
   protected void keyTyped( KeyEvent event )
   {
-    // TODO Auto-generated method stub #########################################
+    // move editor right or left when tab typed
+    char key = event.getCharacter().charAt( 0 );
+    if ( key == '\t' )
+      if ( event.isShiftDown() )
+        moveFocus( MoveDirection.LEFT );
+      else
+        moveFocus( MoveDirection.RIGHT );
+
+    // move editor up or down when carriage return typed
+    if ( key == '\r' )
+      if ( event.isShiftDown() )
+        moveFocus( MoveDirection.UP );
+      else
+        moveFocus( MoveDirection.DOWN );
+
+    // open cell editor if key typed is suitable
+    if ( !Character.isISOControl( key ) )
+      openEditor( event.getCharacter() );
+
+    redraw();
   }
 
   /***************************************** keyPressed ******************************************/
@@ -310,8 +329,25 @@ public class TableEvents extends TableSelection
     // check if cell selected
     if ( getCursor() == Cursors.CROSS )
     {
-      startNewSelection();
-      setSelectFocusPosition( mouseColumnPos.get(), mouseRowPos.get(), !shift, !ctrl );
+      // get column and row positions
+      int columnPos = mouseColumnPos.get();
+      int rowPos = mouseRowPos.get();
+
+      // if ctrl pressed, start new selection, otherwise clear pre-existing
+      if ( ctrl )
+        startNewSelection();
+      else
+        clearAllSelection();
+
+      // if shift pressed, set selection, otherwise also move focus
+      setSelectPosition( columnPos, rowPos );
+      if ( shift )
+        setCurrentSelection();
+      else
+        setFocusPosition( columnPos, rowPos );
+      ensureRowShown( rowPos );
+      ensureColumnShown( columnPos );
+
       redraw();
       return;
     }
@@ -319,14 +355,23 @@ public class TableEvents extends TableSelection
     // check if column selected
     if ( getCursor() == Cursors.DOWNARROW )
     {
+      // get column and row positions
       int columnPos = mouseColumnPos.get();
       int rowPos = getRowPositionAtY( getColumnHeaderHeight() );
-      startNewSelection();
-      setSelectFocusPosition( columnPos, rowPos, !shift, !ctrl );
-      setCurrentSelection( getCurrentSelection().c1, 0, getCurrentSelection().c2, m_data.getRowCount() - 1 );
 
-      // setting selectRowPos to max int indicates column being selected
-      selectRowPos.set( Integer.MAX_VALUE );
+      // if ctrl pressed, start new selection, otherwise clear pre-existing
+      if ( ctrl )
+        startNewSelection();
+      else
+        clearAllSelection();
+
+      // if shift pressed, expand selection, otherwise select single column
+      if ( !shift )
+        setFocusPosition( columnPos, rowPos );
+      setSelectPosition( columnPos, BELOW );
+      setCurrentSelection();
+      ensureColumnShown( columnPos );
+
       redraw();
       return;
     }
@@ -334,14 +379,23 @@ public class TableEvents extends TableSelection
     // check if row selected
     if ( getCursor() == Cursors.RIGHTARROW )
     {
+      // get column and row positions
       int columnPos = getColumnPositionAtX( getRowHeaderWidth() );
       int rowPos = mouseRowPos.get();
-      startNewSelection();
-      setSelectFocusPosition( columnPos, rowPos, !shift, !ctrl );
-      setCurrentSelection( 0, getCurrentSelection().r1, m_data.getColumnCount() - 1, getCurrentSelection().r2 );
 
-      // setting selectColumnPos to max int indicates row being selected
-      selectColumnPos.set( Integer.MAX_VALUE );
+      // if ctrl pressed, start new selection, otherwise clear pre-existing
+      if ( ctrl )
+        startNewSelection();
+      else
+        clearAllSelection();
+
+      // if shift pressed, expand selection, otherwise select single row
+      if ( !shift )
+        setFocusPosition( columnPos, rowPos );
+      setSelectPosition( RIGHT, rowPos );
+      setCurrentSelection();
+      ensureRowShown( rowPos );
+
       redraw();
       return;
     }
@@ -371,12 +425,10 @@ public class TableEvents extends TableSelection
     // check if whole table selected
     if ( getCursor() == Cursors.DEFAULT && mouseColumnPos.get() == HEADER && mouseRowPos.get() == HEADER )
     {
-      int columnPos = getColumnPositionAtX( getRowHeaderWidth() );
-      int rowPos = getRowPositionAtY( getColumnHeaderHeight() );
-      setSelectFocusPosition( columnPos, rowPos, !shift, !ctrl );
-      selectTable();
-      selectColumnPos.set( getVisibleLast() );
-      selectRowPos.set( getVisibleBottom() );
+      clearAllSelection();
+      setFocusPosition( 0, 0 );
+      setSelectPosition( RIGHT, BELOW );
+      setCurrentSelection();
       redraw();
       return;
     }

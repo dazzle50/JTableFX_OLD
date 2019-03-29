@@ -110,6 +110,28 @@ public class TableView extends TableDraw
   protected Paint getCellBackgroundPaint()
   {
     // return cell background paint, starting with header cells
+    if ( m_rowIndex == HEADER || m_columnIndex == HEADER )
+      return getCellBackgroundPaintHeader();
+
+    // for selected cells
+    if ( isCellSelected( m_columnPos, m_rowPos ) )
+      return getCellBackgroundPaintSelected();
+
+    // otherwise default background
+    return getCellBackgroundPaintDefault();
+  }
+
+  /******************************** getCellBackgroundPaintDefault ********************************/
+  protected Paint getCellBackgroundPaintDefault()
+  {
+    // default table cell background
+    return Color.WHITE;
+  }
+
+  /******************************** getCellBackgroundPaintHeader *********************************/
+  protected Paint getCellBackgroundPaintHeader()
+  {
+    // return header cell background
     if ( m_rowIndex == HEADER )
     {
       if ( m_columnPos == focusColumnPos.get() )
@@ -117,6 +139,7 @@ public class TableView extends TableDraw
       else
         return hasColumnSelection( m_columnPos ) ? Color.gray( 0.85 ) : Color.gray( 0.95 );
     }
+
     if ( m_columnIndex == HEADER )
     {
       if ( m_rowPos == focusRowPos.get() )
@@ -125,18 +148,24 @@ public class TableView extends TableDraw
         return hasRowSelection( m_rowPos ) ? Color.gray( 0.85 ) : Color.gray( 0.95 );
     }
 
-    // for selected cells, excluding focused cell
-    if ( isCellSelected( m_columnPos, m_rowPos )
-        && !( m_rowPos == focusRowPos.get() && m_columnPos == focusColumnPos.get() ) )
-    {
-      Color selected = Color.rgb( 51, 153, 255 );
-      if ( m_rowPos == selectRowPos.get() && m_columnPos == selectColumnPos.get() )
-        selected = selected.desaturate();
-      return isTableFocused() ? selected : selected.desaturate();
-    }
+    throw new IllegalArgumentException( "Not header " + m_columnIndex + " " + m_rowIndex );
+  }
 
-    // otherwise default background
-    return Color.WHITE;
+  /******************************* getCellBackgroundPaintSelected *********************************/
+  protected Paint getCellBackgroundPaintSelected()
+  {
+    // return selected cell background
+    if ( m_rowPos == focusRowPos.get() && m_columnPos == focusColumnPos.get() )
+      return getCellBackgroundPaintDefault();
+
+    Color selected = Color.rgb( 51, 153, 255 );
+    for ( int count = getSelectionCount( m_columnPos, m_rowPos ); count > 1; count-- )
+      selected = selected.desaturate();
+
+    if ( m_rowPos == selectRowPos.get() && m_columnPos == selectColumnPos.get() )
+      selected = selected.desaturate();
+
+    return isTableFocused() ? selected : selected.desaturate();
   }
 
   /************************************** getCellTextPaint ***************************************/

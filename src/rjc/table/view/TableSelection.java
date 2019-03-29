@@ -20,6 +20,8 @@ package rjc.table.view;
 
 import java.util.ArrayList;
 
+import rjc.table.Utils;
+
 /*************************************************************************************************/
 /************************************* Table area selection **************************************/
 /*************************************************************************************************/
@@ -51,6 +53,12 @@ public class TableSelection extends TableSizing
     }
   }
 
+  // directions of focus movement
+  public static enum MoveDirection
+  {
+    LEFT, RIGHT, UP, DOWN, NONE
+  }
+
   // list of selected areas for this table view
   private ArrayList<Selected> m_selected = new ArrayList<>();
 
@@ -64,17 +72,10 @@ public class TableSelection extends TableSizing
     m_currentSelection = null;
   }
 
-  /*************************************** selectionCount ****************************************/
-  public int selectionCount()
-  {
-    // return number of selected areas
-    return m_selected.size();
-  }
-
   /***************************************** selectTable *****************************************/
   public void selectTable()
   {
-    // select entire table
+    // select entire visible table
     clearAllSelection();
     setCurrentSelection( getVisibleFirst(), getVisibleTop(), getVisibleLast(), getVisibleBottom() );
   }
@@ -82,8 +83,10 @@ public class TableSelection extends TableSizing
   /************************************** startNewSelection **************************************/
   public void startNewSelection()
   {
-    // start new selection by stop having a current selection 
-    m_currentSelection = null;
+    // start new selection
+    m_currentSelection = new Selected();
+    m_currentSelection.set( focusColumnPos.get(), focusRowPos.get(), selectColumnPos.get(), selectRowPos.get() );
+    m_selected.add( m_currentSelection );
   }
 
   /************************************* setCurrentSelection *************************************/
@@ -101,8 +104,21 @@ public class TableSelection extends TableSizing
       m_selected.add( m_currentSelection );
     }
 
+    // ensure selected columns start at top of table, and selected rows start at left of table
+    if ( rowPos2 == BELOW )
+      rowPos1 = 0;
+    if ( columnPos2 == RIGHT )
+      columnPos1 = 0;
+
     // set current selection area
     m_currentSelection.set( columnPos1, rowPos1, columnPos2, rowPos2 );
+  }
+
+  /************************************* setCurrentSelection *************************************/
+  public void setCurrentSelection()
+  {
+    // set current selection area to rectangle between focus and select cells
+    setCurrentSelection( focusColumnPos.get(), focusRowPos.get(), selectColumnPos.get(), selectRowPos.get() );
   }
 
   /************************************* getCurrentSelection *************************************/
@@ -112,9 +128,85 @@ public class TableSelection extends TableSizing
     return m_currentSelection;
   }
 
+  /****************************************** moveFocus ******************************************/
+  public void moveFocus( MoveDirection direction )
+  {
+    // is selection is only on focus cell
+    if ( m_selected.size() == 0 )
+    {
+      // move within full visible table
+      int columnPos = focusColumnPos.get();
+      int rowPos = focusRowPos.get();
+
+      if ( direction == MoveDirection.RIGHT )
+      {
+        columnPos = getVisibleRight( columnPos );
+        if ( columnPos == focusColumnPos.get() )
+        {
+          columnPos = getVisibleFirst();
+          rowPos = getVisibleDown( rowPos );
+          if ( rowPos == focusRowPos.get() )
+            rowPos = getVisibleTop();
+        }
+      }
+
+      if ( direction == MoveDirection.LEFT )
+      {
+        columnPos = getVisibleLeft( columnPos );
+        if ( columnPos == focusColumnPos.get() )
+        {
+          columnPos = getVisibleLast();
+          rowPos = getVisibleUp( rowPos );
+          if ( rowPos == focusRowPos.get() )
+            rowPos = getVisibleBottom();
+        }
+      }
+
+      if ( direction == MoveDirection.DOWN )
+      {
+        rowPos = getVisibleDown( rowPos );
+        if ( rowPos == focusRowPos.get() )
+        {
+          rowPos = getVisibleTop();
+          columnPos = getVisibleRight( columnPos );
+          if ( columnPos == focusColumnPos.get() )
+            columnPos = getVisibleFirst();
+        }
+      }
+
+      if ( direction == MoveDirection.UP )
+      {
+        rowPos = getVisibleUp( rowPos );
+        if ( rowPos == focusRowPos.get() )
+        {
+          rowPos = getVisibleBottom();
+          columnPos = getVisibleLeft( columnPos );
+          if ( columnPos == focusColumnPos.get() )
+            columnPos = getVisibleLast();
+        }
+      }
+
+      setFocusPosition( columnPos, rowPos );
+    }
+    else
+    {
+      // move within selected area(s)
+      Utils.trace( "Selected area(s)" );
+    }
+
+  }
+
   /*********************************** setSelectFocusPosition ************************************/
   protected void setSelectFocusPosition( int columnPos, int rowPos, boolean setFocus, boolean clearSelection )
   {
+    // pos of Integer.MAX_VALUE indicates whole row or column selection, check not also setting focus
+    if ( setFocus && ( columnPos == Integer.MAX_VALUE || rowPos == Integer.MAX_VALUE ) )
+      throw new IllegalArgumentException( "Setting focus not allowed " + columnPos + " " + rowPos );
+
+    // clear previous selections
+    if ( clearSelection )
+      clearAllSelection();
+
     // ensure column and row positions are visible
     if ( columnPos < Integer.MAX_VALUE )
       columnPos = ensureColumnShown( columnPos );
@@ -129,13 +221,8 @@ public class TableSelection extends TableSizing
       focusColumnPos.set( columnPos );
       focusRowPos.set( rowPos );
     }
-
-    // clear previous selections
-    if ( clearSelection )
-      clearAllSelection();
-
-    // update current selection area
-    setCurrentSelection( focusColumnPos.get(), focusRowPos.get(), selectColumnPos.get(), selectRowPos.get() );
+    else
+      setCurrentSelection( focusColumnPos.get(), focusRowPos.get(), selectColumnPos.get(), selectRowPos.get() );
 
     // ensure selection starts first column/row if selecting column(s)/row(s)
     if ( selectColumnPos.get() == Integer.MAX_VALUE )
@@ -153,6 +240,25 @@ public class TableSelection extends TableSizing
         return true;
 
     return false;
+  }
+
+  /************************************** getSelectionCount **************************************/
+  public int getSelectionCount()
+  {
+    // return number of selected areas
+    return m_selected.size();
+  }
+
+  /************************************** getSelectionCount **************************************/
+  public int getSelectionCount( int columnPos, int rowPos )
+  {
+    // return count of selected areas covering specified cell
+    int count = 0;
+    for ( Selected area : m_selected )
+      if ( columnPos >= area.c1 && columnPos <= area.c2 && rowPos >= area.r1 && rowPos <= area.r2 )
+        count++;
+
+    return count;
   }
 
   /************************************** isColumnSelected ***************************************/

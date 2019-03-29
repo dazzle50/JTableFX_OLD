@@ -36,12 +36,12 @@ public class TableDisplay extends TableParent
   protected static final int INVALID = -2;                // when int value is invalid
   protected static final int HEADER  = -1;                // when column or row refers to headers
 
-  protected static final int LEFT    = Integer.MIN_VALUE; // column index or position left of table body
-  protected static final int RIGHT   = Integer.MAX_VALUE; // column index or position right of table body
-  protected static final int ABOVE   = Integer.MIN_VALUE; // row index or position above table body
-  protected static final int BELOW   = Integer.MAX_VALUE; // row index or position below table body
+  public static final int    LEFT    = Integer.MIN_VALUE; // column index or position left of table body
+  public static final int    RIGHT   = Integer.MAX_VALUE; // column index or position right of table body
+  public static final int    ABOVE   = Integer.MIN_VALUE; // row index or position above table body
+  public static final int    BELOW   = Integer.MAX_VALUE; // row index or position below table body
 
-  private static double      MAXSIZE = 999999;            // max valid size for table
+  private static double      MAXSIZE = 999999;            // max valid pixel size for table
 
   /******************************************* resize ********************************************/
   @Override
