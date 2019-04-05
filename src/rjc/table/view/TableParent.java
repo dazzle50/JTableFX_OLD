@@ -18,13 +18,8 @@
 
 package rjc.table.view;
 
-import javafx.animation.KeyFrame;
-import javafx.animation.KeyValue;
-import javafx.animation.Timeline;
-import javafx.beans.property.DoubleProperty;
 import javafx.scene.Node;
 import javafx.scene.Parent;
-import javafx.util.Duration;
 
 /*************************************************************************************************/
 /****************************** JavaFX parent node for table views *******************************/
@@ -32,9 +27,8 @@ import javafx.util.Duration;
 
 class TableParent extends Parent
 {
-  private int      m_height;    // table node height
-  private int      m_width;     // table node width
-  private Timeline m_animation; // used for smooth table scrolling
+  private int m_height; // table node height
+  private int m_width;  // table node width
 
   /******************************************* resize ********************************************/
   @Override
@@ -111,50 +105,6 @@ class TableParent extends Parent
   {
     // remove node from table displayed children
     getChildren().remove( node );
-  }
-
-  /******************************************* animate *******************************************/
-  public void animate( DoubleProperty property, int endValue, int duration_ms )
-  {
-    // create animation stopping any current animation first
-    stopAnimation();
-
-    KeyValue kv = new KeyValue( property, endValue );
-    KeyFrame kf = new KeyFrame( Duration.millis( duration_ms ), kv );
-    m_animation = new Timeline( kf );
-    m_animation.play();
-
-    // when animation finished clear pointer
-    m_animation.setOnFinished( event -> m_animation = null );
-  }
-
-  /*************************************** finishAnimation ***************************************/
-  public void finishAnimation()
-  {
-    // finish animation
-    if ( m_animation == null )
-      return;
-
-    m_animation.jumpTo( "end" );
-    m_animation = null;
-  }
-
-  /**************************************** stopAnimation ****************************************/
-  public void stopAnimation()
-  {
-    // stop animation
-    if ( m_animation == null )
-      return;
-
-    m_animation.stop();
-    m_animation = null;
-  }
-
-  /************************************* isAnimationFinished *************************************/
-  public boolean isAnimationFinished()
-  {
-    // return true if no animation is in progress
-    return m_animation == null;
   }
 
 }

@@ -84,9 +84,8 @@ public class TableSelection extends TableSizing
   public void startNewSelection()
   {
     // start new selection
-    m_currentSelection = new Selected();
-    m_currentSelection.set( focusColumnPos.get(), focusRowPos.get(), selectColumnPos.get(), selectRowPos.get() );
-    m_selected.add( m_currentSelection );
+    m_currentSelection = null;
+    setCurrentSelection();
   }
 
   /************************************* setCurrentSelection *************************************/
@@ -104,10 +103,10 @@ public class TableSelection extends TableSizing
       m_selected.add( m_currentSelection );
     }
 
-    // ensure selected columns start at top of table, and selected rows start at left of table
-    if ( rowPos2 == BELOW )
+    // ensure selected columns start at top of table, and selected rows start at left edge of table
+    if ( rowPos2 == BELOW_TABLE )
       rowPos1 = 0;
-    if ( columnPos2 == RIGHT )
+    if ( columnPos2 == RIGHT_OF_TABLE )
       columnPos1 = 0;
 
     // set current selection area
@@ -199,36 +198,25 @@ public class TableSelection extends TableSizing
   /*********************************** setSelectFocusPosition ************************************/
   protected void setSelectFocusPosition( int columnPos, int rowPos, boolean setFocus, boolean clearSelection )
   {
-    // pos of Integer.MAX_VALUE indicates whole row or column selection, check not also setting focus
-    if ( setFocus && ( columnPos == Integer.MAX_VALUE || rowPos == Integer.MAX_VALUE ) )
+    // when selecting whole row or column selection, check not also setting focus
+    if ( setFocus && ( columnPos == RIGHT_OF_TABLE || rowPos == BELOW_TABLE ) )
       throw new IllegalArgumentException( "Setting focus not allowed " + columnPos + " " + rowPos );
 
     // clear previous selections
     if ( clearSelection )
       clearAllSelection();
 
+    // set table select & focus cell position properties
+    setSelectPosition( columnPos, rowPos );
+    if ( setFocus )
+      setFocusPosition( columnPos, rowPos );
+    setCurrentSelection();
+
     // ensure column and row positions are visible
     if ( columnPos < Integer.MAX_VALUE )
       columnPos = ensureColumnShown( columnPos );
     if ( rowPos < Integer.MAX_VALUE )
       rowPos = ensureRowShown( rowPos );
-
-    // set table select & focus cell position properties
-    selectColumnPos.set( columnPos );
-    selectRowPos.set( rowPos );
-    if ( setFocus )
-    {
-      focusColumnPos.set( columnPos );
-      focusRowPos.set( rowPos );
-    }
-    else
-      setCurrentSelection( focusColumnPos.get(), focusRowPos.get(), selectColumnPos.get(), selectRowPos.get() );
-
-    // ensure selection starts first column/row if selecting column(s)/row(s)
-    if ( selectColumnPos.get() == Integer.MAX_VALUE )
-      m_currentSelection.c1 = 0;
-    if ( selectRowPos.get() == Integer.MAX_VALUE )
-      m_currentSelection.r1 = 0;
   }
 
   /*************************************** isCellSelected ****************************************/

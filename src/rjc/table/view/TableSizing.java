@@ -361,11 +361,11 @@ public class TableSizing extends TablePosition
 
     // if left of table body return LEFT
     if ( x < 0 )
-      return LEFT;
+      return LEFT_OF_TABLE;
 
     // if right of table body return RIGHT
     if ( x >= getBodyWidth() )
-      return RIGHT;
+      return RIGHT_OF_TABLE;
 
     // make sure x start cache is populated by calling getColumnPositionXStart
     getColumnPositionXStart( m_data.getColumnCount() - 1 );
@@ -393,11 +393,11 @@ public class TableSizing extends TablePosition
 
     // if above table body return ABOVE
     if ( y < 0 )
-      return ABOVE;
+      return ABOVE_TABLE;
 
     // if below table body return BELOW
     if ( y >= getBodyHeight() )
-      return BELOW;
+      return BELOW_TABLE;
 
     // make sure y start cache is populated by calling getRowPositionYStart
     getRowPositionYStart( m_data.getRowCount() - 1 );

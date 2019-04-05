@@ -67,21 +67,23 @@ public class TableScrollBar extends ScrollBar
     // increase scroll bar value to next table cell boundary
     if ( getOrientation() == Orientation.VERTICAL )
     {
+      m_view.finishYAnimation();
       int rowPos = m_view.getRowPositionAtY( m_view.getColumnHeaderHeight() );
       int y = m_view.getRowPositionYStart( ++rowPos );
       while ( y < m_view.getColumnHeaderHeight() )
         y = m_view.getRowPositionYStart( ++rowPos );
       double value = getValue() + y - m_view.getColumnHeaderHeight();
-      m_view.animate( valueProperty(), (int) ( value < getMax() ? value : getMax() ), 100 );
+      m_view.animateToYOffset( (int) value );
     }
     else
     {
+      m_view.finishXAnimation();
       int columnPos = m_view.getColumnPositionAtX( m_view.getRowHeaderWidth() );
       int x = m_view.getColumnPositionXStart( ++columnPos );
       while ( x < m_view.getColumnHeaderHeight() )
         x = m_view.getColumnPositionXStart( ++columnPos );
       double value = getValue() + x - m_view.getRowHeaderWidth();
-      m_view.animate( valueProperty(), (int) ( value < getMax() ? value : getMax() ), 100 );
+      m_view.animateToXOffset( (int) value );
     }
   }
 
@@ -92,22 +94,24 @@ public class TableScrollBar extends ScrollBar
     // decrease scroll bar value to next table cell boundary
     if ( getOrientation() == Orientation.VERTICAL )
     {
+      m_view.finishYAnimation();
       int rowPos = m_view.getRowPositionAtY( m_view.getColumnHeaderHeight() - 1 );
       if ( rowPos >= 0 )
       {
         int y = m_view.getRowPositionYStart( rowPos );
         double value = getValue() + y - m_view.getColumnHeaderHeight();
-        m_view.animate( valueProperty(), (int) ( value > 0.0 ? value : 0 ), 100 );
+        m_view.animateToYOffset( (int) value );
       }
     }
     else
     {
+      m_view.finishXAnimation();
       int columnPos = m_view.getColumnPositionAtX( m_view.getRowHeaderWidth() - 1 );
       if ( columnPos >= 0 )
       {
         int x = m_view.getColumnPositionXStart( columnPos );
         double value = getValue() + x - m_view.getRowHeaderWidth();
-        m_view.animate( valueProperty(), (int) ( value > 0.0 ? value : 0 ), 100 );
+        m_view.animateToXOffset( (int) value );
       }
     }
   }

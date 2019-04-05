@@ -1,5 +1,5 @@
 # JTableFX
-An open source project for JavaFX that aims to provide a flexible and configurable user interface control to visualise and interact with a two-dimensional table grid of data cells.
+An open source project for JavaFX that aims to provide a flexible and configurable user interface control to visualise and interact with a two-dimensional spreadsheet-like table grid of data cells.
 
 ## Features
 
@@ -7,8 +7,8 @@ An open source project for JavaFX that aims to provide a flexible and configurab
 * Highly configurable look and behaviour via method overloading
 * Memory efficient for large tables
 * Navigation and interaction by mouse and keyboard
-* Data model defines row and column count plus getting and setting values
-* Default table view implementation supports
+* Data model defines table size plus getting and setting values
+* Default table view implementation supports (not all implemented yet)
     * Display of different cell value data types
     * Editors for different cell value data types
     * Cell, column, and row selection
@@ -25,7 +25,7 @@ The project includes a demonstration application that contains multiple examples
 ## Running the demo application from command line
 
 The demo application can be executed by downloading the latest JAR from the project releases page and launching from the command-line.
-As JavaFX is no longer bundled with the latest Java, some extra command-line parameters are needed to include the JavaFX library.
+As JavaFX is no longer bundled within the latest Java distributions, some extra command-line parameters are needed to reference the JavaFX library.
 
 ```
 java --module-path %PATH_TO_FX% --add-modules=javafx.controls JTableFX.jar
@@ -33,7 +33,7 @@ java --module-path %PATH_TO_FX% --add-modules=javafx.controls JTableFX.jar
 
 ## Running the demo application from Windows
 
-To enable easy execution of JavaFX applications from Windows desktop or file explorer, you can use a command batch file such as [run_javafx.cmd](https://github.com/dazzle50/JTableFX/blob/master/run_javafx.cmd)
+To enable easy execution of JavaFX applications from Windows desktop or file explorer, you can use a command batch file such as [run_javafx.cmd](run_javafx.cmd)
 * Create environment variable **PATH_TO_FX** pointing to the lib directory of the JavaFX SDK
 * Create command file *run_javafx.cmd* in a desired location
 * Associate JAR file type with *run_javafx.cmd* by right-click on a jar file, under *General* click *Change...* and locate & select the *run_javafx.cmd* command file
@@ -64,4 +64,4 @@ After importing the source code into Eclipse, the project should now compile and
 
 * [Java](https://en.wikipedia.org/wiki/Java_(programming_language)) - General-purpose computer programming language
 * [JavaFX](https://en.wikipedia.org/wiki/JavaFX) - Java software library used to generate the application's interactive graphical user interface 
-* [Eclipse](https://www.eclipse.org/ide/) - Integrated development environment (IDE) used to develop the project
+* [Eclipse](https://en.wikipedia.org/wiki/Eclipse_(software)) - Integrated development environment (IDE) used to develop the project

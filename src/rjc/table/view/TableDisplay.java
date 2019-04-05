@@ -26,22 +26,25 @@ import rjc.table.data.TableData;
 
 public class TableDisplay extends TableParent
 {
-  protected TableView        m_view;                      // shortcut to table view
-  protected TableData        m_data;                      // shortcut to table data
+  protected TableView        m_view;                                 // shortcut to table view
+  protected TableData        m_data;                                 // shortcut to table data
 
-  protected TableScrollBar   m_vScrollBar;                // vertical scroll bar
-  protected TableScrollBar   m_hScrollBar;                // horizontal scroll bar
-  protected TableCanvas      m_canvas;                    // table canvas
+  protected TableScrollBar   m_vScrollBar;                           // vertical scroll bar
+  protected TableScrollBar   m_hScrollBar;                           // horizontal scroll bar
+  protected TableCanvas      m_canvas;                               // table canvas
 
-  protected static final int INVALID = -2;                // when int value is invalid
-  protected static final int HEADER  = -1;                // when column or row refers to headers
+  private AnimateProperty    m_vScrolling   = new AnimateProperty(); // vertical animated scrolling
+  private AnimateProperty    m_hScrolling   = new AnimateProperty(); // horizontal animated scrolling
 
-  public static final int    LEFT    = Integer.MIN_VALUE; // column index or position left of table body
-  public static final int    RIGHT   = Integer.MAX_VALUE; // column index or position right of table body
-  public static final int    ABOVE   = Integer.MIN_VALUE; // row index or position above table body
-  public static final int    BELOW   = Integer.MAX_VALUE; // row index or position below table body
+  protected static final int INVALID        = -2;                    // when int value is invalid
+  protected static final int HEADER         = -1;                    // when column or row refers to headers
 
-  private static double      MAXSIZE = 999999;            // max valid pixel size for table
+  public static final int    LEFT_OF_TABLE  = Integer.MIN_VALUE;     // column index or position left of table body
+  public static final int    RIGHT_OF_TABLE = Integer.MAX_VALUE;     // column index or position right of table body
+  public static final int    ABOVE_TABLE    = Integer.MIN_VALUE;     // row index or position above table body
+  public static final int    BELOW_TABLE    = Integer.MAX_VALUE;     // row index or position below table body
+
+  private static double      MAX_PIXELS     = 999999;                // max valid pixel size for table
 
   /******************************************* resize ********************************************/
   @Override
@@ -52,7 +55,7 @@ public class TableDisplay extends TableParent
       return;
 
     // do nothing if size is larger than max allowed
-    if ( width > MAXSIZE || height > MAXSIZE )
+    if ( width > MAX_PIXELS || height > MAX_PIXELS )
       return;
 
     // resize parent and re-layout canvas and scroll bars
@@ -240,8 +243,8 @@ public class TableDisplay extends TableParent
       endValue = (int) m_vScrollBar.getMin();
     if ( endValue > m_hScrollBar.getMax() )
       endValue = (int) m_vScrollBar.getMax();
-    finishAnimation();
-    animate( m_hScrollBar.valueProperty(), endValue, 200 );
+
+    m_hScrolling.animate( m_hScrollBar.valueProperty(), endValue, 100 );
   }
 
   /************************************** animateToYOffset ***************************************/
@@ -252,35 +255,49 @@ public class TableDisplay extends TableParent
       endValue = (int) m_vScrollBar.getMin();
     if ( endValue > m_vScrollBar.getMax() )
       endValue = (int) m_vScrollBar.getMax();
-    finishAnimation();
-    animate( m_vScrollBar.valueProperty(), endValue, 200 );
+
+    m_vScrolling.animate( m_vScrollBar.valueProperty(), endValue, 100 );
+  }
+
+  /************************************** finishXAnimation ***************************************/
+  public void finishXAnimation()
+  {
+    // finish any horizontal animation
+    m_hScrolling.finishAnimation();
+  }
+
+  /************************************** finishYAnimation ***************************************/
+  public void finishYAnimation()
+  {
+    // finish any vertical animation
+    m_vScrolling.finishAnimation();
   }
 
   /************************************* animateScrollToTop **************************************/
   public void animateScrollToTop()
   {
     // create scroll up animation
-    animate( m_vScrollBar.valueProperty(), 0, 5 * getYOffset() );
+    m_vScrolling.animate( m_vScrollBar.valueProperty(), 0, 5 * getYOffset() );
   }
 
   /************************************ animateScrollToBottom ************************************/
   public void animateScrollToBottom()
   {
     // create scroll down animation
-    animate( m_vScrollBar.valueProperty(), getYOffsetMax(), 5 * ( getYOffsetMax() - getYOffset() ) );
+    m_vScrolling.animate( m_vScrollBar.valueProperty(), getYOffsetMax(), 5 * ( getYOffsetMax() - getYOffset() ) );
   }
 
   /********************************** animateScrollToRightEdge ***********************************/
   public void animateScrollToRightEdge()
   {
     // create scroll right animation
-    animate( m_hScrollBar.valueProperty(), getXOffsetMax(), 5 * ( getXOffsetMax() - getXOffset() ) );
+    m_hScrolling.animate( m_hScrollBar.valueProperty(), getXOffsetMax(), 5 * ( getXOffsetMax() - getXOffset() ) );
   }
 
   /*********************************** animateScrollToLeftEdge ***********************************/
   public void animateScrollToLeftEdge()
   {
     // create scroll left animation
-    animate( m_hScrollBar.valueProperty(), 0, 5 * getXOffset() );
+    m_hScrolling.animate( m_hScrollBar.valueProperty(), 0, 5 * getXOffset() );
   }
 }
