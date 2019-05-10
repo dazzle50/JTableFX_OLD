@@ -52,12 +52,8 @@ public class TableScrollBar extends ScrollBar
       setMinHeight( SIZE );
     }
 
-    // redraw table when scroll bar position value changes
-    valueProperty().addListener( ( observable, oldV, newV ) ->
-    {
-      m_view.redraw();
-      m_view.resetMousePosition();
-    } );
+    // react to scroll bar position value changes such as redrawing table
+    valueProperty().addListener( ( observable, oldV, newV ) -> m_view.tableScroll() );
   }
 
   /****************************************** increment ******************************************/

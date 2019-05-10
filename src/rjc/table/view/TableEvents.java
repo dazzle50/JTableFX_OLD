@@ -133,7 +133,7 @@ public class TableEvents extends TableSelection
           }
           else
           {
-            // top of table not in view, make sure scrool up at least one row
+            // top of table not in view, make sure scroll up at least one row
             if ( newTopRow == getRowPositionAtY( getColumnHeaderHeight() ) )
               newTopRow = getVisibleUp( newTopRow );
 
@@ -168,7 +168,6 @@ public class TableEvents extends TableSelection
               newTopRow = getVisibleDown( newTopRow );
 
             int newYOffset = getYOffset() - getColumnHeaderHeight() + getRowPositionYStart( newTopRow );
-
             int focusY = ( getRowPositionYStart( rowPos ) + getRowPositionYStart( rowPos + 1 ) ) / 2;
             rowPos = getRowPositionAtY( focusY + newYOffset - getYOffset() );
             if ( rowPos == BELOW_TABLE )
@@ -302,7 +301,7 @@ public class TableEvents extends TableSelection
     // mouse has left table
     m_x = INVALID;
     m_y = INVALID;
-    setMousePosition();
+    checkMouseCellPosition();
     if ( event.getButton() == MouseButton.NONE )
       setCursor( Cursors.DEFAULT );
   }
@@ -313,8 +312,8 @@ public class TableEvents extends TableSelection
     // determine which table cell mouse is over and set cursor appropriately
     m_x = (int) event.getX();
     m_y = (int) event.getY();
-    setMousePosition();
-    setMouseCursor();
+    checkMouseCellPosition();
+    checkMouseCursor();
   }
 
   /**************************************** mouseClicked *****************************************/
@@ -362,8 +361,8 @@ public class TableEvents extends TableSelection
     m_y = (int) event.getY();
     event.consume();
     requestFocus();
-    setMousePosition();
-    setMouseCursor();
+    checkMouseCellPosition();
+    checkMouseCursor();
 
     // check if cell selected
     if ( getCursor() == Cursors.CROSS )
@@ -446,28 +445,6 @@ public class TableEvents extends TableSelection
   /*************************************** mouseReleased *****************************************/
   protected void mouseReleased( MouseEvent event )
   {
-    // TODO Auto-generated method stub #########################################
-  }
-
-  /**************************************** mouseDragged *****************************************/
-  protected void mouseDragged( MouseEvent event )
-  {
-    // user is moving mouse with button down
-    boolean ctrl = event.isControlDown();
-    m_x = (int) event.getX();
-    m_y = (int) event.getY();
-    setMousePosition();
-
-    // check if cell selecting
-    if ( getCursor() == Cursors.CROSS )
-    {
-      if ( !isCellSelected( focusColumnPos.get(), focusRowPos.get() ) )
-        startNewSelection();
-      setSelectFocusPosition( mouseColumnPos.get(), mouseRowPos.get(), false, !ctrl );
-      redraw();
-      return;
-    }
-
     // check if column selecting
     if ( getCursor() == Cursors.DOWNARROW )
     {
@@ -477,9 +454,9 @@ public class TableEvents extends TableSelection
       if ( columnPos < 0 )
         columnPos = getVisibleFirst();
 
-      setCurrentSelection( focusColumnPos.get(), 0, mouseColumnPos.get(), BELOW_TABLE );
-      ensureColumnShown( mouseColumnPos.get() );
-      selectColumnPos.set( mouseColumnPos.get() );
+      setCurrentSelection( focusColumnPos.get(), 0, columnPos, BELOW_TABLE );
+      selectColumnPos.set( columnPos );
+      ensureColumnShown( columnPos );
       redraw();
       return;
     }
@@ -487,9 +464,98 @@ public class TableEvents extends TableSelection
     // check if row selecting
     if ( getCursor() == Cursors.RIGHTARROW )
     {
-      setCurrentSelection( getCurrentSelection().c1, focusRowPos.get(), getCurrentSelection().c2, mouseRowPos.get() );
-      ensureRowShown( mouseRowPos.get() );
-      selectRowPos.set( mouseRowPos.get() );
+      int rowPos = mouseRowPos.get();
+      if ( rowPos == BELOW_TABLE )
+        rowPos = getVisibleBottom();
+      if ( rowPos < 0 )
+        rowPos = getVisibleTop();
+
+      setCurrentSelection( getCurrentSelection().c1, focusRowPos.get(), getCurrentSelection().c2, rowPos );
+      selectRowPos.set( rowPos );
+      ensureRowShown( rowPos );
+      redraw();
+      return;
+    }
+  }
+
+  /**************************************** mouseDragged *****************************************/
+  protected void mouseDragged( MouseEvent event )
+  {
+    // user is moving mouse with button down
+    boolean ctrl = event.isControlDown();
+    m_x = (int) event.getX();
+    m_y = (int) event.getY();
+    checkMouseCellPosition();
+
+    // check if cell selecting
+    if ( getCursor() == Cursors.CROSS )
+    {
+      int columnPos = mouseColumnPos.get();
+      if ( columnPos == RIGHT_OF_TABLE )
+        columnPos = getVisibleLast();
+      if ( columnPos <= HEADER )
+        columnPos = getVisibleFirst();
+
+      int rowPos = mouseRowPos.get();
+      if ( rowPos == BELOW_TABLE )
+        rowPos = getVisibleBottom();
+      if ( rowPos <= HEADER )
+        rowPos = getVisibleTop();
+
+      if ( !isCellSelected( focusColumnPos.get(), focusRowPos.get() ) )
+        startNewSelection();
+      if ( columnPos != selectColumnPos.get() || rowPos != selectRowPos.get() )
+      {
+        setSelectFocusPosition( columnPos, rowPos, false, !ctrl );
+        redraw();
+      }
+      return;
+    }
+
+    // check if column selecting
+    if ( getCursor() == Cursors.DOWNARROW )
+    {
+      int columnPos = mouseColumnPos.get();
+      if ( columnPos == RIGHT_OF_TABLE )
+        columnPos = getVisibleLast();
+      if ( columnPos <= HEADER )
+        columnPos = getVisibleFirst();
+
+      int rowPos = mouseRowPos.get();
+      if ( rowPos == BELOW_TABLE )
+        rowPos = getVisibleBottom();
+      if ( rowPos <= HEADER )
+        rowPos = getVisibleTop();
+
+      if ( columnPos != selectColumnPos.get() || rowPos != selectRowPos.get() )
+      {
+
+        setCurrentSelection( focusColumnPos.get(), 0, columnPos, BELOW_TABLE );
+        selectColumnPos.set( columnPos );
+
+        if ( m_x > getCanvasWidth() )
+          animateScrollToRightEdge();
+        else
+        {
+          ensureColumnShown( columnPos );
+          redraw();
+        }
+      }
+      return;
+    }
+
+    // check if row selecting
+    if ( getCursor() == Cursors.RIGHTARROW )
+    {
+      int rowPos = mouseRowPos.get();
+      if ( rowPos == BELOW_TABLE )
+        rowPos = getVisibleBottom();
+      if ( rowPos <= HEADER )
+        rowPos = getVisibleTop();
+
+      setCurrentSelection( getCurrentSelection().c1, focusRowPos.get(), getCurrentSelection().c2, rowPos );
+      ensureRowShown( rowPos );
+      selectRowPos.set( rowPos );
       redraw();
       return;
     }
@@ -517,14 +583,14 @@ public class TableEvents extends TableSelection
     // check if column reorder
     if ( getCursor() == Cursors.H_MOVE )
     {
-
+      // TODO
       return;
     }
 
     // check if row reorder
     if ( getCursor() == Cursors.V_MOVE )
     {
-
+      // TODO
       return;
     }
 
@@ -543,17 +609,25 @@ public class TableEvents extends TableSelection
     }
   }
 
-  /************************************* resetMousePosition **************************************/
-  protected void resetMousePosition()
+  /***************************************** tableScroll *****************************************/
+  protected void tableScroll()
+  {
+    // handle any actions needed due to the table scrolled
+    resetMouseCellPosition();
+    redraw();
+  }
+
+  /************************************* mousePositionReset **************************************/
+  protected void resetMouseCellPosition()
   {
     // determine mouse cell position
     m_cellXend = INVALID;
     m_cellYend = INVALID;
-    setMousePosition();
+    checkMouseCellPosition();
   }
 
-  /************************************** setMousePosition ***************************************/
-  protected void setMousePosition()
+  /*********************************** checkMouseCellPosition ************************************/
+  protected void checkMouseCellPosition()
   {
     // check if mouse moved outside current column
     if ( m_x < m_cellXstart || m_x >= m_cellXend )
@@ -624,8 +698,8 @@ public class TableEvents extends TableSelection
     }
   }
 
-  /*************************************** setMouseCursor ****************************************/
-  protected void setMouseCursor()
+  /************************************** checkMouseCursor ***************************************/
+  protected void checkMouseCursor()
   {
     // if over table headers corner, set cursor to default
     if ( m_x < getRowHeaderWidth() && m_y < getColumnHeaderHeight() )
