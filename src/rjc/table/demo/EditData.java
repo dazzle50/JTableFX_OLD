@@ -54,6 +54,8 @@ public class EditData extends TableData
   {
     // populate the private variables with table contents
     super();
+    setColumnCount( SECTION_MAX + 1 );
+    setRowCount( ROWS );
 
     for ( int row = 0; row < ROWS; row++ )
     {
@@ -67,60 +69,40 @@ public class EditData extends TableData
     }
   }
 
-  /*************************************** getColumnCount ****************************************/
-  @Override
-  public int getColumnCount()
-  {
-    // return number of columns to be displayed in table
-    return SECTION_MAX + 1;
-  }
-
-  /**************************************** getRowCount ******************************************/
-  @Override
-  public int getRowCount()
-  {
-    // return number of rows to be displayed in table
-    return ROWS;
-  }
-
-  /************************************** getColumnTitle *****************************************/
-  @Override
-  public String getColumnTitle( int columnIndex )
-  {
-    // return column title for specified column index
-    switch ( columnIndex )
-    {
-      case SECTION_READONLY:
-        return "ReadOnly";
-      case SECTION_TEXT:
-        return "Text";
-      case SECTION_INTEGER:
-        return "Integer";
-      case SECTION_DOUBLE:
-        return "Double";
-      case SECTION_DATE:
-        return "Date";
-      case SECTION_TIME:
-        return "Time";
-      case SECTION_DATETIME:
-        return "DateTime";
-      default:
-        throw new IllegalArgumentException( "Column index = " + columnIndex );
-    }
-  }
-
-  /**************************************** getRowTitle ******************************************/
-  @Override
-  public String getRowTitle( int rowIndex )
-  {
-    // return row title for specified row
-    return String.valueOf( rowIndex + 1 );
-  }
-
   /****************************************** getValue *******************************************/
   @Override
   public Object getValue( int columnIndex, int rowIndex )
   {
+    // return header corner cell value
+    if ( columnIndex == HEADER && rowIndex == HEADER )
+      return null;
+
+    // return row value for specified row index
+    if ( columnIndex == HEADER )
+      return String.valueOf( rowIndex + 1 );
+
+    // return column value for specified column index
+    if ( rowIndex == HEADER )
+      switch ( columnIndex )
+      {
+        case SECTION_READONLY:
+          return "ReadOnly";
+        case SECTION_TEXT:
+          return "Text";
+        case SECTION_INTEGER:
+          return "Integer";
+        case SECTION_DOUBLE:
+          return "Double";
+        case SECTION_DATE:
+          return "Date";
+        case SECTION_TIME:
+          return "Time";
+        case SECTION_DATETIME:
+          return "DateTime";
+        default:
+          throw new IllegalArgumentException( "Column index = " + columnIndex );
+      }
+
     // return cell value for specified cell index
     switch ( columnIndex )
     {
@@ -145,10 +127,11 @@ public class EditData extends TableData
 
   /****************************************** setValue *******************************************/
   @Override
-  public void setValue( int columnIndex, int rowIndex, Object newValue )
+  public boolean setValue( int columnIndex, int rowIndex, Object newValue )
   {
-    // set cell value for specified cell index
+    // returns true if cell value successfully set for specified cell index
     Utils.trace( columnIndex, rowIndex, newValue );
+    return false;
   }
 
 }

@@ -18,18 +18,72 @@
 
 package rjc.table.data;
 
-import java.util.ArrayList;
-
+import javafx.beans.property.ReadOnlyIntegerProperty;
+import javafx.beans.property.ReadOnlyIntegerWrapper;
+import javafx.beans.property.ReadOnlyListProperty;
+import javafx.beans.property.ReadOnlyListWrapper;
+import javafx.collections.FXCollections;
 import rjc.table.Utils;
 import rjc.table.view.TableView;
 
 /*************************************************************************************************/
-/************************** Supports registered associated table views ***************************/
+/******************* Column & row counts + registering associated table views ********************/
 /*************************************************************************************************/
 
 public class TableBase
 {
-  private ArrayList<TableView> m_views = new ArrayList<TableView>();
+  // observable list of registered table views
+  final private ReadOnlyListWrapper<TableView> m_views       = new ReadOnlyListWrapper<>(
+      FXCollections.observableArrayList() );
+
+  // observable integers for table body column & row counts
+  final private ReadOnlyIntegerWrapper         m_columnCount = new ReadOnlyIntegerWrapper( 3 );
+  final private ReadOnlyIntegerWrapper         m_rowCount    = new ReadOnlyIntegerWrapper( 10 );
+
+  // column & row index starts at 0 for table body, index of -1 is the column & row headers
+  final public int                             HEADER        = -1;
+
+  /*************************************** getColumnCount ****************************************/
+  final public int getColumnCount()
+  {
+    // return number of columns in table body
+    return m_columnCount.get();
+  }
+
+  /*************************************** setColumnCount ****************************************/
+  final public void setColumnCount( int columnCount )
+  {
+    // set number of columns in table body
+    m_columnCount.set( columnCount );
+  }
+
+  /**************************************** getRowCount ******************************************/
+  final public int getRowCount()
+  {
+    // return number of rows in table body
+    return m_rowCount.get();
+  }
+
+  /**************************************** setRowCount ******************************************/
+  final public void setRowCount( int rowCount )
+  {
+    // set number of rows in table body
+    m_rowCount.set( rowCount );
+  }
+
+  /*********************************** getColumnCountProperty ************************************/
+  final public ReadOnlyIntegerProperty getColumnCountProperty()
+  {
+    // return read-only property for column count
+    return m_columnCount.getReadOnlyProperty();
+  }
+
+  /************************************ getRowCountProperty **************************************/
+  final public ReadOnlyIntegerProperty getRowCountProperty()
+  {
+    // return read-only property for row count
+    return m_rowCount.getReadOnlyProperty();
+  }
 
   /****************************************** register *******************************************/
   public void register( TableView view )
@@ -51,10 +105,10 @@ public class TableBase
   }
 
   /****************************************** getViews *******************************************/
-  public ArrayList<TableView> getViews()
+  public ReadOnlyListProperty<TableView> getViews()
   {
-    // return list of associated table views
-    return m_views;
+    // return read-only list of associated table views
+    return m_views.getReadOnlyProperty();
   }
 
   /***************************************** resetViews ******************************************/
@@ -75,21 +129,52 @@ public class TableBase
   public void redrawCell( int columnIndex, int rowIndex )
   {
     // redraw cell in associated views in PARALLEL
-    m_views.parallelStream().forEach( view -> view.redrawCell( columnIndex, rowIndex ) );
+    if ( isColumnIndexValid( columnIndex ) && isRowIndexValid( rowIndex ) )
+      m_views.parallelStream().forEach( view -> view.redrawCell( columnIndex, rowIndex ) );
   }
 
   /***************************************** redrawColumn ****************************************/
   public void redrawColumn( int columnIndex )
   {
     // redraw column in associated views in PARALLEL
-    m_views.parallelStream().forEach( view -> view.redrawColumn( columnIndex ) );
+    if ( isColumnIndexValid( columnIndex ) )
+      m_views.parallelStream().forEach( view -> view.redrawColumn( columnIndex ) );
   }
 
   /****************************************** redrawRow ******************************************/
   public void redrawRow( int rowIndex )
   {
     // redraw row in associated views in PARALLEL
-    m_views.parallelStream().forEach( view -> view.redrawRow( rowIndex ) );
+    if ( isRowIndexValid( rowIndex ) )
+      m_views.parallelStream().forEach( view -> view.redrawRow( rowIndex ) );
+  }
+
+  /************************************* isColumnIndexValid **************************************/
+  public boolean isColumnIndexValid( int columnIndex )
+  {
+    // return true if column index is in table body or header range
+    int max = getColumnCount() - 1;
+    if ( columnIndex < HEADER || columnIndex > max )
+    {
+      Utils.stack( "WARNING: column index out of range (-1," + max + ")", columnIndex, this );
+      return false;
+    }
+
+    return true;
+  }
+
+  /*************************************** isRowIndexValid ***************************************/
+  public boolean isRowIndexValid( int rowIndex )
+  {
+    // return true if row index is in table body or header range
+    int max = getRowCount() - 1;
+    if ( rowIndex < HEADER || rowIndex > max )
+    {
+      Utils.stack( "WARNING: row index out of range (-1," + max + ")", rowIndex, this );
+      return false;
+    }
+
+    return true;
   }
 
   /****************************************** toString *******************************************/

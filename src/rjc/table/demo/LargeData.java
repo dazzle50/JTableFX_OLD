@@ -27,20 +27,13 @@ import rjc.table.data.TableData;
 public class LargeData extends TableData
 {
 
-  /*************************************** getColumnCount ****************************************/
-  @Override
-  public int getColumnCount()
+  /**************************************** constructor ******************************************/
+  public LargeData()
   {
-    // very large number of columns
-    return 1000000;
-  }
-
-  /**************************************** getRowCount ******************************************/
-  @Override
-  public int getRowCount()
-  {
-    // very large number of rows
-    return 1000000;
+    // set the large column & row count
+    super();
+    setColumnCount( 1000000 );
+    setRowCount( 1000000 );
   }
 
 }

@@ -25,45 +25,30 @@ package rjc.table.data;
 public class TableData extends TableBase
 {
 
-  /*************************************** getColumnCount ****************************************/
-  public int getColumnCount()
-  {
-    // return number of columns to be displayed in table
-    return 3;
-  }
-
-  /**************************************** getRowCount ******************************************/
-  public int getRowCount()
-  {
-    // return number of rows to be displayed in table
-    return 10;
-  }
-
-  /************************************** getColumnTitle *****************************************/
-  public String getColumnTitle( int columnIndex )
-  {
-    // return column title for specified column index
-    return "C" + columnIndex;
-  }
-
-  /**************************************** getRowTitle ******************************************/
-  public String getRowTitle( int rowIndex )
-  {
-    // return row title for specified row
-    return "R" + rowIndex;
-  }
-
   /****************************************** getValue *******************************************/
   public Object getValue( int columnIndex, int rowIndex )
   {
+    // return header corner cell value
+    if ( columnIndex == HEADER && rowIndex == HEADER )
+      return "-";
+
+    // return row value for specified row index
+    if ( columnIndex == HEADER )
+      return "R" + rowIndex;
+
+    // return column value for specified column index
+    if ( rowIndex == HEADER )
+      return "C" + columnIndex;
+
     // return cell value for specified cell index
     return "{" + columnIndex + "," + rowIndex + "}";
   }
 
   /****************************************** setValue *******************************************/
-  public void setValue( int columnIndex, int rowIndex, Object newValue )
+  public boolean setValue( int columnIndex, int rowIndex, Object newValue )
   {
-    // set cell value for specified cell index
+    // returns true if cell value successfully set for specified cell index
+    return false;
   }
 
 }
