@@ -40,8 +40,8 @@ public class TableBase
   final private ReadOnlyIntegerWrapper         m_columnCount = new ReadOnlyIntegerWrapper( 3 );
   final private ReadOnlyIntegerWrapper         m_rowCount    = new ReadOnlyIntegerWrapper( 10 );
 
-  // column & row index starts at 0 for table body, index of -1 is the column & row headers
-  final public int                             HEADER        = -1;
+  // column & row index starts at 0 for table body, index of -1 is for header
+  final static public int                      HEADER        = -1;
 
   /*************************************** getColumnCount ****************************************/
   final public int getColumnCount()
@@ -182,7 +182,8 @@ public class TableBase
   public String toString()
   {
     // return as string
-    return getClass().getSimpleName() + "@" + Integer.toHexString( hashCode() ) + "[m_views=" + m_views + "]";
+    return getClass().getSimpleName() + "@" + Integer.toHexString( hashCode() ) + "[m_columnCount=" + m_columnCount
+        + " m_rowCount=" + m_rowCount + " m_views=" + m_views + "]";
   }
 
 }
