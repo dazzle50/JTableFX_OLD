@@ -18,7 +18,179 @@
 
 package rjc.table.new_view;
 
+import javafx.geometry.Insets;
+import javafx.geometry.Pos;
+import javafx.scene.canvas.GraphicsContext;
+import javafx.scene.text.Font;
+import rjc.table.Utils;
+import rjc.table.cell.CellText;
+
+/*************************************************************************************************/
+/****************************** Table body and header cells drawing ******************************/
+/*************************************************************************************************/
+
 public class TableDraw extends TableXML
 {
+  protected int             m_columnIndex; // column index for current table body or header cell being drawn
+  protected int             m_rowIndex;    // row index for current table body or header cell being drawn
+  protected int             m_columnPos;   // column position for current table body or header cell being drawn
+  protected int             m_rowPos;      // row position for current table body or header cell being drawn
+  protected GraphicsContext gc;            // graphics context for current table body or header cell being drawn
+  protected double          x;             // x coordinate for current table body or header cell being drawn
+  protected double          y;             // y coordinate for current table body or header cell being drawn
+  protected double          w;             // width for current table body or header cell being drawn
+  protected double          h;             // height for current table body or header cell being drawn
+
+  /***************************************** redrawCell ******************************************/
+  public void redrawCell( int columnIndex, int rowIndex )
+  {
+    // redraw table body or header cell
+    if ( isVisible() && columnIndex >= HEADER && rowIndex >= HEADER )
+    {
+      m_columnIndex = columnIndex;
+      m_rowIndex = rowIndex;
+      // TODO
+    }
+  }
+
+  /**************************************** redrawColumn *****************************************/
+  public void redrawColumn( int columnIndex )
+  {
+    // redraw visible bit of column including header
+    if ( isVisible() && columnIndex >= HEADER )
+    {
+      m_columnIndex = columnIndex;
+      // TODO
+
+      // redraw column header
+
+      // redraw row header if overlaps column
+    }
+  }
+
+  /****************************************** redrawRow ******************************************/
+  public void redrawRow( int rowIndex )
+  {
+    // redraw visible bit of row including header
+    if ( isVisible() && rowIndex >= HEADER )
+    {
+      m_rowIndex = rowIndex;
+      // TODO
+
+      // redraw row header
+
+      // redraw column header if overlaps row
+    }
+  }
+
+  /******************************************** reset ********************************************/
+  public void reset()
+  {
+    // TODO #########################################################################
+    Utils.trace( "RESET" );
+  }
+
+  /*************************************** redrawColumns *****************************************/
+  public void redrawColumns( int minColumnPos, int maxColumnPos )
+  {
+    // redraw all columns between min and max column positions inclusive
+    int max = m_data.getColumnCount() - 1;
+    if ( minColumnPos <= max && maxColumnPos >= 0 )
+    {
+      if ( minColumnPos < 0 )
+        minColumnPos = 0;
+      if ( maxColumnPos > max )
+        maxColumnPos = max;
+
+      // for ( int pos = minColumnPos; pos <= maxColumnPos; pos++ )
+      // redrawColumn( getColumnIndexFromPosition( pos ) );
+    }
+  }
+
+  /***************************************** redrawRows ******************************************/
+  public void redrawRows( int minRowPos, int maxRowPos )
+  {
+    // redraw all rows between min and max row positions inclusive
+    int max = m_data.getRowCount() - 1;
+    if ( minRowPos <= max && maxRowPos >= 0 )
+    {
+      if ( minRowPos < 0 )
+        minRowPos = 0;
+      if ( maxRowPos > max )
+        maxRowPos = max;
+
+      // for ( int pos = minRowPos; pos <= maxRowPos; pos++ )
+      // redrawRow( getRowIndexFromPosition( pos ) );
+    }
+  }
+
+  /****************************************** drawCell *******************************************/
+  protected void drawCell()
+  {
+    // clip drawing to cell boundaries
+    gc.save();
+    gc.beginPath();
+    gc.rect( x, y, w, h );
+    gc.clip();
+
+    // draw table body or header cell
+    drawCellBackground();
+    drawCellContent();
+    drawCellBorder();
+
+    // remove clip
+    gc.restore();
+  }
+
+  /**************************************** redrawOverlay ****************************************/
+  public void redrawOverlay()
+  {
+    // highlight focus cell with special border
+    // TODO
+  }
+
+  /************************************* drawCellBackground **************************************/
+  protected void drawCellBackground()
+  {
+    // draw cell background
+    gc.setFill( m_view.getCellBackgroundPaint() );
+    gc.fillRect( x, y, w, h );
+  }
+
+  /*************************************** drawCellBorder ****************************************/
+  protected void drawCellBorder()
+  {
+    // draw cell border
+    gc.setStroke( m_view.getCellBorderPaint() );
+    gc.strokeLine( x + w - 0.5, y + 0.5, x + w - 0.5, y + h - 0.5 );
+    gc.strokeLine( x + 0.5, y + h - 0.5, x + w - 1.5, y + h - 0.5 );
+  }
+
+  /************************************** drawCellContent ****************************************/
+  protected void drawCellContent()
+  {
+    // draw cell contents
+    drawCellText( m_view.getCellText() );
+  }
+
+  /**************************************** drawCellText *****************************************/
+  protected void drawCellText( String cellText )
+  {
+    // convert string into text lines
+    Font font = m_view.getCellTextFont();
+    Insets insets = m_view.getCellTextInsets();
+    Pos alignment = m_view.getCellTextAlignment();
+    CellText lines = new CellText( cellText, font, insets, alignment, w, h );
+
+    // draw the lines on cell
+    gc.setFont( font );
+    gc.setFill( m_view.getCellTextPaint() );
+    int line = 0;
+    while ( lines.getText( line ) != null )
+    {
+      gc.fillText( lines.getText( line ), x + lines.getX( line ), y + lines.getY( line ) );
+      line++;
+    }
+  }
 
 }

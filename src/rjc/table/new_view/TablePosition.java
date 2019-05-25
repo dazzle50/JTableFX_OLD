@@ -19,51 +19,41 @@
 package rjc.table.new_view;
 
 /*************************************************************************************************/
-/************************************* Table area selection **************************************/
+/**************************** Table focus & select cell functionality ****************************/
 /*************************************************************************************************/
 
-public class TableSelection extends TablePosition
+public class TablePosition extends TableDisplay
 {
 
-  /************************************** getSelectionCount **************************************/
-  public int getSelectionCount()
+  /************************************** getFocusColumnPos **************************************/
+  public int getFocusColumnPos()
   {
-    // return number of selected areas
-    return 0; // TODO
+    return 0;
   }
 
-  /************************************** getSelectionCount **************************************/
-  public int getSelectionCount( int columnPos, int rowPos )
+  public int getSelectColumnPos()
   {
-    // return count of selected areas covering specified cell
-    return 0; // TODO
+    return 0;
   }
 
-  /*************************************** isCellSelected ****************************************/
-  public boolean isCellSelected( int columnPos, int rowPos )
+  public int getMouseColumnPos()
   {
-    // return true if specified cell is in a selected area
-    // TODO
-
-    return false;
+    return 0;
   }
 
-  /*************************************** hasRowSelection ***************************************/
-  public boolean hasRowSelection( int rowPos )
+  public int getFocusRowPos()
   {
-    // return true if specified row has any selection
-    // TODO
-
-    return false;
+    return 0;
   }
 
-  /************************************* hasColumnSelection **************************************/
-  public boolean hasColumnSelection( int columnPos )
+  public int getSelectRowPos()
   {
-    // return true if specified column has any selection
-    // TODO
+    return 0;
+  }
 
-    return false;
+  public int getMouseRowPos()
+  {
+    return 0;
   }
 
 }

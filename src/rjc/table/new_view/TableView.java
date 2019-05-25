@@ -18,6 +18,11 @@
 
 package rjc.table.new_view;
 
+import javafx.geometry.Insets;
+import javafx.geometry.Pos;
+import javafx.scene.paint.Color;
+import javafx.scene.paint.Paint;
+import javafx.scene.text.Font;
 import rjc.table.data.TableData;
 
 /*************************************************************************************************/
@@ -26,12 +31,123 @@ import rjc.table.data.TableData;
 
 public class TableView extends TableDraw
 {
+  protected final static Insets CELL_TEXT_INSERTS = new Insets( 0.0, 1.0, 1.0, 0.0 );
 
   /**************************************** constructor ******************************************/
   public TableView( TableData data )
   {
     // setup and register table view
 
+    // TODO
+  }
+
+  /**************************************** getCellText ******************************************/
+  protected String getCellText()
+  {
+    // return cell value as string
+    Object value = m_data.getValue( m_columnIndex, m_rowIndex );
+    return value == null ? null : value.toString();
+  }
+
+  /************************************ getCellTextAlignment *************************************/
+  protected Pos getCellTextAlignment()
+  {
+    // return cell text alignment
+    return Pos.CENTER;
+  }
+
+  /************************************** getCellTextFont ****************************************/
+  protected Font getCellTextFont()
+  {
+    // return cell text font (includes family, weight, posture, size)
+    return Font.getDefault();
+  }
+
+  /************************************** getCellTextInsets **************************************/
+  protected Insets getCellTextInsets()
+  {
+    // return cell text insets
+    return CELL_TEXT_INSERTS;
+  }
+
+  /************************************* getCellBorderPaint **************************************/
+  protected Paint getCellBorderPaint()
+  {
+    // return cell border paint
+    return Color.gray( 0.8 );
+  }
+
+  /*********************************** getCellBackgroundPaint ************************************/
+  protected Paint getCellBackgroundPaint()
+  {
+    // return cell background paint, starting with header cells
+    if ( m_rowIndex == HEADER || m_columnIndex == HEADER )
+      return getCellBackgroundPaintHeader();
+
+    // for selected cells
+    if ( isCellSelected( m_columnPos, m_rowPos ) )
+      return getCellBackgroundPaintSelected();
+
+    // otherwise default background
+    return getCellBackgroundPaintDefault();
+  }
+
+  /******************************** getCellBackgroundPaintDefault ********************************/
+  protected Paint getCellBackgroundPaintDefault()
+  {
+    // default table cell background
+    return Color.WHITE;
+  }
+
+  /******************************** getCellBackgroundPaintHeader *********************************/
+  protected Paint getCellBackgroundPaintHeader()
+  {
+    // return header cell background
+    if ( m_rowIndex == HEADER )
+    {
+      if ( m_columnPos == getFocusColumnPos() )
+        return Color.LIGHTYELLOW;
+      else
+        return hasColumnSelection( m_columnPos ) ? Color.gray( 0.85 ) : Color.gray( 0.95 );
+    }
+
+    if ( m_columnIndex == HEADER )
+    {
+      if ( m_rowPos == getFocusRowPos() )
+        return Color.LIGHTYELLOW;
+      else
+        return hasRowSelection( m_rowPos ) ? Color.gray( 0.85 ) : Color.gray( 0.95 );
+    }
+
+    throw new IllegalArgumentException( "Not header " + m_columnIndex + " " + m_rowIndex );
+  }
+
+  /******************************* getCellBackgroundPaintSelected *********************************/
+  protected Paint getCellBackgroundPaintSelected()
+  {
+    // return selected cell background
+    if ( m_rowPos == getFocusRowPos() && m_columnPos == getFocusColumnPos() )
+      return getCellBackgroundPaintDefault();
+
+    Color selected = Color.rgb( 51, 153, 255 );
+    for ( int count = getSelectionCount( m_columnPos, m_rowPos ); count > 1; count-- )
+      selected = selected.desaturate();
+
+    if ( m_rowPos == getSelectRowPos() && m_columnPos == getSelectColumnPos() )
+      selected = selected.desaturate();
+
+    return isTableFocused() ? selected : selected.desaturate();
+  }
+
+  /************************************** getCellTextPaint ***************************************/
+  protected Paint getCellTextPaint()
+  {
+    // return cell text paint
+    if ( isCellSelected( m_columnPos, m_rowPos )
+        && !( m_rowPos == getFocusRowPos() && m_columnPos == getFocusColumnPos() ) )
+      return Color.WHITE;
+    else
+      return Color.BLACK;
   }
 
 }
