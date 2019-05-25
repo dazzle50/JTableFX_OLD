@@ -19,10 +19,13 @@
 package rjc.table.new_view;
 
 import javafx.geometry.Insets;
+import javafx.geometry.Orientation;
 import javafx.geometry.Pos;
+import javafx.scene.canvas.Canvas;
 import javafx.scene.paint.Color;
 import javafx.scene.paint.Paint;
 import javafx.scene.text.Font;
+import javafx.scene.text.FontSmoothingType;
 import rjc.table.data.TableData;
 
 /*************************************************************************************************/
@@ -37,8 +40,26 @@ public class TableView extends TableDraw
   public TableView( TableData data )
   {
     // setup and register table view
+    m_view = this;
+    m_data = data;
+    // data.register( m_view ); ... TODO
 
-    // TODO
+    // create table canvas, axis and scroll bars
+    m_canvas = new Canvas();
+    m_columns = new TableAxis( data.getColumnCountProperty() );
+    m_rows = new TableAxis( data.getRowCountProperty() );
+    m_rows.setDefaultSize( 20 );
+    m_hScrollBar = new TableScrollBar( m_columns, Orientation.HORIZONTAL );
+    m_vScrollBar = new TableScrollBar( m_rows, Orientation.VERTICAL );
+
+    // add canvas and scroll bars to parent displayed children
+    add( m_canvas );
+    add( m_vScrollBar );
+    add( m_hScrollBar );
+
+    // setup graphics context
+    gc = m_canvas.getGraphicsContext2D();
+    gc.setFontSmoothingType( FontSmoothingType.LCD );
   }
 
   /**************************************** getCellText ******************************************/

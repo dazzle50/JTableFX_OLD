@@ -37,9 +37,11 @@ public class TableAxis extends AxisSize
   {
     // call super
     super( countProperty );
+    reset();
   }
 
   /******************************************** clear ********************************************/
+  @Override
   public void reset()
   {
     // call super + clear set of collapsed positions

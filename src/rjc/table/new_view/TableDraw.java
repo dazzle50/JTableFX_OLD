@@ -21,6 +21,7 @@ package rjc.table.new_view;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.canvas.GraphicsContext;
+import javafx.scene.paint.Color;
 import javafx.scene.text.Font;
 import rjc.table.Utils;
 import rjc.table.cell.CellText;
@@ -49,7 +50,21 @@ public class TableDraw extends TableXML
     {
       m_columnIndex = columnIndex;
       m_rowIndex = rowIndex;
-      // TODO
+      m_columnPos = m_columns.getPositionFromIndex( columnIndex );
+      m_rowPos = m_rows.getPositionFromIndex( rowIndex );
+      x = getXStartFromColumnPos( m_columnPos );
+      y = getYStartFromRowPos( m_rowPos );
+      w = m_columns.getCellSize( columnIndex );
+      h = m_rows.getCellSize( rowIndex );
+      drawCell();
+
+      // redraw column header if overlaps row
+      if ( rowIndex != HEADER && y < getColumnHeaderHeight() )
+        redrawRow( HEADER );
+
+      // redraw row header if overlaps column
+      if ( columnIndex != HEADER && x < getRowHeaderWidth() )
+        redrawColumn( HEADER );
     }
   }
 
@@ -60,11 +75,43 @@ public class TableDraw extends TableXML
     if ( isVisible() && columnIndex >= HEADER )
     {
       m_columnIndex = columnIndex;
-      // TODO
+      m_columnPos = m_columns.getPositionFromIndex( columnIndex );
+
+      // calculate which rows are visible
+      int minRowPos = getRowPositionAtY( getColumnHeaderHeight() );
+      int maxRowPos = getRowPositionAtY( (int) m_canvas.getHeight() );
+      x = getXStartFromColumnPos( m_columnPos );
+      w = m_columns.getCellSize( columnIndex );
+
+      // redraw all body cells between min and max row positions inclusive
+      int max = m_data.getRowCount() - 1;
+      if ( minRowPos <= max && maxRowPos >= 0 )
+      {
+        if ( minRowPos < 0 )
+          minRowPos = 0;
+        if ( maxRowPos > max )
+          maxRowPos = max;
+
+        for ( m_rowPos = minRowPos; m_rowPos <= maxRowPos; m_rowPos++ )
+        {
+          m_rowIndex = m_rows.getIndexFromPosition( m_rowPos );
+          y = getYStartFromRowPos( m_rowPos );
+          h = getYStartFromRowPos( m_rowPos + 1 ) - y;
+          if ( h > 0 )
+            drawCell();
+        }
+      }
 
       // redraw column header
+      m_rowIndex = HEADER;
+      m_rowPos = HEADER;
+      y = 0.0;
+      h = getColumnHeaderHeight();
+      drawCell();
 
       // redraw row header if overlaps column
+      if ( columnIndex != HEADER && x < getRowHeaderWidth() )
+        redrawColumn( HEADER );
     }
   }
 
@@ -75,11 +122,43 @@ public class TableDraw extends TableXML
     if ( isVisible() && rowIndex >= HEADER )
     {
       m_rowIndex = rowIndex;
-      // TODO
+      m_rowPos = m_rows.getPositionFromIndex( rowIndex );
+
+      // calculate which columns are visible
+      int minColumnPos = getColumnPositionAtX( getRowHeaderWidth() );
+      int maxColumnPos = getColumnPositionAtX( (int) m_canvas.getWidth() );
+      y = getYStartFromRowPos( m_rowPos );
+      h = m_rows.getCellSize( rowIndex );
+
+      // redraw all body cells between min and max column positions inclusive
+      int max = m_data.getColumnCount() - 1;
+      if ( minColumnPos <= max && maxColumnPos >= 0 )
+      {
+        if ( minColumnPos < 0 )
+          minColumnPos = 0;
+        if ( maxColumnPos > max )
+          maxColumnPos = max;
+
+        for ( m_columnPos = minColumnPos; m_columnPos <= maxColumnPos; m_columnPos++ )
+        {
+          m_columnIndex = m_columns.getIndexFromPosition( m_columnPos );
+          x = getXStartFromColumnPos( m_columnPos );
+          w = getXStartFromColumnPos( m_columnPos + 1 ) - x;
+          if ( w > 0 )
+            drawCell();
+        }
+      }
 
       // redraw row header
+      m_columnIndex = HEADER;
+      m_columnPos = HEADER;
+      x = 0.0;
+      w = getRowHeaderWidth();
+      drawCell();
 
       // redraw column header if overlaps row
+      if ( rowIndex != HEADER && y < getColumnHeaderHeight() )
+        redrawRow( HEADER );
     }
   }
 
@@ -102,8 +181,8 @@ public class TableDraw extends TableXML
       if ( maxColumnPos > max )
         maxColumnPos = max;
 
-      // for ( int pos = minColumnPos; pos <= maxColumnPos; pos++ )
-      // redrawColumn( getColumnIndexFromPosition( pos ) );
+      for ( int pos = minColumnPos; pos <= maxColumnPos; pos++ )
+        redrawColumn( m_columns.getIndexFromPosition( pos ) );
     }
   }
 
@@ -119,8 +198,8 @@ public class TableDraw extends TableXML
       if ( maxRowPos > max )
         maxRowPos = max;
 
-      // for ( int pos = minRowPos; pos <= maxRowPos; pos++ )
-      // redrawRow( getRowIndexFromPosition( pos ) );
+      for ( int pos = minRowPos; pos <= maxRowPos; pos++ )
+        redrawRow( m_rows.getIndexFromPosition( pos ) );
     }
   }
 
@@ -146,7 +225,31 @@ public class TableDraw extends TableXML
   public void redrawOverlay()
   {
     // highlight focus cell with special border
-    // TODO
+    if ( getFocusColumnPos() >= 0 && getFocusRowPos() >= 0 )
+    {
+      if ( isTableFocused() )
+        gc.setStroke( Color.CORNFLOWERBLUE );
+      else
+        gc.setStroke( Color.CORNFLOWERBLUE.desaturate() );
+
+      x = getXStartFromColumnPos( getFocusColumnPos() );
+      y = getYStartFromRowPos( getFocusRowPos() );
+      w = getXStartFromColumnPos( getFocusColumnPos() + 1 ) - x;
+      h = getYStartFromRowPos( getFocusRowPos() + 1 ) - y;
+
+      // clip drawing to table body
+      gc.save();
+      gc.beginPath();
+      gc.rect( getRowHeaderWidth(), getColumnHeaderHeight(), m_canvas.getWidth(), m_canvas.getHeight() );
+      gc.clip();
+
+      // draw special border
+      gc.strokeRect( x - 0.5, y - 0.5, w, h );
+      gc.strokeRect( x + 0.5, y + 0.5, w - 2, h - 2 );
+
+      // remove clip
+      gc.restore();
+    }
   }
 
   /************************************* drawCellBackground **************************************/

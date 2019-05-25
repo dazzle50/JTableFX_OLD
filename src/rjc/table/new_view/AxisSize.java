@@ -49,7 +49,6 @@ public class AxisSize extends AxisBase
   {
     // call super
     super( countProperty );
-    reset();
 
     // if axis count changes
     countProperty.addListener( ( observable, oldCount, newCount ) ->

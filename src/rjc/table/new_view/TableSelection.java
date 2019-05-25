@@ -18,32 +18,71 @@
 
 package rjc.table.new_view;
 
+import javafx.beans.property.ReadOnlyListWrapper;
+import javafx.collections.FXCollections;
+
 /*************************************************************************************************/
 /************************************* Table area selection **************************************/
 /*************************************************************************************************/
 
-public class TableSelection extends TablePosition
+public class TableSelection extends TableNavigation
 {
+  public class Selected
+  {
+    public int c1; // smallest column position
+    public int r1; // smallest row position
+    public int c2; // largest column position
+    public int r2; // largest row position
+
+    public void set( int columnPos1, int rowPos1, int columnPos2, int rowPos2 )
+    {
+      // set private variables in correct order
+      c1 = Math.min( columnPos1, columnPos2 );
+      c2 = Math.max( columnPos1, columnPos2 );
+      r1 = Math.min( rowPos1, rowPos2 );
+      r2 = Math.max( rowPos1, rowPos2 );
+    }
+
+    @Override
+    public String toString()
+    {
+      return getClass().getSimpleName() + "@" + Integer.toHexString( hashCode() ) + "[c1=" + c1 + " r1=" + r1 + " c2="
+          + c2 + " r2=" + r2 + "]";
+    }
+  }
+
+  // observable list of selected areas for this table view
+  final private ReadOnlyListWrapper<Selected> m_selected = new ReadOnlyListWrapper<>(
+      FXCollections.observableArrayList() );
+
+  private Selected                            m_currentSelection;                    // current selection area
 
   /************************************** getSelectionCount **************************************/
   public int getSelectionCount()
   {
     // return number of selected areas
-    return 0; // TODO
+    return m_selected.size();
   }
 
   /************************************** getSelectionCount **************************************/
   public int getSelectionCount( int columnPos, int rowPos )
   {
     // return count of selected areas covering specified cell
-    return 0; // TODO
+    int count = 0;
+    for ( Selected area : m_selected )
+      if ( columnPos >= area.c1 && columnPos <= area.c2 && rowPos >= area.r1 && rowPos <= area.r2 )
+        count++;
+
+    return count;
   }
 
   /*************************************** isCellSelected ****************************************/
   public boolean isCellSelected( int columnPos, int rowPos )
   {
     // return true if specified cell is in a selected area
-    // TODO
+    for ( Selected area : m_selected )
+      if ( columnPos >= area.c1 && columnPos <= area.c2 && rowPos >= area.r1 && rowPos <= area.r2 )
+        return true;
 
     return false;
   }
@@ -64,6 +103,15 @@ public class TableSelection extends TablePosition
     // TODO
 
     return false;
+  }
+
+  /****************************************** toString *******************************************/
+  @Override
+  public String toString()
+  {
+    // convert to string
+    return getClass().getSimpleName() + "@" + Integer.toHexString( hashCode() ) + "[selected=" + m_selected.size()
+        + "]";
   }
 
 }
