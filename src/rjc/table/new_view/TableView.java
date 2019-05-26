@@ -52,6 +52,32 @@ public class TableView extends TableDraw
     m_hScrollBar = new TableScrollBar( m_columns, Orientation.HORIZONTAL );
     m_vScrollBar = new TableScrollBar( m_rows, Orientation.VERTICAL );
 
+    // when canvas size changes draw new bits
+    m_canvas.widthProperty()
+        .addListener( ( observable, oldW, newW ) -> widthChange( oldW.intValue(), newW.intValue() ) );
+    m_canvas.heightProperty()
+        .addListener( ( observable, oldH, newH ) -> heightChange( oldH.intValue(), newH.intValue() ) );
+
+    // redraw table when focus changes
+    m_canvas.focusedProperty().addListener( ( observable, oldF, newF ) -> redraw() );
+
+    // react to mouse events
+    m_canvas.setOnMouseExited( event -> mouseExited( event ) );
+    m_canvas.setOnMouseMoved( event -> mouseMoved( event ) );
+    m_canvas.setOnMouseDragged( event -> mouseDragged( event ) );
+    m_canvas.setOnMouseReleased( event -> mouseReleased( event ) );
+    m_canvas.setOnMousePressed( event -> mousePressed( event ) );
+    m_canvas.setOnMouseClicked( event -> mouseClicked( event ) );
+    m_canvas.setOnScroll( event -> mouseScroll( event ) );
+
+    // react to keyboard events
+    m_canvas.setOnKeyPressed( event -> keyPressed( event ) );
+    m_canvas.setOnKeyTyped( event -> keyTyped( event ) );
+
+    // react to scroll bar position value changes such as redrawing table
+    m_hScrollBar.valueProperty().addListener( ( observable, oldV, newV ) -> tableScrolled() );
+    m_vScrollBar.valueProperty().addListener( ( observable, oldV, newV ) -> tableScrolled() );
+
     // add canvas and scroll bars to parent displayed children
     add( m_canvas );
     add( m_vScrollBar );

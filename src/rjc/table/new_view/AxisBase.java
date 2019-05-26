@@ -78,7 +78,7 @@ public class AxisBase
       return m_indexFromPosition.indexOf( index );
 
     // if not in mapping but within count, then return index as not re-ordered
-    if ( index >= FIRSTCELL && index < getCount() )
+    if ( index >= HEADER && index < getCount() )
       return index;
 
     // index is out of bounds, so throw exception
@@ -93,7 +93,7 @@ public class AxisBase
       return m_indexFromPosition.get( position );
 
     // if not in mapping but within count, then return position as not re-ordered
-    if ( position >= FIRSTCELL && position < getCount() )
+    if ( position >= HEADER && position < getCount() )
       return position;
 
     // position is out of bounds, so throw exception

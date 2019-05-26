@@ -105,6 +105,32 @@ public class TableSelection extends TableNavigation
     return false;
   }
 
+  /*********************************** setSelectFocusPosition ************************************/
+  protected void setSelectFocusPosition( int columnPos, int rowPos, boolean setFocus, boolean clearSelection )
+  {
+    // TODO
+    /*
+    if ( setFocus && ( columnPos == RIGHT_OF_TABLE || rowPos == BELOW_TABLE ) )
+      throw new IllegalArgumentException( "Setting focus not allowed " + columnPos + " " + rowPos );
+    
+    // clear previous selections
+    if ( clearSelection )
+      clearAllSelection();
+    
+    // set table select & focus cell position properties
+    setSelectPosition( columnPos, rowPos );
+    if ( setFocus )
+      setFocusPosition( columnPos, rowPos );
+    setCurrentSelection();
+    
+    // ensure column and row positions are visible
+    if ( columnPos < Integer.MAX_VALUE )
+      columnPos = ensureColumnShown( columnPos );
+    if ( rowPos < Integer.MAX_VALUE )
+      rowPos = ensureRowShown( rowPos );
+    */
+  }
+
   /****************************************** toString *******************************************/
   @Override
   public String toString()

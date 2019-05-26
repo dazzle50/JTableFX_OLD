@@ -243,7 +243,7 @@ public class AxisSize extends AxisBase
   public int getStartFromPosition( int cellPosition, int scroll )
   {
     // check position is valid
-    if ( cellPosition < HEADER || cellPosition >= getCount() )
+    if ( cellPosition < HEADER || cellPosition > getCount() )
       throw new IndexOutOfBoundsException( "position=" + cellPosition + " but count=" + getCount() );
 
     // if header, return zero
@@ -288,7 +288,7 @@ public class AxisSize extends AxisBase
 
     // check within start cache
     int position = m_cellPositionStartCache.size() - 1;
-    int start = m_cellPositionStartCache.get( position );
+    int start = position < 0 ? 0 : m_cellPositionStartCache.get( position );
     if ( coordinate >= start )
     {
       while ( coordinate > start )
