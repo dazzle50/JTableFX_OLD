@@ -35,7 +35,7 @@ public class AxisSize extends AxisBase
   private int                          m_defaultSize;
   private int                          m_minimumSize;
 
-  // exceptions to default size, -ve means hidden, key = cell-index+1 as key=0 is for header (-1)
+  // exceptions to default size, -ve means hidden
   final private Map<Integer, Integer>  m_sizeExceptions         = new HashMap<Integer, Integer>();
 
   // cached cell position start pixel coordinate
@@ -58,7 +58,7 @@ public class AxisSize extends AxisBase
       int exceptionsCount = 0;
       int bodySize = 0;
       for ( int key : m_sizeExceptions.keySet() )
-        if ( key != 0 ) // ignore any exception for header size
+        if ( key != HEADER ) // ignore any exception for header size
         {
           if ( key < count )
           {
@@ -73,6 +73,7 @@ public class AxisSize extends AxisBase
       m_bodySize.set( bodySize + ( count - exceptionsCount ) * m_defaultSize );
 
       // truncate cell position start if size greater than new count
+      count++;
       if ( m_cellPositionStartCache.size() > count )
         m_cellPositionStartCache.subList( count, m_cellPositionStartCache.size() ).clear();
     } );
@@ -102,7 +103,7 @@ public class AxisSize extends AxisBase
       int bodySize = 0;
 
       for ( int key : m_sizeExceptions.keySet() )
-        if ( key != 0 ) // ignore any exception for header size
+        if ( key != HEADER ) // ignore any exception for header size
         {
           defaultCount--;
           int size = m_sizeExceptions.get( key );
@@ -153,6 +154,7 @@ public class AxisSize extends AxisBase
 
       m_defaultSize = defaultSize;
       m_bodySize.set( INVALID );
+      m_cellPositionStartCache.clear();
     }
   }
 
@@ -182,10 +184,12 @@ public class AxisSize extends AxisBase
           if ( entry.getValue() < 0 && entry.getValue() > -minSize )
             entry.setValue( -minSize );
         }
+
+        m_bodySize.set( INVALID );
+        m_cellPositionStartCache.clear();
       }
 
       m_minimumSize = minSize;
-      m_bodySize.set( INVALID );
     }
   }
 
@@ -193,7 +197,7 @@ public class AxisSize extends AxisBase
   public int getCellSize( int cellIndex )
   {
     // return cell size, key = index+1 as key=0 is for header
-    int size = m_sizeExceptions.getOrDefault( cellIndex + 1, m_defaultSize );
+    int size = m_sizeExceptions.getOrDefault( cellIndex, m_defaultSize );
     if ( size < 0 )
       return 0; // -ve means row hidden, so return zero
 
@@ -213,7 +217,7 @@ public class AxisSize extends AxisBase
 
     // create a size exception (even if same as default)
     int oldSize = getCellSize( cellIndex );
-    m_sizeExceptions.put( cellIndex + 1, newSize );
+    m_sizeExceptions.put( cellIndex, newSize );
 
     // if new size is different, update body size and truncate cell position start cache if needed
     if ( newSize != oldSize )
@@ -235,8 +239,8 @@ public class AxisSize extends AxisBase
     if ( cellIndex < HEADER || cellIndex >= getCount() )
       throw new IndexOutOfBoundsException( "cell index=" + cellIndex + " but count=" + getCount() );
 
-    // remove cell index size exception if exists, key = index+1 as key=0 is for header
-    m_sizeExceptions.remove( cellIndex + 1 );
+    // remove cell index size exception if exists
+    m_sizeExceptions.remove( cellIndex );
   }
 
   /************************************ getStartFromPosition *************************************/
@@ -282,7 +286,7 @@ public class AxisSize extends AxisBase
       return HEADER;
 
     // check if after table
-    coordinate += scroll;
+    coordinate += scroll - getCellSize( HEADER );
     if ( coordinate >= getBodySize() )
       return AFTER;
 
@@ -296,7 +300,7 @@ public class AxisSize extends AxisBase
         start += getCellSize( getIndexFromPosition( position++ ) );
         m_cellPositionStartCache.add( start );
       }
-      return position;
+      return position + 1;
     }
 
     // find position by binary search of cache
@@ -310,7 +314,7 @@ public class AxisSize extends AxisBase
       else
         endPos = rowPos;
     }
-    return startPos - 1;
+    return startPos;
   }
 
   /**************************************** getTableSize *****************************************/
@@ -323,7 +327,7 @@ public class AxisSize extends AxisBase
   /************************************** isPositionHidden ***************************************/
   public boolean isPositionHidden( int position )
   {
-    // return if position is hidden
+    // return if position is hidden (or zero size)
     return getCellSize( getIndexFromPosition( position ) ) <= 0;
   }
 
@@ -332,7 +336,7 @@ public class AxisSize extends AxisBase
   {
     // if position not already hidden, set size exception and update body size
     int index = getIndexFromPosition( position );
-    int oldSize = m_sizeExceptions.getOrDefault( index + 1, m_defaultSize );
+    int oldSize = m_sizeExceptions.getOrDefault( index, m_defaultSize );
     if ( oldSize > 0 )
     {
       m_sizeExceptions.put( index, -oldSize );
@@ -343,6 +347,71 @@ public class AxisSize extends AxisBase
       if ( m_cellPositionStartCache.size() > position )
         m_cellPositionStartCache.subList( position, m_cellPositionStartCache.size() ).clear();
     }
+  }
+
+  /*************************************** unhidePosition ****************************************/
+  public void unhidePosition( int position )
+  {
+    // if position hidden, set size exception and update body size
+    int index = getIndexFromPosition( position );
+    int oldSize = m_sizeExceptions.getOrDefault( index, m_defaultSize );
+    if ( oldSize < 0 )
+    {
+      if ( oldSize == -m_defaultSize )
+        m_sizeExceptions.remove( index );
+      else
+        m_sizeExceptions.put( index, -oldSize );
+
+      if ( m_bodySize.get() != INVALID )
+        m_bodySize.set( m_bodySize.get() - oldSize );
+
+      // truncate cell position start cache if size greater than position
+      if ( m_cellPositionStartCache.size() > position )
+        m_cellPositionStartCache.subList( position, m_cellPositionStartCache.size() ).clear();
+    }
+  }
+
+  /****************************************** getFirst *******************************************/
+  public int getFirst()
+  {
+    // return first cell body position visible
+    return getNext( HEADER );
+  }
+
+  /******************************************* getLast *******************************************/
+  public int getLast()
+  {
+    // return last cell body position visible
+    return getPrevious( getCount() );
+  }
+
+  /******************************************* getNext *******************************************/
+  public int getNext( int position )
+  {
+    // return next cell body position visible, or last if there isn't one
+    int max = getCount() - 1;
+    boolean hidden;
+    do
+      hidden = isPositionHidden( ++position );
+    while ( position < max && hidden );
+
+    if ( hidden )
+      return getLast();
+    return position;
+  }
+
+  /***************************************** getPrevious *****************************************/
+  public int getPrevious( int position )
+  {
+    // return previous cell body position visible, or first if there isn't one
+    boolean hidden;
+    do
+      hidden = isPositionHidden( --position );
+    while ( position > FIRSTCELL && hidden );
+
+    if ( hidden )
+      return getFirst();
+    return position;
   }
 
 }

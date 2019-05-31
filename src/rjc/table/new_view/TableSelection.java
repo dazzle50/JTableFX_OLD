@@ -43,6 +43,12 @@ public class TableSelection extends TableNavigation
       r2 = Math.max( rowPos1, rowPos2 );
     }
 
+    public boolean isSelected( int columnPos, int rowPos )
+    {
+      // return true is specified position is selected
+      return columnPos >= c1 && columnPos <= c2 && rowPos >= r1 && rowPos <= r2;
+    }
+
     @Override
     public String toString()
     {
@@ -70,7 +76,7 @@ public class TableSelection extends TableNavigation
     // return count of selected areas covering specified cell
     int count = 0;
     for ( Selected area : m_selected )
-      if ( columnPos >= area.c1 && columnPos <= area.c2 && rowPos >= area.r1 && rowPos <= area.r2 )
+      if ( area.isSelected( columnPos, rowPos ) )
         count++;
 
     return count;
@@ -81,7 +87,7 @@ public class TableSelection extends TableNavigation
   {
     // return true if specified cell is in a selected area
     for ( Selected area : m_selected )
-      if ( columnPos >= area.c1 && columnPos <= area.c2 && rowPos >= area.r1 && rowPos <= area.r2 )
+      if ( area.isSelected( columnPos, rowPos ) )
         return true;
 
     return false;
@@ -103,6 +109,48 @@ public class TableSelection extends TableNavigation
     // TODO
 
     return false;
+  }
+
+  /************************************** isColumnSelected ***************************************/
+  public boolean isColumnSelected( int columnPos )
+  {
+    // return true if all visible cells in specified column are selected
+    int top = m_rows.getFirst();
+    int bottom = m_rows.getLast();
+    for ( int rowPos = top; rowPos <= bottom; rowPos++ )
+      rows: if ( !m_rows.isPositionHidden( rowPos ) )
+      {
+        for ( Selected area : m_selected )
+          if ( area.isSelected( columnPos, rowPos ) )
+          {
+            rowPos = area.r2;
+            break rows;
+          }
+        return false;
+      }
+
+    return true;
+  }
+
+  /**************************************** isRowSelected ****************************************/
+  public boolean isRowSelected( int rowPos )
+  {
+    // return true if all visible cells in specified row are selected
+    int left = m_columns.getFirst();
+    int right = m_columns.getLast();
+    for ( int columnPos = left; columnPos <= right; columnPos++ )
+      columns: if ( !m_columns.isPositionHidden( columnPos ) )
+      {
+        for ( Selected area : m_selected )
+          if ( area.isSelected( columnPos, rowPos ) )
+          {
+            columnPos = area.c2;
+            break columns;
+          }
+        return false;
+      }
+
+    return true;
   }
 
   /*********************************** setSelectFocusPosition ************************************/

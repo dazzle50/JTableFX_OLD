@@ -36,64 +36,39 @@ public class Utils
 
   public static DateTimeFormatter timestampFormatter = DateTimeFormatter.ofPattern( "uuuu-MM-dd HH:mm:ss.SSS" );
 
-  /***************************************** timestamp *****************************************/
+  /****************************************** timestamp ******************************************/
   public static String timestamp()
   {
     // returns current date-time as string in format YYYY-MM-DD HH:MM:SS.SSS
     return LocalDateTime.now().format( timestampFormatter );
   }
 
-  /******************************************* trace *********************************************/
+  /******************************************** trace ********************************************/
   public static void trace( Object... objects )
   {
-    // prints space separated objects in string representation prefixed by date-time
-    // and suffixed by file+line-number & method
-    StringBuilder str = new StringBuilder();
-    for ( Object obj : objects )
-    {
-      if ( obj == null )
-        str.append( "null " );
-      else if ( obj instanceof String )
-        str.append( "\"" + obj + "\" " );
-      else if ( obj instanceof Character )
-        str.append( "'" + obj + "' " );
-      else
-        str.append( obj + " " );
-    }
+    // sends to standard out date-time, the input objects, suffixed by file+line-number & method
+    System.out.println( timestamp() + " " + objectsString( objects ) + caller( 1 ) );
+  }
 
-    System.out.println( timestamp() + " " + str.toString() + caller( 1 ) );
+  /********************************************* path ********************************************/
+  public static void path( Object... objects )
+  {
+    // sends to standard out date-time, the input objects, suffixed by file+line-number & method x5
+    System.out.println( timestamp() + " " + objectsString( objects ) + caller( 1 ) + " " + caller( 2 ) + " "
+        + caller( 3 ) + " " + caller( 4 ) + " " + caller( 5 ) );
   }
 
   /******************************************* stack *********************************************/
+
   public static void stack( Object... objects )
   {
-    // prints space separated objects in string representation prefixed by date-time
-    StringBuilder str = new StringBuilder();
-    for ( Object obj : objects )
-    {
-      if ( obj == null )
-        str.append( "null " );
-      else if ( obj instanceof String )
-        str.append( "\"" + obj + "\" " );
-      else if ( obj instanceof Character )
-        str.append( "'" + obj + "' " );
-      else
-        str.append( obj + " " );
-    }
-    System.out.println( timestamp() + " " + str.toString() );
+    // sends to standard out date-time and the input objects
+    System.out.println( timestamp() + " " + objectsString( objects ) );
 
-    // prints stack
+    // sends to standard out this thread's stack trace
     StackTraceElement[] stack = new Throwable().getStackTrace();
     for ( int i = 1; i < stack.length; i++ )
-    {
-      // cannot simply use stack[i].toString() because need extra space before bracket for Eclipse hyperlink to work
-      String txt = stack[i].getClassName() + "." + stack[i].getMethodName()
-          + ( stack[i].isNativeMethod() ? " (Native Method)"
-              : ( stack[i].getFileName() != null && stack[i].getLineNumber() >= 0
-                  ? " (" + stack[i].getFileName() + ":" + stack[i].getLineNumber() + ")"
-                  : ( stack[i].getFileName() != null ? " (" + stack[i].getFileName() + ")" : " (Unknown Source)" ) ) );
-      System.out.println( "\t" + txt );
-    }
+      System.out.println( "\t" + stackElementString( stack[i] ) );
   }
 
   /******************************************* caller *******************************************/
@@ -104,6 +79,37 @@ public class Utils
     String method = stack[++pos].getMethodName() + "()";
     String file = "(" + stack[pos].getFileName() + ":" + stack[pos].getLineNumber() + ") ";
     return file + method;
+  }
+
+  /**************************************** objectsString ****************************************/
+  public static StringBuilder objectsString( Object... objects )
+  {
+    // converts objects to space separated string
+    StringBuilder str = new StringBuilder();
+    for ( Object obj : objects )
+    {
+      if ( obj == null )
+        str.append( "null " );
+      else if ( obj instanceof String )
+        str.append( "\"" + obj + "\" " );
+      else if ( obj instanceof Character )
+        str.append( "'" + obj + "' " );
+      else
+        str.append( obj + " " );
+    }
+
+    return str;
+  }
+
+  /************************************* stackElementString **************************************/
+  public static String stackElementString( StackTraceElement element )
+  {
+    // cannot simply use stack[i].toString() because need extra space before bracket for Eclipse hyperlink to work 
+    return element.getClassName() + "." + element.getMethodName()
+        + ( element.isNativeMethod() ? " (Native Method)"
+            : ( element.getFileName() != null && element.getLineNumber() >= 0
+                ? " (" + element.getFileName() + ":" + element.getLineNumber() + ")"
+                : ( element.getFileName() != null ? " (" + element.getFileName() + ")" : " (Unknown Source)" ) ) );
   }
 
   /******************************************* clean *********************************************/

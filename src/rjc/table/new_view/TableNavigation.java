@@ -147,18 +147,18 @@ public class TableNavigation extends TableDisplay
     m_selectRowPos.set( position );
   }
 
-  /*************************************** setMouseColumnPos *************************************/
-  public void checkMouseColumnPos( int x )
+  /************************************** setMouseColumnPos **************************************/
+  public void setMouseColumnPos( int position )
   {
-    // set mouse cell column position from x coordinate
-    // TODO
+    // set focus cell column position
+    m_mouseColumnPos.set( position );
   }
 
-  /**************************************** setMouseRowPos ***************************************/
-  public void checkMouseRowPos( int y )
+  /*************************************** setMouseRowPos ****************************************/
+  public void setMouseRowPos( int position )
   {
-    // set mouse cell row position from y coordinate
-    // TODO
+    // set focus cell row position
+    m_mouseRowPos.set( position );
   }
 
 }

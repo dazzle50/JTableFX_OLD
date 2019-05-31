@@ -75,13 +75,14 @@ public class TableDisplay extends TableParent
 
       // calculate which columns need to be redrawn
       int minColumnPos = getColumnPositionAtX( oldW );
-      if ( minColumnPos == HEADER )
+      if ( minColumnPos <= HEADER )
         minColumnPos = getColumnPositionAtX( getRowHeaderWidth() );
       int maxColumnPos = getColumnPositionAtX( newW );
       m_view.redrawColumns( minColumnPos, maxColumnPos );
 
       // check if row header needs to be redrawn
-      if ( oldW < getRowHeaderWidth() )
+      if ( maxColumnPos == HEADER
+          || ( oldW < getRowHeaderWidth() && getXStartFromColumnPos( minColumnPos ) >= getRowHeaderWidth() ) )
         m_view.redrawColumn( HEADER );
 
       // draw table overlay
@@ -100,13 +101,14 @@ public class TableDisplay extends TableParent
 
       // calculate which rows need to be redrawn, and redraw them
       int minRowPos = getRowPositionAtY( oldH );
-      if ( minRowPos == HEADER )
+      if ( minRowPos <= HEADER )
         minRowPos = getRowPositionAtY( getColumnHeaderHeight() );
       int maxRowPos = getRowPositionAtY( newH );
       m_view.redrawRows( minRowPos, maxRowPos );
 
       // check if column header needs to be redrawn
-      if ( oldH < getColumnHeaderHeight() )
+      if ( maxRowPos == HEADER
+          || ( oldH < getColumnHeaderHeight() && getYStartFromRowPos( minRowPos ) >= getColumnHeaderHeight() ) )
         m_view.redrawRow( HEADER );
 
       // draw table overlay
