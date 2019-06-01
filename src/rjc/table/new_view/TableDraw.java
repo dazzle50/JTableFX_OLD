@@ -85,10 +85,10 @@ public class TableDraw extends TableXML
 
       // redraw all body cells between min and max row positions inclusive
       int max = m_data.getRowCount() - 1;
-      if ( minRowPos <= max && maxRowPos >= 0 )
+      if ( minRowPos <= max && maxRowPos >= FIRSTCELL )
       {
-        if ( minRowPos < 0 )
-          minRowPos = 0;
+        if ( minRowPos < FIRSTCELL )
+          minRowPos = FIRSTCELL;
         if ( maxRowPos > max )
           maxRowPos = max;
 
@@ -132,10 +132,10 @@ public class TableDraw extends TableXML
 
       // redraw all body cells between min and max column positions inclusive
       int max = m_data.getColumnCount() - 1;
-      if ( minColumnPos <= max && maxColumnPos >= 0 )
+      if ( minColumnPos <= max && maxColumnPos >= FIRSTCELL )
       {
-        if ( minColumnPos < 0 )
-          minColumnPos = 0;
+        if ( minColumnPos < FIRSTCELL )
+          minColumnPos = FIRSTCELL;
         if ( maxColumnPos > max )
           maxColumnPos = max;
 
@@ -174,10 +174,10 @@ public class TableDraw extends TableXML
   {
     // redraw all columns between min and max column positions inclusive
     int max = m_data.getColumnCount() - 1;
-    if ( minColumnPos <= max && maxColumnPos >= 0 )
+    if ( minColumnPos <= max && maxColumnPos >= FIRSTCELL )
     {
-      if ( minColumnPos < 0 )
-        minColumnPos = 0;
+      if ( minColumnPos < FIRSTCELL )
+        minColumnPos = FIRSTCELL;
       if ( maxColumnPos > max )
         maxColumnPos = max;
 
@@ -191,10 +191,10 @@ public class TableDraw extends TableXML
   {
     // redraw all rows between min and max row positions inclusive
     int max = m_data.getRowCount() - 1;
-    if ( minRowPos <= max && maxRowPos >= 0 )
+    if ( minRowPos <= max && maxRowPos >= FIRSTCELL )
     {
-      if ( minRowPos < 0 )
-        minRowPos = 0;
+      if ( minRowPos < FIRSTCELL )
+        minRowPos = FIRSTCELL;
       if ( maxRowPos > max )
         maxRowPos = max;
 
@@ -225,7 +225,7 @@ public class TableDraw extends TableXML
   public void redrawOverlay()
   {
     // highlight focus cell with special border
-    if ( getFocusColumnPos() >= 0 && getFocusRowPos() >= 0 )
+    if ( getFocusColumnPos() >= FIRSTCELL && getFocusRowPos() >= FIRSTCELL )
     {
       if ( isTableFocused() )
         gc.setStroke( Color.CORNFLOWERBLUE );

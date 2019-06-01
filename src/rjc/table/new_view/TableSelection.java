@@ -18,6 +18,7 @@
 
 package rjc.table.new_view;
 
+import javafx.beans.property.ReadOnlyListProperty;
 import javafx.beans.property.ReadOnlyListWrapper;
 import javafx.collections.FXCollections;
 
@@ -57,16 +58,72 @@ public class TableSelection extends TableNavigation
     }
   }
 
-  // observable list of selected areas for this table view
+  // observable list of selected areas for this table view (should always include focus cell)
   final private ReadOnlyListWrapper<Selected> m_selected = new ReadOnlyListWrapper<>(
       FXCollections.observableArrayList() );
 
   private Selected                            m_currentSelection;                    // current selection area
 
+  /************************************** clearAllSelection **************************************/
+  public void clearAllSelection()
+  {
+    // remove all selected areas
+    m_selected.clear();
+    m_currentSelection = null;
+  }
+
+  /***************************************** selectTable *****************************************/
+  public void selectTable()
+  {
+    // select entire table
+    clearAllSelection();
+    setCurrentSelection( FIRSTCELL, FIRSTCELL, m_data.getColumnCount(), m_data.getRowCount() );
+  }
+
+  /************************************* setCurrentSelection *************************************/
+  public void setCurrentSelection()
+  {
+    // set current selection area to rectangle between focus and select cells
+    if ( getFocusColumnPos() > HEADER )
+      setCurrentSelection( getFocusColumnPos(), getFocusRowPos(), getSelectColumnPos(), getSelectRowPos() );
+  }
+
+  /************************************* setCurrentSelection *************************************/
+  public void setCurrentSelection( int columnPos1, int rowPos1, int columnPos2, int rowPos2 )
+  {
+    // check column & row positions are zero or positive
+    if ( columnPos1 <= HEADER || rowPos1 <= HEADER || columnPos2 <= HEADER || rowPos2 <= HEADER )
+      throw new IllegalArgumentException(
+          "Positions not valid " + columnPos1 + " " + rowPos1 + " " + columnPos2 + " " + rowPos2 );
+
+    // if no current selection, start new selection area
+    if ( m_currentSelection == null )
+    {
+      m_currentSelection = new Selected();
+      m_selected.add( m_currentSelection );
+    }
+
+    // ensure selected columns start at top of table, and selected rows start at left edge of table
+    if ( rowPos2 == AFTER )
+      rowPos1 = FIRSTCELL;
+    if ( columnPos2 == AFTER )
+      columnPos1 = FIRSTCELL;
+
+    // set current selection area
+    m_currentSelection.set( columnPos1, rowPos1, columnPos2, rowPos2 );
+  }
+
+  /************************************ getSelectionProperty *************************************/
+  public ReadOnlyListProperty<Selected> getSelectionProperty()
+  {
+    // return selected areas list property
+    return m_selected.getReadOnlyProperty();
+  }
+
   /************************************** getSelectionCount **************************************/
   public int getSelectionCount()
   {
-    // return number of selected areas
+    // return number of table selected areas
     return m_selected.size();
   }
 
@@ -97,7 +154,9 @@ public class TableSelection extends TableNavigation
   public boolean hasRowSelection( int rowPos )
   {
     // return true if specified row has any selection
-    // TODO
+    for ( Selected area : m_selected )
+      if ( rowPos >= area.r1 && rowPos <= area.r2 )
+        return true;
 
     return false;
   }
@@ -106,7 +165,9 @@ public class TableSelection extends TableNavigation
   public boolean hasColumnSelection( int columnPos )
   {
     // return true if specified column has any selection
-    // TODO
+    for ( Selected area : m_selected )
+      if ( columnPos >= area.c1 && columnPos <= area.c2 )
+        return true;
 
     return false;
   }
@@ -153,30 +214,36 @@ public class TableSelection extends TableNavigation
     return true;
   }
 
+  /************************************** startNewSelection **************************************/
+  public void startNewSelection()
+  {
+    // start new selection
+    m_currentSelection = null;
+    setCurrentSelection();
+  }
+
   /*********************************** setSelectFocusPosition ************************************/
   protected void setSelectFocusPosition( int columnPos, int rowPos, boolean setFocus, boolean clearSelection )
   {
-    // TODO
-    /*
-    if ( setFocus && ( columnPos == RIGHT_OF_TABLE || rowPos == BELOW_TABLE ) )
-      throw new IllegalArgumentException( "Setting focus not allowed " + columnPos + " " + rowPos );
-    
     // clear previous selections
     if ( clearSelection )
       clearAllSelection();
-    
-    // set table select & focus cell position properties
-    setSelectPosition( columnPos, rowPos );
-    if ( setFocus )
-      setFocusPosition( columnPos, rowPos );
+
+    // set table select & focus cell positions
+    setSelectColumnPos( columnPos );
+    setSelectRowPos( rowPos );
+    if ( setFocus || getFocusColumnPos() < FIRSTCELL )
+    {
+      setFocusColumnPos( columnPos );
+      setFocusRowPos( rowPos );
+    }
     setCurrentSelection();
-    
-    // ensure column and row positions are visible
-    if ( columnPos < Integer.MAX_VALUE )
-      columnPos = ensureColumnShown( columnPos );
-    if ( rowPos < Integer.MAX_VALUE )
-      rowPos = ensureRowShown( rowPos );
-    */
+
+    // scroll table if necessary to show cell position
+    if ( columnPos < AFTER )
+      m_hScrollBar.scrollTo( columnPos );
+    if ( rowPos < AFTER )
+      m_vScrollBar.scrollTo( rowPos );
   }
 
   /****************************************** toString *******************************************/

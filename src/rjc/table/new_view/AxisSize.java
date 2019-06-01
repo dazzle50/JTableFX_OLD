@@ -390,10 +390,9 @@ public class AxisSize extends AxisBase
   {
     // return next cell body position visible, or last if there isn't one
     int max = getCount() - 1;
-    boolean hidden;
-    do
+    boolean hidden = true;
+    while ( position < max && hidden )
       hidden = isPositionHidden( ++position );
-    while ( position < max && hidden );
 
     if ( hidden )
       return getLast();
@@ -404,10 +403,9 @@ public class AxisSize extends AxisBase
   public int getPrevious( int position )
   {
     // return previous cell body position visible, or first if there isn't one
-    boolean hidden;
-    do
+    boolean hidden = true;
+    while ( position > FIRSTCELL && hidden )
       hidden = isPositionHidden( --position );
-    while ( position > FIRSTCELL && hidden );
 
     if ( hidden )
       return getFirst();

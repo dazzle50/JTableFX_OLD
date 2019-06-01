@@ -89,7 +89,7 @@ public class TableEvents extends TableSelection
         case KP_RIGHT:
           columnPos = shift ? getSelectColumnPos() : getFocusColumnPos();
           rowPos = shift ? getSelectRowPos() : getFocusRowPos();
-          // TODO columnPos = ctrl ? getVisibleLast() : getVisibleRight( columnPos );
+          columnPos = ctrl ? m_columns.getLast() : m_columns.getNext( columnPos );
           setSelectFocusPosition( columnPos, rowPos, !shift, !shift );
           redraw();
           break;
@@ -98,7 +98,7 @@ public class TableEvents extends TableSelection
         case KP_LEFT:
           columnPos = shift ? getSelectColumnPos() : getFocusColumnPos();
           rowPos = shift ? getSelectRowPos() : getFocusRowPos();
-          // TODO columnPos = ctrl ? getVisibleFirst() : getVisibleLeft( columnPos );
+          columnPos = ctrl ? m_columns.getFirst() : m_columns.getPrevious( columnPos );
           setSelectFocusPosition( columnPos, rowPos, !shift, !shift );
           redraw();
           break;
@@ -107,7 +107,7 @@ public class TableEvents extends TableSelection
         case KP_DOWN:
           columnPos = shift ? getSelectColumnPos() : getFocusColumnPos();
           rowPos = shift ? getSelectRowPos() : getFocusRowPos();
-          // TODO rowPos = ctrl ? getVisibleBottom() : getVisibleDown( rowPos );
+          rowPos = ctrl ? m_rows.getLast() : m_rows.getNext( rowPos );
           setSelectFocusPosition( columnPos, rowPos, !shift, !shift );
           redraw();
           break;
@@ -116,7 +116,7 @@ public class TableEvents extends TableSelection
         case KP_UP:
           columnPos = shift ? getSelectColumnPos() : getFocusColumnPos();
           rowPos = shift ? getSelectRowPos() : getFocusRowPos();
-          // TODO rowPos = ctrl ? getVisibleTop() : getVisibleUp( rowPos );
+          rowPos = ctrl ? m_rows.getFirst() : m_rows.getPrevious( rowPos );
           setSelectFocusPosition( columnPos, rowPos, !shift, !shift );
           redraw();
           break;
@@ -124,20 +124,22 @@ public class TableEvents extends TableSelection
         case PAGE_UP: // page up key
           columnPos = shift ? getSelectColumnPos() : getFocusColumnPos();
           rowPos = shift ? getSelectRowPos() : getFocusRowPos();
+          // TODO
           break;
 
         case PAGE_DOWN: // page down key
           columnPos = shift ? getSelectColumnPos() : getFocusColumnPos();
           rowPos = shift ? getSelectRowPos() : getFocusRowPos();
+          // TODO
           break;
 
         case HOME: // home key - navigate to left-most visible column
-          // TODO setSelectFocusPosition( getVisibleFirst(), getSelectRowPos(), !shift, !shift );
+          setSelectFocusPosition( m_columns.getFirst(), getSelectRowPos(), !shift, !shift );
           redraw();
           break;
 
         case END: // end key - navigate to right-most visible column
-          // TODO setSelectFocusPosition( getVisibleLast(), getSelectRowPos(), !shift, !shift );
+          setSelectFocusPosition( m_columns.getLast(), getSelectRowPos(), !shift, !shift );
           redraw();
           break;
 
@@ -216,7 +218,7 @@ public class TableEvents extends TableSelection
   protected void controlAPressed()
   {
     // select whole table (Ctrl-A)
-    // TODO selectTable();
+    selectTable();
     redraw();
   }
 
@@ -287,19 +289,19 @@ public class TableEvents extends TableSelection
     // double-click on column header resize to autofit
     if ( doubleClick && getCursor() == Cursors.H_RESIZE )
     {
-      // TODO if ( m_x - m_cellXstart < m_cellXend - m_x )
-      // TODO   autofitColumnWidth( getMouseColumnPos() - 1 );
-      // TODO else
-      // TODO   autofitColumnWidth( getMouseColumnPos() );
+      if ( m_x - m_cellXstart < m_cellXend - m_x )
+        autofitColumnWidth( getMouseColumnPos() - 1 );
+      else
+        autofitColumnWidth( getMouseColumnPos() );
     }
 
     // double-click on row header resize to autofit
     if ( doubleClick && getCursor() == Cursors.V_RESIZE )
     {
-      // TODO if ( m_y - m_cellYstart < m_cellYend - m_y )
-      // TODO   autofitRowHeight( getMouseRowPos() - 1 );
-      // TODO else
-      // TODO   autofitRowHeight( getMouseRowPos() );
+      if ( m_y - m_cellYstart < m_cellYend - m_y )
+        autofitRowHeight( getMouseRowPos() - 1 );
+      else
+        autofitRowHeight( getMouseRowPos() );
     }
   }
 
@@ -324,8 +326,8 @@ public class TableEvents extends TableSelection
       int columnPos = getMouseColumnPos();
       int rowPos = getMouseRowPos();
 
-      // TODO if ( ctrl && getFocusColumnPos() >= 0 )
-      // TODO      startNewSelection();
+      if ( ctrl )
+        startNewSelection();
       setSelectFocusPosition( columnPos, rowPos, !shift, !ctrl );
       redraw();
       return;
@@ -338,10 +340,10 @@ public class TableEvents extends TableSelection
       int columnPos = getMouseColumnPos();
       int rowPos = getRowPositionAtY( getColumnHeaderHeight() );
 
-      // TODO if ( ctrl && getFocusColumnPos() >= 0 )
-      // TODO   startNewSelection();
+      if ( ctrl )
+        startNewSelection();
       setSelectFocusPosition( columnPos, rowPos, !shift, !ctrl );
-      // TODO setSelectFocusPosition( columnPos, BELOW_TABLE, false, !ctrl );
+      setSelectFocusPosition( columnPos, AFTER, false, !ctrl );
       redraw();
       return;
     }
@@ -353,10 +355,10 @@ public class TableEvents extends TableSelection
       int columnPos = getColumnPositionAtX( getRowHeaderWidth() );
       int rowPos = getMouseRowPos();
 
-      // TODO if ( ctrl && getFocusColumnPos() >= 0 )
-      // TODO   startNewSelection();
+      if ( ctrl )
+        startNewSelection();
       setSelectFocusPosition( columnPos, rowPos, !shift, !ctrl );
-      // TODO setSelectFocusPosition( RIGHT_OF_TABLE, rowPos, false, !ctrl );
+      setSelectFocusPosition( AFTER, rowPos, false, !ctrl );
       redraw();
       return;
     }
@@ -364,27 +366,23 @@ public class TableEvents extends TableSelection
     // check if column resize started
     if ( getCursor() == Cursors.H_RESIZE && button == MouseButton.PRIMARY )
     {
-      /*
       if ( m_x - m_cellXstart < m_cellXend - m_x )
         m_resizeIndex = m_columns.getIndexFromPosition( getMouseColumnPos() - 1 );
       else
         m_resizeIndex = m_columns.getIndexFromPosition( getMouseColumnPos() );
-      
+
       m_resizeOffset = m_x - m_columns.getCellSize( m_resizeIndex );
-      */
     }
 
     // check if row resize started
     if ( getCursor() == Cursors.V_RESIZE && button == MouseButton.PRIMARY )
     {
-      /*
       if ( m_y - m_cellYstart < m_cellYend - m_y )
         m_resizeIndex = m_rows.getIndexFromPosition( getMouseRowPos() - 1 );
       else
         m_resizeIndex = m_rows.getIndexFromPosition( getMouseRowPos() );
-      
+
       m_resizeOffset = m_y - m_rows.getCellSize( m_resizeIndex );
-      */
     }
 
     // check if whole table selected
@@ -399,6 +397,9 @@ public class TableEvents extends TableSelection
   /*************************************** mouseReleased *****************************************/
   protected void mouseReleased( MouseEvent event )
   {
+    m_resizeIndex = INVALID;
+    m_resizeOffset = INVALID;
+
     // check if column selecting
     if ( getCursor() == Cursors.DOWNARROW )
     {
@@ -436,7 +437,6 @@ public class TableEvents extends TableSelection
   protected void mouseDragged( MouseEvent event )
   {
     // user is moving mouse with button down
-    boolean ctrl = event.isControlDown();
     m_x = (int) event.getX();
     m_y = (int) event.getY();
     checkMouseCellPosition();
@@ -444,103 +444,86 @@ public class TableEvents extends TableSelection
     // check if cell selecting
     if ( getCursor() == Cursors.CROSS )
     {
-      /*
       int columnPos = getMouseColumnPos();
-      if ( columnPos == RIGHT_OF_TABLE )
-        columnPos = getVisibleLast();
+      if ( columnPos == AFTER )
+        columnPos = m_columns.getLast();
       if ( columnPos <= HEADER )
-        columnPos = getVisibleFirst();
-      
+        columnPos = m_columns.getFirst();
+
       int rowPos = getMouseRowPos();
-      if ( rowPos == BELOW_TABLE )
-        rowPos = getVisibleBottom();
+      if ( rowPos == AFTER )
+        rowPos = m_rows.getLast();
       if ( rowPos <= HEADER )
-        rowPos = getVisibleTop();
-      
-      if ( !isCellSelected( getFocusColumnPos(), getFocusRowPos() ) )
-        startNewSelection();
+        rowPos = m_rows.getFirst();
+
       if ( columnPos != getSelectColumnPos() || rowPos != getSelectRowPos() )
       {
-        setSelectFocusPosition( columnPos, rowPos, false, !ctrl );
+        setSelectFocusPosition( columnPos, rowPos, false, false );
         redraw();
       }
-      */
       return;
     }
 
     // check if column selecting
     if ( getCursor() == Cursors.DOWNARROW )
     {
-      /*
       int columnPos = getMouseColumnPos();
-      if ( columnPos == RIGHT_OF_TABLE )
-        columnPos = getVisibleLast();
+      if ( columnPos == AFTER )
+        columnPos = m_columns.getLast();
       if ( columnPos <= HEADER )
-        columnPos = getVisibleFirst();
-      
-      int rowPos = getMouseRowPos();
-      if ( rowPos == BELOW_TABLE )
-        rowPos = getVisibleBottom();
-      if ( rowPos <= HEADER )
-        rowPos = getVisibleTop();
-      
-      if ( columnPos != getSelectColumnPos() || rowPos != getSelectRowPos() )
+        columnPos = m_columns.getFirst();
+
+      if ( columnPos != getSelectColumnPos() )
       {
-      
-        setCurrentSelection( getFocusColumnPos(), 0, columnPos, BELOW_TABLE );
-        selectColumnPos.set( columnPos );
-      
-        if ( m_x > getCanvasWidth() )
-          animateScrollToRightEdge();
-        else
-        {
-          ensureColumnShown( columnPos );
-          redraw();
-        }
+        setCurrentSelection( getFocusColumnPos(), FIRSTCELL, columnPos, AFTER );
+        setSelectColumnPos( columnPos );
+        m_hScrollBar.scrollTo( columnPos );
+        redraw();
+
+        // TODO scrolling when mouse beyond canvas
       }
-      */
       return;
     }
 
     // check if row selecting
     if ( getCursor() == Cursors.RIGHTARROW )
     {
-      /*
       int rowPos = getMouseRowPos();
-      if ( rowPos == BELOW_TABLE )
-        rowPos = getVisibleBottom();
+      if ( rowPos == AFTER )
+        rowPos = m_rows.getLast();
       if ( rowPos <= HEADER )
-        rowPos = getVisibleTop();
-      
-      setCurrentSelection( getCurrentSelection().c1, getFocusRowPos(), getCurrentSelection().c2, rowPos );
-      ensureRowShown( rowPos );
-      selectRowPos.set( rowPos );
-      */
-      redraw();
+        rowPos = m_rows.getFirst();
+
+      if ( rowPos != getSelectRowPos() )
+      {
+        setCurrentSelection( FIRSTCELL, getFocusRowPos(), AFTER, rowPos );
+        setSelectRowPos( rowPos );
+        m_vScrollBar.scrollTo( rowPos );
+        redraw();
+
+        // TODO scrolling when mouse beyond canvas
+      }
       return;
     }
 
     // check if column resizing
-    if ( getCursor() == Cursors.H_RESIZE && m_resizeIndex >= 0 )
+    if ( getCursor() == Cursors.H_RESIZE && m_resizeIndex >= FIRSTCELL )
     {
-      /*
-      setColumnIndexWidth( m_resizeIndex, m_x - m_resizeOffset );
+      m_columns.setCellSize( m_resizeIndex, m_x - m_resizeOffset );
       m_cellXend = INVALID;
-      widthChange( getColumnIndexXStart( m_resizeIndex ), getCanvasWidth() );
+      widthChange( getXStartFromColumnPos( m_columns.getPositionFromIndex( m_resizeIndex ) ),
+          (int) m_canvas.getWidth() );
       layoutDisplay();
-      */
       return;
     }
 
     // check if row resizing
-    if ( getCursor() == Cursors.V_RESIZE && m_resizeIndex >= 0 )
+    if ( getCursor() == Cursors.V_RESIZE && m_resizeIndex >= FIRSTCELL )
     {
-      /*
-      setRowIndexHeight( m_resizeIndex, m_y - m_resizeOffset );
+      m_rows.setCellSize( m_resizeIndex, m_y - m_resizeOffset );
       m_cellYend = INVALID;
-      heightChange( getRowIndexYStart( m_resizeIndex ), m_canvas.getHeight() );
+      heightChange( getYStartFromRowPos( m_rows.getPositionFromIndex( m_resizeIndex ) ), (int) m_canvas.getWidth() );
       layoutDisplay();
-      */
       return;
     }
 
@@ -591,13 +574,13 @@ public class TableEvents extends TableSelection
       {
         m_cellXstart = Integer.MIN_VALUE;
         m_cellXend = 0;
-        columnPos = TableAxis.BEFORE;
+        columnPos = BEFORE;
       }
-      else if ( m_x >= getTableWidth() )
+      else if ( m_x + m_hScrollBar.getValue() >= getTableWidth() )
       {
         m_cellXstart = getTableWidth();
         m_cellXend = Integer.MAX_VALUE;
-        columnPos = TableAxis.AFTER;
+        columnPos = AFTER;
       }
       else if ( m_x < getRowHeaderWidth() )
       {
@@ -625,13 +608,13 @@ public class TableEvents extends TableSelection
       {
         m_cellYstart = Integer.MIN_VALUE;
         m_cellYend = 0;
-        rowPos = TableAxis.BEFORE;
+        rowPos = BEFORE;
       }
-      else if ( m_y >= getTableHeight() )
+      else if ( m_y + m_vScrollBar.getValue() >= getTableHeight() )
       {
         m_cellYstart = getTableHeight();
         m_cellYend = Integer.MAX_VALUE;
-        rowPos = TableAxis.AFTER;
+        rowPos = AFTER;
       }
       else if ( m_y < getColumnHeaderHeight() )
       {
@@ -673,7 +656,7 @@ public class TableEvents extends TableSelection
     if ( m_y < getColumnHeaderHeight() )
     {
       // if near column edge, set cursor to resize
-      if ( m_cellXend - m_x <= PROXIMITY || ( m_x - m_cellXstart <= PROXIMITY && getMouseColumnPos() != 0 ) )
+      if ( m_cellXend - m_x <= PROXIMITY || ( m_x - m_cellXstart <= PROXIMITY && getMouseColumnPos() != FIRSTCELL ) )
       {
         setCursor( Cursors.H_RESIZE );
         return;
@@ -695,7 +678,7 @@ public class TableEvents extends TableSelection
     if ( m_x < getRowHeaderWidth() )
     {
       // if near row edge, set cursor to resize
-      if ( m_cellYend - m_y <= PROXIMITY || ( m_y - m_cellYstart <= PROXIMITY && getMouseRowPos() != 0 ) )
+      if ( m_cellYend - m_y <= PROXIMITY || ( m_y - m_cellYstart <= PROXIMITY && getMouseRowPos() != FIRSTCELL ) )
       {
         setCursor( Cursors.V_RESIZE );
         return;
@@ -715,6 +698,20 @@ public class TableEvents extends TableSelection
 
     // mouse over table body cells
     setCursor( Cursors.CROSS );
+  }
+
+  /************************************** autofitRowHeight ***************************************/
+  public void autofitRowHeight( int rowPos )
+  {
+    // autofit column width to avoid text ellipsis TODO
+    Utils.trace( "DOUBLE CLICK to autofit row position " + rowPos );
+  }
+
+  /************************************* autofitColumnWidth **************************************/
+  public void autofitColumnWidth( int columnPos )
+  {
+    // autofit row height to avoid text ellipsis TODO
+    Utils.trace( "DOUBLE CLICK to autofit column position " + columnPos );
   }
 
 }

@@ -27,18 +27,22 @@ import rjc.table.data.TableData;
 
 public class TableDisplay extends TableParent
 {
-  protected TableView        m_view;       // shortcut to table view
-  protected TableData        m_data;       // shortcut to table data
+  protected TableView      m_view;                         // shortcut to table view
+  protected TableData      m_data;                         // shortcut to table data
 
-  protected TableAxis        m_columns;    // axis for vertical columns
-  protected TableAxis        m_rows;       // axis for horizontal rows
+  protected TableAxis      m_columns;                      // axis for vertical columns
+  protected TableAxis      m_rows;                         // axis for horizontal rows
 
-  protected TableScrollBar   m_vScrollBar; // vertical scroll bar
-  protected TableScrollBar   m_hScrollBar; // horizontal scroll bar
-  protected Canvas           m_canvas;     // canvas for table column & row headers and body cells
+  protected TableScrollBar m_vScrollBar;                   // vertical scroll bar
+  protected TableScrollBar m_hScrollBar;                   // horizontal scroll bar
+  protected Canvas         m_canvas;                       // canvas for table column & row headers and body cells
 
-  protected static final int INVALID = -2; // when column or row value is invalid
-  protected static final int HEADER  = -1; // when column or row refers to headers
+  // column & row index starts at 0 for table body, index of -1 is for axis header
+  final static public int  INVALID   = TableAxis.INVALID;
+  final static public int  HEADER    = TableAxis.HEADER;
+  final static public int  FIRSTCELL = TableAxis.FIRSTCELL;
+  final static public int  BEFORE    = TableAxis.BEFORE;
+  final static public int  AFTER     = TableAxis.AFTER;
 
   /******************************************* resize ********************************************/
   @Override

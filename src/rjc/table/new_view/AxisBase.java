@@ -35,11 +35,11 @@ public class AxisBase
   final private ArrayList<Integer> m_indexFromPosition = new ArrayList<Integer>();
 
   // axis index starts at 0 for table body, index of -1 is for axis header
-  final static public int          FIRSTCELL           = 0;
-  final static public int          HEADER              = -1;
   final static public int          INVALID             = -2;
-  final static public int          BEFORE              = Integer.MIN_VALUE;
-  final static public int          AFTER               = Integer.MAX_VALUE;
+  final static public int          HEADER              = -1;
+  final static public int          FIRSTCELL           = 0;
+  final static public int          BEFORE              = Integer.MIN_VALUE + 1;
+  final static public int          AFTER               = Integer.MAX_VALUE - 1;
 
   /**************************************** constructor ******************************************/
   public AxisBase( ReadOnlyIntegerProperty countProperty )
