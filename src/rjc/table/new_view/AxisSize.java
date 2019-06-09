@@ -227,8 +227,8 @@ public class AxisSize extends AxisBase
 
       // truncate cell position start cache if size greater than cell position
       int cellPos = getPositionFromIndex( cellIndex );
-      if ( m_cellPositionStartCache.size() > cellPos )
-        m_cellPositionStartCache.subList( cellPos, m_cellPositionStartCache.size() ).clear();
+      if ( m_cellPositionStartCache.size() > cellPos + 1 )
+        m_cellPositionStartCache.subList( cellPos + 1, m_cellPositionStartCache.size() ).clear();
     }
   }
 
@@ -286,21 +286,21 @@ public class AxisSize extends AxisBase
       return HEADER;
 
     // check if after table
-    coordinate += scroll - getCellSize( HEADER );
-    if ( coordinate >= getBodySize() )
+    coordinate += scroll;
+    if ( coordinate >= getBodySize() + getCellSize( HEADER ) )
       return AFTER;
 
     // check within start cache
     int position = m_cellPositionStartCache.size() - 1;
     int start = position < 0 ? 0 : m_cellPositionStartCache.get( position );
-    if ( coordinate >= start )
+    if ( coordinate > start )
     {
       while ( coordinate > start )
       {
         start += getCellSize( getIndexFromPosition( position++ ) );
         m_cellPositionStartCache.add( start );
       }
-      return position + 1;
+      return --position;
     }
 
     // find position by binary search of cache
@@ -314,7 +314,7 @@ public class AxisSize extends AxisBase
       else
         endPos = rowPos;
     }
-    return startPos;
+    return startPos - 1;
   }
 
   /**************************************** getTableSize *****************************************/

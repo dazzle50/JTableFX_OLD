@@ -172,7 +172,7 @@ public class TableDraw extends TableXML
   /*************************************** redrawColumns *****************************************/
   public void redrawColumns( int minColumnPos, int maxColumnPos )
   {
-    // redraw all columns between min and max column positions inclusive
+    // redraw all table body columns between min and max column positions inclusive
     int max = m_data.getColumnCount() - 1;
     if ( minColumnPos <= max && maxColumnPos >= FIRSTCELL )
     {
@@ -189,7 +189,7 @@ public class TableDraw extends TableXML
   /***************************************** redrawRows ******************************************/
   public void redrawRows( int minRowPos, int maxRowPos )
   {
-    // redraw all rows between min and max row positions inclusive
+    // redraw all table body rows between min and max row positions inclusive
     int max = m_data.getRowCount() - 1;
     if ( minRowPos <= max && maxRowPos >= FIRSTCELL )
     {
@@ -240,7 +240,7 @@ public class TableDraw extends TableXML
       // clip drawing to table body
       gc.save();
       gc.beginPath();
-      gc.rect( getRowHeaderWidth(), getColumnHeaderHeight(), m_canvas.getWidth(), m_canvas.getHeight() );
+      gc.rect( getRowHeaderWidth() - 1, getColumnHeaderHeight() - 1, m_canvas.getWidth(), m_canvas.getHeight() );
       gc.clip();
 
       // draw special border

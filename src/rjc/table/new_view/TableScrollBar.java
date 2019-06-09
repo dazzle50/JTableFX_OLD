@@ -24,6 +24,7 @@ import javafx.animation.Timeline;
 import javafx.geometry.Orientation;
 import javafx.scene.control.ScrollBar;
 import javafx.util.Duration;
+import rjc.table.Utils;
 
 /*************************************************************************************************/
 /*************** Extended version of ScrollBar with special increment & decrement ****************/
@@ -65,14 +66,12 @@ public class TableScrollBar extends ScrollBar
   public void increment()
   {
     // increase scroll bar value to next table cell boundary
-    if ( getOrientation() == Orientation.VERTICAL )
-    {
-      // TODO
-    }
-    else
-    {
-      // TODO
-    }
+    int headerSize = m_axis.getCellSize( TableAxis.HEADER );
+    int pos = m_axis.getPositionFromCoordinate( headerSize, (int) getValue() );
+    int nextPos = m_axis.getNext( pos );
+    int start = m_axis.getStartFromPosition( nextPos, 0 ) - headerSize;
+
+    animate( start, SCROLL_TO_DURATION );
   }
 
   /****************************************** decrement ******************************************/
@@ -80,13 +79,17 @@ public class TableScrollBar extends ScrollBar
   public void decrement()
   {
     // decrease scroll bar value to next table cell boundary
-    if ( getOrientation() == Orientation.VERTICAL )
-    {
-      // TODO
-    }
+    int headerSize = m_axis.getCellSize( TableAxis.HEADER );
+    int pos = m_axis.getPositionFromCoordinate( headerSize, (int) getValue() );
+    int start = m_axis.getStartFromPosition( pos, 0 ) - headerSize;
+
+    if ( start < getValue() )
+      animate( start, SCROLL_TO_DURATION );
     else
     {
-      // TODO
+      int previousPos = m_axis.getPrevious( pos );
+      start = m_axis.getStartFromPosition( previousPos, 0 ) - headerSize;
+      animate( start, SCROLL_TO_DURATION );
     }
   }
 
@@ -117,6 +120,9 @@ public class TableScrollBar extends ScrollBar
   /******************************************* animate *******************************************/
   public void animate( int newValue, int duration_ms )
   {
+    // ensure new value is valid
+    newValue = Utils.clamp( newValue, 0, (int) getMax() );
+
     // if already scrolling to specified new-value, no need to start new animation
     if ( newValue == m_scrollingTo )
       return;
@@ -136,6 +142,14 @@ public class TableScrollBar extends ScrollBar
       m_scrollingTo = -1;
     } );
     m_timeline.play();
+  }
+
+  /*************************************** finishAnimation ***************************************/
+  public void finishAnimation()
+  {
+    // finish animation by jumping to end
+    if ( m_timeline != null )
+      m_timeline.jumpTo( "end" );
   }
 
   /****************************************** toString *******************************************/

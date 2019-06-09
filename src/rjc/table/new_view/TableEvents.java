@@ -46,7 +46,6 @@ public class TableEvents extends TableSelection
   /****************************************** keyTyped *******************************************/
   protected void keyTyped( KeyEvent event )
   {
-    /*
     // move editor right or left when tab typed
     char key = event.getCharacter().charAt( 0 );
     if ( key == '\t' )
@@ -54,18 +53,17 @@ public class TableEvents extends TableSelection
         moveFocus( MoveDirection.LEFT );
       else
         moveFocus( MoveDirection.RIGHT );
-    
+
     // move editor up or down when carriage return typed
     if ( key == '\r' )
       if ( event.isShiftDown() )
         moveFocus( MoveDirection.UP );
       else
         moveFocus( MoveDirection.DOWN );
-    
+
     // open cell editor if key typed is suitable
     if ( !Character.isISOControl( key ) )
       openEditor( event.getCharacter() );
-    */
 
     redraw();
   }
@@ -121,25 +119,84 @@ public class TableEvents extends TableSelection
           redraw();
           break;
 
-        case PAGE_UP: // page up key
-          columnPos = shift ? getSelectColumnPos() : getFocusColumnPos();
-          rowPos = shift ? getSelectRowPos() : getFocusRowPos();
-          // TODO
-          break;
-
         case PAGE_DOWN: // page down key
           columnPos = shift ? getSelectColumnPos() : getFocusColumnPos();
-          rowPos = shift ? getSelectRowPos() : getFocusRowPos();
-          // TODO
+          m_vScrollBar.finishAnimation();
+          if ( m_vScrollBar.isVisible() && m_vScrollBar.getValue() < m_vScrollBar.getMax() )
+          {
+            // bottom of table not visible, make sure scroll down at least one row
+            int newTopRow = getRowPositionAtY( (int) m_canvas.getHeight() + 1 );
+            if ( newTopRow == getRowPositionAtY( getColumnHeaderHeight() ) )
+              newTopRow = m_rows.getNext( newTopRow );
+            int newYScroll = m_rows.getStartFromPosition( newTopRow, 0 ) - getColumnHeaderHeight();
+
+            // determine new position for select/focus 
+            rowPos = shift ? getSelectRowPos() : getFocusRowPos();
+            int ySelect = ( getYStartFromRowPos( rowPos ) + getYStartFromRowPos( rowPos + 1 ) ) / 2;
+            ySelect = Utils.clamp( ySelect, getColumnHeaderHeight(), (int) m_canvas.getHeight() );
+            rowPos = getRowPositionAtY( ySelect + newYScroll - (int) m_vScrollBar.getValue() );
+            if ( rowPos >= AFTER )
+              rowPos = m_rows.getLast();
+            boolean rowNotCompletelyVisible = getYStartFromRowPos( rowPos + 1 ) > m_canvas.getHeight() + newYScroll
+                - (int) m_vScrollBar.getValue();
+            boolean rowAboveCompletelyVisible = getYStartFromRowPos(
+                m_rows.getPrevious( rowPos ) ) > getColumnHeaderHeight() + newYScroll - (int) m_vScrollBar.getValue();
+            if ( rowNotCompletelyVisible && rowAboveCompletelyVisible )
+              rowPos = m_rows.getPrevious( rowPos );
+
+            // move select/focus and scroll table
+            setSelectFocusPosition( columnPos, rowPos, !shift, !ctrl );
+            m_vScrollBar.animate( newYScroll, TableScrollBar.SCROLL_TO_DURATION );
+          }
+          else
+          {
+            // bottom of table already visible so move to last row
+            setSelectFocusPosition( columnPos, m_rows.getLast(), !shift, !ctrl );
+            redraw();
+          }
+          break;
+
+        case PAGE_UP: // page up key
+          columnPos = shift ? getSelectColumnPos() : getFocusColumnPos();
+          m_vScrollBar.finishAnimation();
+          if ( m_vScrollBar.isVisible() && m_vScrollBar.getValue() > 0.0 )
+          {
+            // top of table not visible, make sure scroll up at least one row
+            int newTopY = (int) m_vScrollBar.getValue() + 2 * getColumnHeaderHeight() - (int) m_canvas.getHeight();
+            int newTopRow = m_rows.getPositionFromCoordinate( newTopY, 0 );
+            if ( newTopRow <= HEADER )
+              newTopRow = m_rows.getFirst();
+            if ( newTopRow == getRowPositionAtY( getColumnHeaderHeight() ) )
+              newTopRow = m_rows.getPrevious( newTopRow );
+            int newYScroll = m_rows.getStartFromPosition( newTopRow, 0 ) - getColumnHeaderHeight();
+
+            // determine new position for select/focus
+            rowPos = shift ? getSelectRowPos() : getFocusRowPos();
+            int ySelect = ( getYStartFromRowPos( rowPos ) + getYStartFromRowPos( rowPos + 1 ) ) / 2;
+            ySelect = Utils.clamp( ySelect, getColumnHeaderHeight(), (int) m_canvas.getHeight() );
+            rowPos = m_rows.getPositionFromCoordinate( ySelect, newYScroll );
+            if ( rowPos <= HEADER )
+              rowPos = m_rows.getFirst();
+
+            // move select/focus and scroll table
+            setSelectFocusPosition( columnPos, rowPos, !shift, !ctrl );
+            m_vScrollBar.animate( newYScroll, TableScrollBar.SCROLL_TO_DURATION );
+          }
+          else
+          {
+            // top of table visible so move to first row
+            setSelectFocusPosition( columnPos, m_rows.getFirst(), !shift, !ctrl );
+            redraw();
+          }
           break;
 
         case HOME: // home key - navigate to left-most visible column
-          setSelectFocusPosition( m_columns.getFirst(), getSelectRowPos(), !shift, !shift );
+          setSelectFocusPosition( m_columns.getFirst(), getSelectRowPos(), !shift, !ctrl );
           redraw();
           break;
 
         case END: // end key - navigate to right-most visible column
-          setSelectFocusPosition( m_columns.getLast(), getSelectRowPos(), !shift, !shift );
+          setSelectFocusPosition( m_columns.getLast(), getSelectRowPos(), !shift, !ctrl );
           redraw();
           break;
 
@@ -388,7 +445,7 @@ public class TableEvents extends TableSelection
     // check if whole table selected
     if ( getCursor() == Cursors.DEFAULT && getMouseColumnPos() == HEADER && getMouseRowPos() == HEADER )
     {
-      // TODO
+      selectTable();
       redraw();
       return;
     }
@@ -439,6 +496,29 @@ public class TableEvents extends TableSelection
     // user is moving mouse with button down
     m_x = (int) event.getX();
     m_y = (int) event.getY();
+
+    // check if column resizing
+    if ( getCursor() == Cursors.H_RESIZE && m_resizeIndex >= FIRSTCELL )
+    {
+      m_columns.setCellSize( m_resizeIndex, m_x - m_resizeOffset );
+      m_cellXend = INVALID;
+      widthChange( getXStartFromColumnPos( m_columns.getPositionFromIndex( m_resizeIndex ) ),
+          (int) m_canvas.getWidth() );
+      layoutDisplay();
+      return;
+    }
+
+    // check if row resizing
+    if ( getCursor() == Cursors.V_RESIZE && m_resizeIndex >= FIRSTCELL )
+    {
+      m_rows.setCellSize( m_resizeIndex, m_y - m_resizeOffset );
+      m_cellYend = INVALID;
+      heightChange( getYStartFromRowPos( m_rows.getPositionFromIndex( m_resizeIndex ) ), (int) m_canvas.getWidth() );
+      layoutDisplay();
+      return;
+    }
+
+    // check mouse cell position AFTER any resizing
     checkMouseCellPosition();
 
     // check if cell selecting
@@ -506,27 +586,6 @@ public class TableEvents extends TableSelection
       return;
     }
 
-    // check if column resizing
-    if ( getCursor() == Cursors.H_RESIZE && m_resizeIndex >= FIRSTCELL )
-    {
-      m_columns.setCellSize( m_resizeIndex, m_x - m_resizeOffset );
-      m_cellXend = INVALID;
-      widthChange( getXStartFromColumnPos( m_columns.getPositionFromIndex( m_resizeIndex ) ),
-          (int) m_canvas.getWidth() );
-      layoutDisplay();
-      return;
-    }
-
-    // check if row resizing
-    if ( getCursor() == Cursors.V_RESIZE && m_resizeIndex >= FIRSTCELL )
-    {
-      m_rows.setCellSize( m_resizeIndex, m_y - m_resizeOffset );
-      m_cellYend = INVALID;
-      heightChange( getYStartFromRowPos( m_rows.getPositionFromIndex( m_resizeIndex ) ), (int) m_canvas.getWidth() );
-      layoutDisplay();
-      return;
-    }
-
     // check if column reorder
     if ( getCursor() == Cursors.H_MOVE )
     {
@@ -550,9 +609,15 @@ public class TableEvents extends TableSelection
     if ( m_vScrollBar.isVisible() )
     {
       if ( event.getDeltaY() > 0 )
+      {
+        m_vScrollBar.finishAnimation();
         m_vScrollBar.decrement();
+      }
       else
+      {
+        m_vScrollBar.finishAnimation();
         m_vScrollBar.increment();
+      }
     }
   }
 
@@ -567,6 +632,7 @@ public class TableEvents extends TableSelection
   protected void checkMouseCellPosition()
   {
     // check if mouse moved outside current column
+    int header = getRowHeaderWidth();
     if ( m_x < m_cellXstart || m_x >= m_cellXend )
     {
       int columnPos = INVALID;
@@ -582,18 +648,18 @@ public class TableEvents extends TableSelection
         m_cellXend = Integer.MAX_VALUE;
         columnPos = AFTER;
       }
-      else if ( m_x < getRowHeaderWidth() )
+      else if ( m_x < header )
       {
         m_cellXstart = 0;
-        m_cellXend = getRowHeaderWidth();
+        m_cellXend = header;
         columnPos = HEADER;
       }
       else
       {
         columnPos = getColumnPositionAtX( m_x );
         m_cellXstart = getXStartFromColumnPos( columnPos );
-        if ( m_cellXstart < getRowHeaderWidth() )
-          m_cellXstart = getRowHeaderWidth();
+        if ( m_cellXstart < header )
+          m_cellXstart = header; // if body cell partly covered by header
         m_cellXend = getXStartFromColumnPos( columnPos + 1 );
       }
 
@@ -601,6 +667,7 @@ public class TableEvents extends TableSelection
     }
 
     // check if mouse moved outside current row
+    header = getColumnHeaderHeight();
     if ( m_y < m_cellYstart || m_y >= m_cellYend )
     {
       int rowPos = INVALID;
@@ -616,18 +683,18 @@ public class TableEvents extends TableSelection
         m_cellYend = Integer.MAX_VALUE;
         rowPos = AFTER;
       }
-      else if ( m_y < getColumnHeaderHeight() )
+      else if ( m_y < header )
       {
         m_cellYstart = 0;
-        m_cellYend = getColumnHeaderHeight();
+        m_cellYend = header;
         rowPos = HEADER;
       }
       else
       {
         rowPos = getRowPositionAtY( m_y );
         m_cellYstart = getYStartFromRowPos( rowPos );
-        if ( m_cellYstart < getColumnHeaderHeight() )
-          m_cellYstart = getColumnHeaderHeight();
+        if ( m_cellYstart < header )
+          m_cellYstart = header; // if body cell partly covered by header
         m_cellYend = getYStartFromRowPos( rowPos + 1 );
       }
 

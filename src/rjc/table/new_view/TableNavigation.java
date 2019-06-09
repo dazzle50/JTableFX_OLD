@@ -35,6 +35,75 @@ public class TableNavigation extends TableDisplay
   final private ReadOnlyIntegerWrapper m_mouseColumnPos  = new ReadOnlyIntegerWrapper( INVALID );
   final private ReadOnlyIntegerWrapper m_mouseRowPos     = new ReadOnlyIntegerWrapper( INVALID );
 
+  // directions of focus movement
+  public static enum MoveDirection
+  {
+    LEFT, RIGHT, UP, DOWN, NONE
+  }
+
+  /****************************************** moveFocus ******************************************/
+  public void moveFocus( MoveDirection direction )
+  {
+    // TODO if areas selected
+    int columnPos = getFocusColumnPos();
+    int rowPos = getFocusRowPos();
+    //Utils.trace( "TODO - different behaviour for selected areas", m_view.getSelectionCount() );
+
+    // otherwise move within full visible table
+    switch ( direction )
+    {
+      case DOWN:
+        rowPos = m_rows.getNext( rowPos );
+        if ( rowPos == getFocusRowPos() )
+        {
+          rowPos = m_rows.getFirst();
+          columnPos = m_columns.getNext( columnPos );
+          if ( columnPos == getFocusColumnPos() )
+            columnPos = m_columns.getFirst();
+        }
+        break;
+
+      case UP:
+        rowPos = m_rows.getPrevious( rowPos );
+        if ( rowPos == getFocusRowPos() )
+        {
+          rowPos = m_rows.getLast();
+          columnPos = m_columns.getPrevious( columnPos );
+          if ( columnPos == getFocusColumnPos() )
+            columnPos = m_columns.getLast();
+        }
+        break;
+
+      case LEFT:
+        columnPos = m_columns.getPrevious( columnPos );
+        if ( columnPos == getFocusColumnPos() )
+        {
+          columnPos = m_columns.getLast();
+          rowPos = m_rows.getPrevious( rowPos );
+          if ( rowPos == getFocusRowPos() )
+            rowPos = m_rows.getLast();
+        }
+        break;
+
+      case RIGHT:
+        columnPos = m_columns.getNext( columnPos );
+        if ( columnPos == getFocusColumnPos() )
+        {
+          columnPos = m_columns.getFirst();
+          rowPos = m_rows.getNext( rowPos );
+          if ( rowPos == getFocusRowPos() )
+            rowPos = m_rows.getFirst();
+        }
+        break;
+
+      default:
+        break;
+    }
+
+    // update select & focus cell positions
+    m_view.setSelectFocusPosition( columnPos, rowPos, true, true );
+  }
+
   /*********************************** getFocusColumnProperty ************************************/
   public ReadOnlyIntegerProperty getFocusColumnProperty()
   {
