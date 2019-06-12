@@ -18,8 +18,13 @@
 
 package rjc.table.view;
 
+import javafx.animation.KeyFrame;
+import javafx.animation.KeyValue;
+import javafx.animation.Timeline;
 import javafx.geometry.Orientation;
 import javafx.scene.control.ScrollBar;
+import javafx.util.Duration;
+import rjc.table.Utils;
 
 /*************************************************************************************************/
 /*************** Extended version of ScrollBar with special increment & decrement ****************/
@@ -27,15 +32,18 @@ import javafx.scene.control.ScrollBar;
 
 public class TableScrollBar extends ScrollBar
 {
-  private TableView m_view;   // associated table view
+  private TableAxis       m_axis;                   // associated table axis
+  private Timeline        m_timeline;               // used for animated table scrolling
+  private int             m_scrollingTo      = -1;  // destination scroll-bar value for current animation
 
-  public static int SIZE = 18;
+  final public static int SIZE               = 18;  // pixels
+  final public static int SCROLL_TO_DURATION = 100; // milliseconds
 
   /**************************************** constructor ******************************************/
-  public TableScrollBar( TableView view, Orientation orientation )
+  public TableScrollBar( TableAxis axis, Orientation orientation )
   {
     // create scroll bar
-    m_view = view;
+    m_axis = axis;
     setOrientation( orientation );
 
     // set width/height
@@ -51,9 +59,6 @@ public class TableScrollBar extends ScrollBar
       setMaxWidth( USE_PREF_SIZE );
       setMinHeight( SIZE );
     }
-
-    // react to scroll bar position value changes such as redrawing table
-    valueProperty().addListener( ( observable, oldV, newV ) -> m_view.tableScroll() );
   }
 
   /****************************************** increment ******************************************/
@@ -61,26 +66,12 @@ public class TableScrollBar extends ScrollBar
   public void increment()
   {
     // increase scroll bar value to next table cell boundary
-    if ( getOrientation() == Orientation.VERTICAL )
-    {
-      m_view.finishYAnimation();
-      int rowPos = m_view.getRowPositionAtY( m_view.getColumnHeaderHeight() );
-      int y = m_view.getRowPositionYStart( ++rowPos );
-      while ( y < m_view.getColumnHeaderHeight() )
-        y = m_view.getRowPositionYStart( ++rowPos );
-      double value = getValue() + y - m_view.getColumnHeaderHeight();
-      m_view.animateToYOffset( (int) value );
-    }
-    else
-    {
-      m_view.finishXAnimation();
-      int columnPos = m_view.getColumnPositionAtX( m_view.getRowHeaderWidth() );
-      int x = m_view.getColumnPositionXStart( ++columnPos );
-      while ( x < m_view.getColumnHeaderHeight() )
-        x = m_view.getColumnPositionXStart( ++columnPos );
-      double value = getValue() + x - m_view.getRowHeaderWidth();
-      m_view.animateToXOffset( (int) value );
-    }
+    int headerSize = m_axis.getCellSize( TableAxis.HEADER );
+    int pos = m_axis.getPositionFromCoordinate( headerSize, (int) getValue() );
+    int nextPos = m_axis.getNext( pos );
+    int start = m_axis.getStartFromPosition( nextPos, 0 ) - headerSize;
+
+    animate( start, SCROLL_TO_DURATION );
   }
 
   /****************************************** decrement ******************************************/
@@ -88,28 +79,77 @@ public class TableScrollBar extends ScrollBar
   public void decrement()
   {
     // decrease scroll bar value to next table cell boundary
-    if ( getOrientation() == Orientation.VERTICAL )
-    {
-      m_view.finishYAnimation();
-      int rowPos = m_view.getRowPositionAtY( m_view.getColumnHeaderHeight() - 1 );
-      if ( rowPos >= 0 )
-      {
-        int y = m_view.getRowPositionYStart( rowPos );
-        double value = getValue() + y - m_view.getColumnHeaderHeight();
-        m_view.animateToYOffset( (int) value );
-      }
-    }
+    int headerSize = m_axis.getCellSize( TableAxis.HEADER );
+    int pos = m_axis.getPositionFromCoordinate( headerSize, (int) getValue() );
+    int start = m_axis.getStartFromPosition( pos, 0 ) - headerSize;
+
+    if ( start < getValue() )
+      animate( start, SCROLL_TO_DURATION );
     else
     {
-      m_view.finishXAnimation();
-      int columnPos = m_view.getColumnPositionAtX( m_view.getRowHeaderWidth() - 1 );
-      if ( columnPos >= 0 )
-      {
-        int x = m_view.getColumnPositionXStart( columnPos );
-        double value = getValue() + x - m_view.getRowHeaderWidth();
-        m_view.animateToXOffset( (int) value );
-      }
+      int previousPos = m_axis.getPrevious( pos );
+      start = m_axis.getStartFromPosition( previousPos, 0 ) - headerSize;
+      animate( start, SCROLL_TO_DURATION );
     }
+  }
+
+  /****************************************** scrollTo *******************************************/
+  public void scrollTo( int position )
+  {
+    // if scroll bar not visible, no need to scroll
+    if ( !isVisible() )
+      return;
+
+    // check if need to scroll towards start to show cell start
+    int start = m_axis.getStartFromPosition( position, (int) getValue() ) - m_axis.getCellSize( TableView.HEADER );
+    if ( start < 0 )
+    {
+      animate( (int) getValue() + start, SCROLL_TO_DURATION );
+      return;
+    }
+
+    // check if need to scroll towards end to show cell end, without hiding start
+    int size = getOrientation() == Orientation.VERTICAL ? (int) getHeight() : (int) getWidth();
+    int end = size - m_axis.getStartFromPosition( position + 1, (int) getValue() );
+    if ( -end > start )
+      end = -start;
+    if ( end < 0 )
+      animate( (int) getValue() - end, SCROLL_TO_DURATION );
+  }
+
+  /******************************************* animate *******************************************/
+  public void animate( int newValue, int duration_ms )
+  {
+    // ensure new value is valid
+    newValue = Utils.clamp( newValue, 0, (int) getMax() );
+
+    // if already scrolling to specified new-value, no need to start new animation
+    if ( newValue == m_scrollingTo )
+      return;
+
+    // stop any current animation first
+    if ( m_timeline != null )
+      m_timeline.pause();
+
+    // create scrolling animation
+    m_scrollingTo = newValue;
+    KeyValue kv = new KeyValue( valueProperty(), newValue );
+    KeyFrame kf = new KeyFrame( Duration.millis( duration_ms ), kv );
+    m_timeline = new Timeline( kf );
+    m_timeline.setOnFinished( event ->
+    {
+      m_timeline = null;
+      m_scrollingTo = -1;
+    } );
+    m_timeline.play();
+  }
+
+  /*************************************** finishAnimation ***************************************/
+  public void finishAnimation()
+  {
+    // finish animation by jumping to end
+    if ( m_timeline != null )
+      m_timeline.jumpTo( "end" );
   }
 
   /****************************************** toString *******************************************/

@@ -18,6 +18,7 @@
 
 package rjc.table.view;
 
+import javafx.scene.canvas.Canvas;
 import rjc.table.data.TableData;
 
 /*************************************************************************************************/
@@ -26,25 +27,22 @@ import rjc.table.data.TableData;
 
 public class TableDisplay extends TableParent
 {
-  protected TableView        m_view;                                 // shortcut to table view
-  protected TableData        m_data;                                 // shortcut to table data
+  protected TableView      m_view;                         // shortcut to table view
+  protected TableData      m_data;                         // shortcut to table data
 
-  protected TableScrollBar   m_vScrollBar;                           // vertical scroll bar
-  protected TableScrollBar   m_hScrollBar;                           // horizontal scroll bar
-  protected TableCanvas      m_canvas;                               // table canvas
+  protected TableAxis      m_columns;                      // axis for vertical columns
+  protected TableAxis      m_rows;                         // axis for horizontal rows
 
-  private AnimateProperty    m_vScrolling   = new AnimateProperty(); // vertical animated scrolling
-  private AnimateProperty    m_hScrolling   = new AnimateProperty(); // horizontal animated scrolling
+  protected TableScrollBar m_vScrollBar;                   // vertical scroll bar
+  protected TableScrollBar m_hScrollBar;                   // horizontal scroll bar
+  protected Canvas         m_canvas;                       // canvas for table column & row headers and body cells
 
-  protected static final int INVALID        = -2;                    // when int value is invalid
-  protected static final int HEADER         = -1;                    // when column or row refers to headers
-
-  public static final int    LEFT_OF_TABLE  = Integer.MIN_VALUE;     // column index or position left of table body
-  public static final int    RIGHT_OF_TABLE = Integer.MAX_VALUE;     // column index or position right of table body
-  public static final int    ABOVE_TABLE    = Integer.MIN_VALUE;     // row index or position above table body
-  public static final int    BELOW_TABLE    = Integer.MAX_VALUE;     // row index or position below table body
-
-  private static double      MAX_PIXELS     = 999999;                // max valid pixel size for table
+  // column & row index starts at 0 for table body, index of -1 is for axis header
+  final static public int  INVALID   = TableAxis.INVALID;
+  final static public int  HEADER    = TableAxis.HEADER;
+  final static public int  FIRSTCELL = TableAxis.FIRSTCELL;
+  final static public int  BEFORE    = TableAxis.BEFORE;
+  final static public int  AFTER     = TableAxis.AFTER;
 
   /******************************************* resize ********************************************/
   @Override
@@ -54,39 +52,83 @@ public class TableDisplay extends TableParent
     if ( (int) width == getWidth() && (int) height == getHeight() )
       return;
 
-    // do nothing if size is larger than max allowed
-    if ( width > MAX_PIXELS || height > MAX_PIXELS )
-      return;
-
-    // resize parent and re-layout canvas and scroll bars
-    super.resize( width, height );
-    layoutDisplay();
+    // only resize if width && height less than max integer (which happens on first pass)
+    if ( width < Integer.MAX_VALUE && height < Integer.MAX_VALUE )
+    {
+      // resize parent and re-layout canvas and scroll bars
+      super.resize( width, height );
+      layoutDisplay();
+    }
   }
 
-  /**************************************** requestFocus *****************************************/
-  @Override
-  public void requestFocus()
+  /******************************************* redraw ********************************************/
+  public void redraw()
   {
-    // setting focus on table should set focus on canvas
-    m_canvas.requestFocus();
+    // request complete redraw of table canvas (-1 and +1 to ensure canvas graphics context does a reset)
+    widthChange( -1, (int) getWidth() + 1 );
   }
 
-  /*************************************** isTableFocused ****************************************/
-  public boolean isTableFocused()
+  /***************************************** widthChange *****************************************/
+  public void widthChange( int oldW, int newW )
   {
-    // return if table canvas has focus
-    return m_canvas.isFocused();
+    // only need to draw if new width is larger than old width
+    if ( newW > oldW && isVisible() && oldW < getTableWidth() )
+    {
+      // clear background (+0.5 needed so anti-aliasing doesn't impact previous column)
+      m_canvas.getGraphicsContext2D().clearRect( oldW + 0.5, 0.0, newW, getHeight() );
+
+      // calculate which columns need to be redrawn
+      int minColumnPos = getColumnPositionAtX( oldW );
+      if ( minColumnPos <= HEADER )
+        minColumnPos = getColumnPositionAtX( getRowHeaderWidth() );
+      int maxColumnPos = getColumnPositionAtX( newW );
+      m_view.redrawColumns( minColumnPos, maxColumnPos );
+
+      // check if row header needs to be redrawn
+      if ( maxColumnPos == HEADER
+          || ( oldW < getRowHeaderWidth() && getXStartFromColumnPos( minColumnPos ) >= getRowHeaderWidth() ) )
+        m_view.redrawColumn( HEADER );
+
+      // draw table overlay
+      m_view.redrawOverlay();
+    }
+  }
+
+  /**************************************** heightChange *****************************************/
+  public void heightChange( int oldH, int newH )
+  {
+    // only need to draw if new height is larger than old height
+    if ( newH > oldH && isVisible() && oldH < getTableHeight() )
+    {
+      // clear background
+      m_canvas.getGraphicsContext2D().clearRect( 0.0, oldH + 0.5, getWidth(), newH );
+
+      // calculate which rows need to be redrawn, and redraw them
+      int minRowPos = getRowPositionAtY( oldH );
+      if ( minRowPos <= HEADER )
+        minRowPos = getRowPositionAtY( getColumnHeaderHeight() );
+      int maxRowPos = getRowPositionAtY( newH );
+      m_view.redrawRows( minRowPos, maxRowPos );
+
+      // check if column header needs to be redrawn
+      if ( maxRowPos == HEADER
+          || ( oldH < getColumnHeaderHeight() && getYStartFromRowPos( minRowPos ) >= getColumnHeaderHeight() ) )
+        m_view.redrawRow( HEADER );
+
+      // draw table overlay
+      m_view.redrawOverlay();
+    }
   }
 
   /**************************************** layoutDisplay ****************************************/
   public void layoutDisplay()
   {
     // determine which scroll-bars should be visible
-    boolean isVSBvisible = getHeight() < m_view.getTableHeight();
+    boolean isVSBvisible = getHeight() < getTableHeight();
     int visibleWidth = isVSBvisible ? getWidth() - (int) m_vScrollBar.getWidth() : getWidth();
-    boolean isHSBvisible = visibleWidth < m_view.getTableWidth();
+    boolean isHSBvisible = visibleWidth < getTableWidth();
     int visibleHeight = isHSBvisible ? getHeight() - (int) m_hScrollBar.getHeight() : getHeight();
-    isVSBvisible = visibleHeight < m_view.getTableHeight();
+    isVSBvisible = visibleHeight < getTableHeight();
     visibleWidth = isVSBvisible ? getWidth() - (int) m_vScrollBar.getWidth() : getWidth();
 
     // update vertical scroll bar
@@ -96,10 +138,10 @@ public class TableDisplay extends TableParent
       m_vScrollBar.setPrefHeight( visibleHeight );
       m_vScrollBar.relocate( getWidth() - m_vScrollBar.getWidth(), 0.0 );
 
-      double max = m_view.getTableHeight() - visibleHeight;
+      double max = getTableHeight() - visibleHeight;
       m_vScrollBar.setMax( max );
-      m_vScrollBar.setVisibleAmount( max * visibleHeight / m_view.getTableHeight() );
-      m_vScrollBar.setBlockIncrement( visibleHeight - m_view.getColumnHeaderHeight() );
+      m_vScrollBar.setVisibleAmount( max * visibleHeight / getTableHeight() );
+      m_vScrollBar.setBlockIncrement( visibleHeight - getColumnHeaderHeight() );
 
       if ( m_vScrollBar.getValue() > max )
         m_vScrollBar.setValue( max );
@@ -117,10 +159,10 @@ public class TableDisplay extends TableParent
       m_hScrollBar.setPrefWidth( visibleWidth );
       m_hScrollBar.relocate( 0.0, getHeight() - m_hScrollBar.getHeight() );
 
-      double max = m_view.getTableWidth() - visibleWidth;
+      double max = getTableWidth() - visibleWidth;
       m_hScrollBar.setMax( max );
-      m_hScrollBar.setVisibleAmount( max * visibleWidth / m_view.getTableWidth() );
-      m_hScrollBar.setBlockIncrement( visibleWidth - m_view.getRowHeaderWidth() );
+      m_hScrollBar.setVisibleAmount( max * visibleWidth / getTableWidth() );
+      m_hScrollBar.setBlockIncrement( visibleWidth - getRowHeaderWidth() );
 
       if ( m_hScrollBar.getValue() > max )
         m_hScrollBar.setValue( max );
@@ -136,168 +178,75 @@ public class TableDisplay extends TableParent
     m_canvas.setHeight( visibleHeight );
   }
 
-  /******************************************* redraw ********************************************/
-  public void redraw()
+  /*************************************** getTableWidth *****************************************/
+  public int getTableWidth()
   {
-    // request complete redraw of table canvas (-1 and +1 to ensure canvas graphics context does a reset)
-    widthChange( -1, (int) getWidth() + 1 );
+    // return width in pixels of all the visible table body columns + row header
+    return m_columns.getTableSize( 0 );
   }
 
-  /***************************************** widthChange *****************************************/
-  public void widthChange( int oldW, int newW )
+  /************************************** getTableHeight *****************************************/
+  public int getTableHeight()
   {
-    // only need to draw if new width is larger than old width
-    if ( newW > oldW && m_view.draw.get() && oldW < m_view.getTableWidth() )
-    {
-      // clear background (+0.5 needed so anti-aliasing doesn't impact previous column)
-      m_canvas.getGraphicsContext2D().clearRect( oldW + 0.5, 0.0, newW, getHeight() );
-
-      // calculate which columns need to be redrawn
-      int minColumnPos = m_view.getColumnPositionAtX( oldW );
-      if ( minColumnPos == TableView.HEADER )
-        minColumnPos = m_view.getColumnPositionAtX( m_view.getRowHeaderWidth() );
-      int maxColumnPos = m_view.getColumnPositionAtX( newW );
-      m_view.redrawColumns( minColumnPos, maxColumnPos );
-
-      // check if row header needs to be redrawn
-      if ( oldW < m_view.getRowHeaderWidth() )
-        m_view.redrawColumn( TableView.HEADER );
-
-      // draw table overlay
-      m_view.redrawOverlay();
-    }
+    // return height in pixels of all the visible table body rows + column header
+    return m_rows.getTableSize( 0 );
   }
 
-  /**************************************** heightChange *****************************************/
-  public void heightChange( int oldH, int newH )
+  /************************************ getColumnHeaderHeight ************************************/
+  public int getColumnHeaderHeight()
   {
-    // only need to draw if new height is larger than old height
-    if ( newH > oldH && m_view.draw.get() && oldH < m_view.getTableHeight() )
-    {
-      // clear background
-      m_canvas.getGraphicsContext2D().clearRect( 0.0, oldH + 0.5, getWidth(), newH );
-
-      // calculate which rows need to be redrawn, and redraw them
-      int minRowPos = m_view.getRowPositionAtY( oldH );
-      if ( minRowPos == TableView.HEADER )
-        minRowPos = m_view.getRowPositionAtY( m_view.getColumnHeaderHeight() );
-      int maxRowPos = m_view.getRowPositionAtY( newH );
-      m_view.redrawRows( minRowPos, maxRowPos );
-
-      // check if column header needs to be redrawn
-      if ( oldH < m_view.getColumnHeaderHeight() )
-        m_view.redrawRow( TableView.HEADER );
-
-      // draw table overlay
-      m_view.redrawOverlay();
-    }
+    // return table column header height
+    return m_rows.getCellSize( HEADER );
   }
 
-  /***************************************** getXOffset ******************************************/
-  public int getXOffset()
+  /************************************** getRowHeaderWidth **************************************/
+  public int getRowHeaderWidth()
   {
-    // return table horizontal offset due to scroll bar
-    return (int) m_hScrollBar.getValue();
+    // return table row header width
+    return m_columns.getCellSize( HEADER );
   }
 
-  /***************************************** getYOffset ******************************************/
-  public int getYOffset()
+  /*********************************** getXStartFromColumnPos ************************************/
+  public int getXStartFromColumnPos( int columnPos )
   {
-    // return table vertical offset due to scroll bar
-    return (int) m_vScrollBar.getValue();
+    // return x coordinate of cell start for specified column position
+    return m_columns.getStartFromPosition( columnPos, (int) m_hScrollBar.getValue() );
   }
 
-  /**************************************** getXOffsetMax ****************************************/
-  public int getXOffsetMax()
+  /************************************* getYStartFromRowPos *************************************/
+  public int getYStartFromRowPos( int rowPos )
   {
-    // return table horizontal scroll bar maximum valid offset
-    return (int) m_hScrollBar.getMax();
+    // return y coordinate of cell start for specified row position
+    return m_rows.getStartFromPosition( rowPos, (int) m_vScrollBar.getValue() );
   }
 
-  /**************************************** getYOffsetMax ****************************************/
-  public int getYOffsetMax()
+  /*********************************** getColumnPositionAtX **************************************/
+  public int getColumnPositionAtX( int x )
   {
-    // return table vertical scroll bar maximum valid offset 
-    return (int) m_vScrollBar.getMax();
+    // return column position at specified x coordinate
+    return m_columns.getPositionFromCoordinate( x, (int) m_hScrollBar.getValue() );
   }
 
-  /*************************************** getCanvasWidth ****************************************/
-  public int getCanvasWidth()
+  /************************************* getRowPositionAtY ***************************************/
+  public int getRowPositionAtY( int y )
   {
-    // return width of canvas
-    return (int) m_canvas.getWidth();
+    // return row position at specified y coordinate
+    return m_rows.getPositionFromCoordinate( y, (int) m_vScrollBar.getValue() );
   }
 
-  /*************************************** getCanvasHeight ***************************************/
-  public int getCanvasHeight()
+  /**************************************** requestFocus *****************************************/
+  @Override
+  public void requestFocus()
   {
-    // return height of canvas
-    return (int) m_canvas.getHeight();
+    // setting focus on table should set focus on canvas
+    m_canvas.requestFocus();
   }
 
-  /************************************** animateToXOffset ***************************************/
-  public void animateToXOffset( int endValue )
+  /*************************************** isTableFocused ****************************************/
+  public boolean isTableFocused()
   {
-    // create scroll horizontal animation
-    if ( endValue < m_hScrollBar.getMin() )
-      endValue = (int) m_vScrollBar.getMin();
-    if ( endValue > m_hScrollBar.getMax() )
-      endValue = (int) m_vScrollBar.getMax();
-
-    m_hScrolling.animate( m_hScrollBar.valueProperty(), endValue, 100 );
+    // return if table canvas has focus
+    return m_canvas.isFocused();
   }
 
-  /************************************** animateToYOffset ***************************************/
-  public void animateToYOffset( int endValue )
-  {
-    // create scroll vertical animation
-    if ( endValue < m_vScrollBar.getMin() )
-      endValue = (int) m_vScrollBar.getMin();
-    if ( endValue > m_vScrollBar.getMax() )
-      endValue = (int) m_vScrollBar.getMax();
-
-    m_vScrolling.animate( m_vScrollBar.valueProperty(), endValue, 100 );
-  }
-
-  /************************************** finishXAnimation ***************************************/
-  public void finishXAnimation()
-  {
-    // finish any horizontal animation
-    m_hScrolling.finishAnimation();
-  }
-
-  /************************************** finishYAnimation ***************************************/
-  public void finishYAnimation()
-  {
-    // finish any vertical animation
-    m_vScrolling.finishAnimation();
-  }
-
-  /************************************* animateScrollToTop **************************************/
-  public void animateScrollToTop()
-  {
-    // create scroll up animation
-    m_vScrolling.animate( m_vScrollBar.valueProperty(), 0, 5 * getYOffset() );
-  }
-
-  /************************************ animateScrollToBottom ************************************/
-  public void animateScrollToBottom()
-  {
-    // create scroll down animation
-    m_vScrolling.animate( m_vScrollBar.valueProperty(), getYOffsetMax(), 5 * ( getYOffsetMax() - getYOffset() ) );
-  }
-
-  /********************************** animateScrollToRightEdge ***********************************/
-  public void animateScrollToRightEdge()
-  {
-    // create scroll right animation
-    m_hScrolling.animate( m_hScrollBar.valueProperty(), getXOffsetMax(), 5 * ( getXOffsetMax() - getXOffset() ) );
-  }
-
-  /*********************************** animateScrollToLeftEdge ***********************************/
-  public void animateScrollToLeftEdge()
-  {
-    // create scroll left animation
-    m_hScrolling.animate( m_hScrollBar.valueProperty(), 0, 5 * getXOffset() );
-  }
 }

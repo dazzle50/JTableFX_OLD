@@ -74,12 +74,12 @@ public class DemoWindow
   private TabPane makeTabs()
   {
     // create default table in tab
-    var defaultTable = new rjc.table.new_view.TableView( new TableData() );
+    TableView defaultTable = new TableView( new TableData() );
     Tab defaultTab = new Tab();
     defaultTab.setText( "Default" );
     defaultTab.setClosable( false );
     defaultTab.setContent( defaultTable );
-    //defaultTable.draw.bind( defaultTab.selectedProperty() );
+    //defaultTable.draw.bind( defaultTab.selectedProperty() );  TODO
 
     // create large table in tab
     TableView largeTable = new LargeView( new LargeData() );
@@ -87,7 +87,7 @@ public class DemoWindow
     largeTab.setText( "Large" );
     largeTab.setClosable( false );
     largeTab.setContent( largeTable );
-    largeTable.draw.bind( largeTab.selectedProperty() );
+    //largeTable.draw.bind( largeTab.selectedProperty() );  TODO
 
     // create editable table in tab
     TableView editTable = new EditView( new EditData() );
@@ -95,7 +95,7 @@ public class DemoWindow
     editTab.setText( "Edit" );
     editTab.setClosable( false );
     editTab.setContent( editTable );
-    editTable.draw.bind( editTab.selectedProperty() );
+    //editTable.draw.bind( editTab.selectedProperty() );  TODO
 
     // create demo tab pane
     TabPane tabs = new TabPane();

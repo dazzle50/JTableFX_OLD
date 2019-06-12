@@ -16,7 +16,7 @@
  *  along with this program.  If not, see http://www.gnu.org/licenses/    *
  **************************************************************************/
 
-package rjc.table.new_view;
+package rjc.table.view;
 
 import javafx.beans.property.ReadOnlyIntegerProperty;
 import javafx.beans.property.ReadOnlyIntegerWrapper;
@@ -25,7 +25,7 @@ import javafx.beans.property.ReadOnlyIntegerWrapper;
 /**************************** Table focus & select cell functionality ****************************/
 /*************************************************************************************************/
 
-public class TableNavigation extends TableDisplay
+public class TableNavigate extends TableDisplay
 {
   // observable integers for focus, select and mouse cell positions
   final private ReadOnlyIntegerWrapper m_focusColumnPos  = new ReadOnlyIntegerWrapper( INVALID );

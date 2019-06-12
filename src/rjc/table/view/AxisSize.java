@@ -16,7 +16,7 @@
  *  along with this program.  If not, see http://www.gnu.org/licenses/    *
  **************************************************************************/
 
-package rjc.table.new_view;
+package rjc.table.view;
 
 import java.util.ArrayList;
 import java.util.HashMap;

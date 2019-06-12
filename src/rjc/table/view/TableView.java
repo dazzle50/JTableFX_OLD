@@ -21,6 +21,7 @@ package rjc.table.view;
 import javafx.geometry.Insets;
 import javafx.geometry.Orientation;
 import javafx.geometry.Pos;
+import javafx.scene.canvas.Canvas;
 import javafx.scene.paint.Color;
 import javafx.scene.paint.Paint;
 import javafx.scene.text.Font;
@@ -41,17 +42,42 @@ public class TableView extends TableDraw
     // setup and register table view
     m_view = this;
     m_data = data;
-    data.register( m_view );
-    draw.addListener( ( observable, oldValue, newValue ) ->
-    {
-      if ( newValue )
-        redraw();
-    } );
+    // data.register( m_view ); ... TODO
+    // visibleProperty().addListener( listener );  ... TODO?
 
-    // create table canvas and scroll bars
-    m_canvas = new TableCanvas( m_view );
-    m_vScrollBar = new TableScrollBar( m_view, Orientation.VERTICAL );
-    m_hScrollBar = new TableScrollBar( m_view, Orientation.HORIZONTAL );
+    // create table canvas, axis and scroll bars
+    m_canvas = new Canvas();
+    m_columns = new TableAxis( data.getColumnCountProperty() );
+    m_rows = new TableAxis( data.getRowCountProperty() );
+    m_rows.setDefaultSize( 20 );
+    m_hScrollBar = new TableScrollBar( m_columns, Orientation.HORIZONTAL );
+    m_vScrollBar = new TableScrollBar( m_rows, Orientation.VERTICAL );
+
+    // when canvas size changes draw new bits
+    m_canvas.widthProperty()
+        .addListener( ( observable, oldW, newW ) -> widthChange( oldW.intValue(), newW.intValue() ) );
+    m_canvas.heightProperty()
+        .addListener( ( observable, oldH, newH ) -> heightChange( oldH.intValue(), newH.intValue() ) );
+
+    // redraw table when focus changes
+    m_canvas.focusedProperty().addListener( ( observable, oldF, newF ) -> redraw() );
+
+    // react to mouse events
+    m_canvas.setOnMouseExited( event -> mouseExited( event ) );
+    m_canvas.setOnMouseMoved( event -> mouseMoved( event ) );
+    m_canvas.setOnMouseDragged( event -> mouseDragged( event ) );
+    m_canvas.setOnMouseReleased( event -> mouseReleased( event ) );
+    m_canvas.setOnMousePressed( event -> mousePressed( event ) );
+    m_canvas.setOnMouseClicked( event -> mouseClicked( event ) );
+    m_canvas.setOnScroll( event -> mouseScroll( event ) );
+
+    // react to keyboard events
+    m_canvas.setOnKeyPressed( event -> keyPressed( event ) );
+    m_canvas.setOnKeyTyped( event -> keyTyped( event ) );
+
+    // react to scroll bar position value changes such as redrawing table
+    m_hScrollBar.valueProperty().addListener( ( observable, oldV, newV ) -> tableScrolled() );
+    m_vScrollBar.valueProperty().addListener( ( observable, oldV, newV ) -> tableScrolled() );
 
     // add canvas and scroll bars to parent displayed children
     add( m_canvas );
@@ -127,7 +153,7 @@ public class TableView extends TableDraw
     // return header cell background
     if ( m_rowIndex == HEADER )
     {
-      if ( m_columnPos == focusColumnPos.get() )
+      if ( m_columnPos == getFocusColumnPos() )
         return Color.LIGHTYELLOW;
       else
         return hasColumnSelection( m_columnPos ) ? Color.gray( 0.85 ) : Color.gray( 0.95 );
@@ -135,7 +161,7 @@ public class TableView extends TableDraw
 
     if ( m_columnIndex == HEADER )
     {
-      if ( m_rowPos == focusRowPos.get() )
+      if ( m_rowPos == getFocusRowPos() )
         return Color.LIGHTYELLOW;
       else
         return hasRowSelection( m_rowPos ) ? Color.gray( 0.85 ) : Color.gray( 0.95 );
@@ -148,14 +174,14 @@ public class TableView extends TableDraw
   protected Paint getCellBackgroundPaintSelected()
   {
     // return selected cell background
-    if ( m_rowPos == focusRowPos.get() && m_columnPos == focusColumnPos.get() )
+    if ( m_rowPos == getFocusRowPos() && m_columnPos == getFocusColumnPos() )
       return getCellBackgroundPaintDefault();
 
     Color selected = Color.rgb( 51, 153, 255 );
     for ( int count = getSelectionCount( m_columnPos, m_rowPos ); count > 1; count-- )
       selected = selected.desaturate();
 
-    if ( m_rowPos == selectRowPos.get() && m_columnPos == selectColumnPos.get() )
+    if ( m_rowPos == getSelectRowPos() && m_columnPos == getSelectColumnPos() )
       selected = selected.desaturate();
 
     return isTableFocused() ? selected : selected.desaturate();
@@ -166,7 +192,7 @@ public class TableView extends TableDraw
   {
     // return cell text paint
     if ( isCellSelected( m_columnPos, m_rowPos )
-        && !( m_rowPos == focusRowPos.get() && m_columnPos == focusColumnPos.get() ) )
+        && !( m_rowPos == getFocusRowPos() && m_columnPos == getFocusColumnPos() ) )
       return Color.WHITE;
     else
       return Color.BLACK;

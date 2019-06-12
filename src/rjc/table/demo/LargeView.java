@@ -36,23 +36,23 @@ public class LargeView extends TableView
   {
     // construct customised table view
     super( data );
-    setRowHeaderWidth( 60 );
+    m_columns.setCellSize( HEADER, 60 );
 
     // when mouse moved redraw old and new column to move highlighting
-    mouseColumnPos.addListener( ( observable, oldColumn, newColumn ) ->
+    getMouseColumnProperty().addListener( ( observable, oldColumn, newColumn ) ->
     {
       int old_index = m_mouseColumnIndex;
-      m_mouseColumnIndex = getColumnIndexFromPosition( newColumn.intValue() );
+      m_mouseColumnIndex = m_columns.getIndexFromPosition( newColumn.intValue() );
       redrawColumn( old_index );
       redrawColumn( m_mouseColumnIndex );
       redrawOverlay();
     } );
 
     // when mouse moved redraw old and new row to move highlighting
-    mouseRowPos.addListener( ( observable, oldRow, newRow ) ->
+    getMouseRowProperty().addListener( ( observable, oldRow, newRow ) ->
     {
       int old_index = m_mouseRowIndex;
-      m_mouseRowIndex = getRowIndexFromPosition( newRow.intValue() );
+      m_mouseRowIndex = m_rows.getIndexFromPosition( newRow.intValue() );
       redrawRow( old_index );
       redrawRow( m_mouseRowIndex );
       redrawOverlay();

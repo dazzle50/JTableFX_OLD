@@ -36,11 +36,11 @@ public class EditView extends TableView
     // construct customised table view
     super( data );
 
-    setColumnIndexWidth( EditData.SECTION_READONLY, 120 );
-    setColumnIndexWidth( EditData.SECTION_TEXT, 120 );
-    setColumnIndexWidth( EditData.SECTION_INTEGER, 80 );
-    setColumnIndexWidth( EditData.SECTION_DOUBLE, 80 );
-    setColumnIndexWidth( EditData.SECTION_DATETIME, 200 );
+    m_columns.setCellSize( EditData.SECTION_READONLY, 120 );
+    m_columns.setCellSize( EditData.SECTION_TEXT, 120 );
+    m_columns.setCellSize( EditData.SECTION_INTEGER, 80 );
+    m_columns.setCellSize( EditData.SECTION_DOUBLE, 80 );
+    m_columns.setCellSize( EditData.SECTION_DATETIME, 200 );
   }
 
   /************************************ getCellTextAlignment *************************************/
