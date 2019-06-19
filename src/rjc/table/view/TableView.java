@@ -42,25 +42,24 @@ public class TableView extends TableDraw
     // setup and register table view
     m_view = this;
     m_data = data;
-    // data.register( m_view ); ... TODO
-    // visibleProperty().addListener( listener );  ... TODO?
+    data.register( m_view );
 
     // create table canvas, axis and scroll bars
     m_canvas = new Canvas();
     m_columns = new TableAxis( data.getColumnCountProperty() );
     m_rows = new TableAxis( data.getRowCountProperty() );
-    m_rows.setDefaultSize( 20 );
     m_hScrollBar = new TableScrollBar( m_columns, Orientation.HORIZONTAL );
     m_vScrollBar = new TableScrollBar( m_rows, Orientation.VERTICAL );
 
-    // when canvas size changes draw new bits
+    // when canvas size changes draw new areas
     m_canvas.widthProperty()
         .addListener( ( observable, oldW, newW ) -> widthChange( oldW.intValue(), newW.intValue() ) );
     m_canvas.heightProperty()
         .addListener( ( observable, oldH, newH ) -> heightChange( oldH.intValue(), newH.intValue() ) );
 
-    // redraw table when focus changes
+    // redraw table when focus changes or becomes visible
     m_canvas.focusedProperty().addListener( ( observable, oldF, newF ) -> redraw() );
+    visibleProperty().addListener( ( observable, oldV, newV ) -> redraw() );
 
     // react to mouse events
     m_canvas.setOnMouseExited( event -> mouseExited( event ) );
@@ -75,7 +74,7 @@ public class TableView extends TableDraw
     m_canvas.setOnKeyPressed( event -> keyPressed( event ) );
     m_canvas.setOnKeyTyped( event -> keyTyped( event ) );
 
-    // react to scroll bar position value changes such as redrawing table
+    // react to scroll bar position value changes
     m_hScrollBar.valueProperty().addListener( ( observable, oldV, newV ) -> tableScrolled() );
     m_vScrollBar.valueProperty().addListener( ( observable, oldV, newV ) -> tableScrolled() );
 
@@ -84,9 +83,21 @@ public class TableView extends TableDraw
     add( m_vScrollBar );
     add( m_hScrollBar );
 
-    // setup graphics context
+    // setup graphics context & reset view
     gc = m_canvas.getGraphicsContext2D();
     gc.setFontSmoothingType( FontSmoothingType.LCD );
+    reset();
+  }
+
+  /******************************************** reset ********************************************/
+  public void reset()
+  {
+    // reset table view to default settings
+    m_columns.reset();
+    m_rows.reset();
+
+    m_rows.setDefaultSize( 20 );
+    m_rows.setHeaderSize( 20 );
   }
 
   /**************************************** getCellText ******************************************/

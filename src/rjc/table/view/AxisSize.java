@@ -34,6 +34,7 @@ public class AxisSize extends AxisBase
   // variables defining default & minimum cell pixel size (width or height)
   private int                          m_defaultSize;
   private int                          m_minimumSize;
+  private int                          m_headerSize;
 
   // exceptions to default size, -ve means hidden
   final private Map<Integer, Integer>  m_sizeExceptions         = new HashMap<Integer, Integer>();
@@ -42,7 +43,7 @@ public class AxisSize extends AxisBase
   final private ArrayList<Integer>     m_cellPositionStartCache = new ArrayList<Integer>();
 
   // observable integer for axis total body size in pixels (excludes header)
-  final private ReadOnlyIntegerWrapper m_bodySize               = new ReadOnlyIntegerWrapper( INVALID );
+  final private ReadOnlyIntegerWrapper m_bodySizeCache          = new ReadOnlyIntegerWrapper( INVALID );
 
   /***************************************** constructor *****************************************/
   public AxisSize( ReadOnlyIntegerProperty countProperty )
@@ -53,24 +54,12 @@ public class AxisSize extends AxisBase
     // if axis count changes
     countProperty.addListener( ( observable, oldCount, newCount ) ->
     {
-      // re-calculate size of table body cells
+      // set cached body size to invalid and remove any exceptions beyond count
+      m_bodySizeCache.set( INVALID );
       int count = newCount.intValue();
-      int exceptionsCount = 0;
-      int bodySize = 0;
       for ( int key : m_sizeExceptions.keySet() )
-        if ( key != HEADER ) // ignore any exception for header size
-        {
-          if ( key < count )
-          {
-            exceptionsCount++;
-            int size = m_sizeExceptions.get( key );
-            if ( size > 0 )
-              bodySize += size;
-          }
-          else
-            m_sizeExceptions.remove( key ); // delete any exceptions beyond cell count
-        }
-      m_bodySize.set( bodySize + ( count - exceptionsCount ) * m_defaultSize );
+        if ( key >= count )
+          m_sizeExceptions.remove( key );
 
       // truncate cell position start if size greater than new count
       count++;
@@ -87,41 +76,41 @@ public class AxisSize extends AxisBase
     super.reset();
     m_defaultSize = 100;
     m_minimumSize = 20;
+    m_headerSize = 40;
     m_sizeExceptions.clear();
     m_cellPositionStartCache.clear();
-    m_bodySize.set( INVALID );
+    m_bodySizeCache.set( INVALID );
   }
 
   /***************************************** getBodySize *****************************************/
   public int getBodySize()
   {
-    // return axis total  body size in pixels (excludes header) 
-    if ( m_bodySize.get() == INVALID )
+    // return axis total body size in pixels (excludes header) 
+    if ( m_bodySizeCache.get() == INVALID )
     {
       // cached size is invalid, so re-calculate size of table body cells
       int defaultCount = getCount();
       int bodySize = 0;
 
       for ( int key : m_sizeExceptions.keySet() )
-        if ( key != HEADER ) // ignore any exception for header size
-        {
-          defaultCount--;
-          int size = m_sizeExceptions.get( key );
-          if ( size > 0 )
-            bodySize += size;
-        }
+      {
+        defaultCount--;
+        int size = m_sizeExceptions.get( key );
+        if ( size > 0 )
+          bodySize += size;
+      }
 
-      m_bodySize.set( bodySize + defaultCount * m_defaultSize );
+      m_bodySizeCache.set( bodySize + defaultCount * m_defaultSize );
     }
 
-    return m_bodySize.get();
+    return m_bodySizeCache.get();
   }
 
   /************************************* getBodySizeProperty *************************************/
   final public ReadOnlyIntegerProperty getBodySizeProperty()
   {
-    // return read-only property for  body size in pixels (excludes header)
-    return m_bodySize.getReadOnlyProperty();
+    // return read-only property for body size in pixels (excludes header)
+    return m_bodySizeCache.getReadOnlyProperty();
   }
 
   /*************************************** getDefaultSize ****************************************/
@@ -153,7 +142,7 @@ public class AxisSize extends AxisBase
         setMinimumSize( defaultSize );
 
       m_defaultSize = defaultSize;
-      m_bodySize.set( INVALID );
+      m_bodySizeCache.set( INVALID );
       m_cellPositionStartCache.clear();
     }
   }
@@ -185,7 +174,7 @@ public class AxisSize extends AxisBase
             entry.setValue( -minSize );
         }
 
-        m_bodySize.set( INVALID );
+        m_bodySizeCache.set( INVALID );
         m_cellPositionStartCache.clear();
       }
 
@@ -193,10 +182,35 @@ public class AxisSize extends AxisBase
     }
   }
 
+  /**************************************** getHeaderSize ****************************************/
+  public int getHeaderSize()
+  {
+    // return header cell size
+    return m_headerSize;
+  }
+
+  /**************************************** setHeaderSize ****************************************/
+  public void setHeaderSize( int newSize )
+  {
+    // check new size is valid
+    if ( newSize < 0 || newSize >= 65536 )
+      throw new IllegalArgumentException( "Header size must be at least zero " + newSize );
+
+    // if new size is different, clear cell position start cache
+    if ( m_headerSize != newSize )
+      m_cellPositionStartCache.clear();
+
+    m_headerSize = newSize;
+  }
+
   /***************************************** getCellSize *****************************************/
   public int getCellSize( int cellIndex )
   {
-    // return cell size, key = index+1 as key=0 is for header
+    // return header size if that was requested
+    if ( cellIndex == HEADER )
+      return m_headerSize;
+
+    // return cell size from exception (-ve means hidden) or default
     int size = m_sizeExceptions.getOrDefault( cellIndex, m_defaultSize );
     if ( size < 0 )
       return 0; // -ve means row hidden, so return zero
@@ -208,7 +222,7 @@ public class AxisSize extends AxisBase
   public void setCellSize( int cellIndex, int newSize )
   {
     // check cell index is valid
-    if ( cellIndex < HEADER || cellIndex >= getCount() )
+    if ( cellIndex < FIRSTCELL || cellIndex >= getCount() )
       throw new IndexOutOfBoundsException( "cell index=" + cellIndex + " but count=" + getCount() );
 
     // make sure size is not below minimum
@@ -222,13 +236,13 @@ public class AxisSize extends AxisBase
     // if new size is different, update body size and truncate cell position start cache if needed
     if ( newSize != oldSize )
     {
-      if ( m_bodySize.get() != INVALID )
-        m_bodySize.set( m_bodySize.get() - oldSize + newSize );
+      if ( m_bodySizeCache.get() != INVALID )
+        m_bodySizeCache.set( m_bodySizeCache.get() - oldSize + newSize );
 
       // truncate cell position start cache if size greater than cell position
-      int cellPos = getPositionFromIndex( cellIndex );
-      if ( m_cellPositionStartCache.size() > cellPos + 1 )
-        m_cellPositionStartCache.subList( cellPos + 1, m_cellPositionStartCache.size() ).clear();
+      int cellPos = getPositionFromIndex( cellIndex ) + 1;
+      if ( m_cellPositionStartCache.size() > cellPos )
+        m_cellPositionStartCache.subList( cellPos, m_cellPositionStartCache.size() ).clear();
     }
   }
 
@@ -236,7 +250,7 @@ public class AxisSize extends AxisBase
   public void clearCellSize( int cellIndex )
   {
     // check cell index is valid
-    if ( cellIndex < HEADER || cellIndex >= getCount() )
+    if ( cellIndex < FIRSTCELL || cellIndex >= getCount() )
       throw new IndexOutOfBoundsException( "cell index=" + cellIndex + " but count=" + getCount() );
 
     // remove cell index size exception if exists
@@ -259,7 +273,7 @@ public class AxisSize extends AxisBase
     {
       // position zero starts after header
       if ( m_cellPositionStartCache.isEmpty() )
-        m_cellPositionStartCache.add( getCellSize( HEADER ) );
+        m_cellPositionStartCache.add( m_headerSize );
 
       int position = m_cellPositionStartCache.size() - 1;
       int start = m_cellPositionStartCache.get( position );
@@ -282,12 +296,12 @@ public class AxisSize extends AxisBase
       return BEFORE;
 
     // check if header
-    if ( coordinate < getCellSize( HEADER ) )
+    if ( coordinate < m_headerSize )
       return HEADER;
 
     // check if after table
     coordinate += scroll;
-    if ( coordinate >= getBodySize() + getCellSize( HEADER ) )
+    if ( coordinate >= getBodySize() + m_headerSize )
       return AFTER;
 
     // check within start cache
@@ -300,7 +314,7 @@ public class AxisSize extends AxisBase
         start += getCellSize( getIndexFromPosition( position++ ) );
         m_cellPositionStartCache.add( start );
       }
-      return --position;
+      return coordinate == start ? position : position - 1;
     }
 
     // find position by binary search of cache
@@ -315,13 +329,6 @@ public class AxisSize extends AxisBase
         endPos = rowPos;
     }
     return startPos - 1;
-  }
-
-  /**************************************** getTableSize *****************************************/
-  public int getTableSize( int scroll )
-  {
-    // return table size for given scroll
-    return getCellSize( HEADER ) + Math.max( 0, getBodySize() - scroll );
   }
 
   /************************************** isPositionHidden ***************************************/
@@ -340,8 +347,8 @@ public class AxisSize extends AxisBase
     if ( oldSize > 0 )
     {
       m_sizeExceptions.put( index, -oldSize );
-      if ( m_bodySize.get() != INVALID )
-        m_bodySize.set( m_bodySize.get() - oldSize );
+      if ( m_bodySizeCache.get() != INVALID )
+        m_bodySizeCache.set( m_bodySizeCache.get() - oldSize );
 
       // truncate cell position start cache if size greater than position
       if ( m_cellPositionStartCache.size() > position )
@@ -362,8 +369,8 @@ public class AxisSize extends AxisBase
       else
         m_sizeExceptions.put( index, -oldSize );
 
-      if ( m_bodySize.get() != INVALID )
-        m_bodySize.set( m_bodySize.get() - oldSize );
+      if ( m_bodySizeCache.get() != INVALID )
+        m_bodySizeCache.set( m_bodySizeCache.get() - oldSize );
 
       // truncate cell position start cache if size greater than position
       if ( m_cellPositionStartCache.size() > position )

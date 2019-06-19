@@ -181,29 +181,29 @@ public class TableDisplay extends TableParent
   /*************************************** getTableWidth *****************************************/
   public int getTableWidth()
   {
-    // return width in pixels of all the visible table body columns + row header
-    return m_columns.getTableSize( 0 );
+    // return width in pixels of all whole visible table including header
+    return m_columns.getHeaderSize() + m_columns.getBodySize();
   }
 
   /************************************** getTableHeight *****************************************/
   public int getTableHeight()
   {
-    // return height in pixels of all the visible table body rows + column header
-    return m_rows.getTableSize( 0 );
+    // return height in pixels of all whole visible table including header
+    return m_rows.getHeaderSize() + m_rows.getBodySize();
   }
 
   /************************************ getColumnHeaderHeight ************************************/
   public int getColumnHeaderHeight()
   {
     // return table column header height
-    return m_rows.getCellSize( HEADER );
+    return m_rows.getHeaderSize();
   }
 
   /************************************** getRowHeaderWidth **************************************/
   public int getRowHeaderWidth()
   {
     // return table row header width
-    return m_columns.getCellSize( HEADER );
+    return m_columns.getHeaderSize();
   }
 
   /*********************************** getXStartFromColumnPos ************************************/

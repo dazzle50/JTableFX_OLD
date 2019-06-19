@@ -28,38 +28,45 @@ import rjc.table.view.TableView;
 
 public class LargeView extends TableView
 {
-  private int m_mouseColumnIndex = INVALID;
-  private int m_mouseRowIndex    = INVALID;
+  private int m_highlightColumnIndex = INVALID;
+  private int m_highlightRowIndex    = INVALID;
 
   /**************************************** constructor ******************************************/
   public LargeView( LargeData data )
   {
     // construct customised table view
     super( data );
-    m_columns.setCellSize( HEADER, 60 );
 
     // when mouse moved redraw old and new column to move highlighting
     getMouseColumnProperty().addListener( ( observable, oldColumn, newColumn ) ->
     {
-      int old_index = m_mouseColumnIndex;
-      m_mouseColumnIndex = m_columns.getIndexFromPosition( newColumn.intValue() );
+      int old_index = m_highlightColumnIndex;
+      int newPos = newColumn.intValue();
+      if ( newPos > BEFORE && newPos < AFTER )
+      {
+        m_highlightColumnIndex = m_columns.getIndexFromPosition( newPos );
+        redrawColumn( m_highlightColumnIndex );
+      }
       redrawColumn( old_index );
-      redrawColumn( m_mouseColumnIndex );
       redrawOverlay();
     } );
 
     // when mouse moved redraw old and new row to move highlighting
     getMouseRowProperty().addListener( ( observable, oldRow, newRow ) ->
     {
-      int old_index = m_mouseRowIndex;
-      m_mouseRowIndex = m_rows.getIndexFromPosition( newRow.intValue() );
+      int old_index = m_highlightRowIndex;
+      int newPos = newRow.intValue();
+      if ( newPos > BEFORE && newPos < AFTER )
+      {
+        m_highlightRowIndex = m_rows.getIndexFromPosition( newPos );
+        redrawRow( m_highlightRowIndex );
+      }
       redrawRow( old_index );
-      redrawRow( m_mouseRowIndex );
       redrawOverlay();
     } );
   }
 
-  /**************************************** constructor ******************************************/
+  /*********************************** getCellBackgroundPaint ************************************/
   @Override
   protected Paint getCellBackgroundPaint()
   {
@@ -70,16 +77,25 @@ public class LargeView extends TableView
     if ( paint == Color.WHITE )
     {
       // highlight cell green where mouse is positioned
-      if ( m_columnIndex == m_mouseColumnIndex && m_rowIndex == m_mouseRowIndex )
+      if ( m_columnIndex == m_highlightColumnIndex && m_rowIndex == m_highlightRowIndex )
         return Color.PALEGREEN;
 
       // highlight row and column pale green where mouse is positioned
-      if ( m_columnIndex == m_mouseColumnIndex || m_rowIndex == m_mouseRowIndex )
+      if ( m_columnIndex == m_highlightColumnIndex || m_rowIndex == m_highlightRowIndex )
         return Color.PALEGREEN.desaturate().desaturate().desaturate().desaturate();
     }
 
     // otherwise default
     return paint;
+  }
+
+  /******************************************** reset ********************************************/
+  @Override
+  public void reset()
+  {
+    // reset table view to default settings with wider header
+    super.reset();
+    m_columns.setHeaderSize( 60 );
   }
 
 }

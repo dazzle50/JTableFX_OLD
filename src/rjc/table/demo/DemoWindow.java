@@ -79,7 +79,7 @@ public class DemoWindow
     defaultTab.setText( "Default" );
     defaultTab.setClosable( false );
     defaultTab.setContent( defaultTable );
-    //defaultTable.draw.bind( defaultTab.selectedProperty() );  TODO
+    defaultTable.visibleProperty().bind( defaultTab.selectedProperty() );
 
     // create large table in tab
     TableView largeTable = new LargeView( new LargeData() );
@@ -87,7 +87,7 @@ public class DemoWindow
     largeTab.setText( "Large" );
     largeTab.setClosable( false );
     largeTab.setContent( largeTable );
-    //largeTable.draw.bind( largeTab.selectedProperty() );  TODO
+    largeTable.visibleProperty().bind( largeTab.selectedProperty() );
 
     // create editable table in tab
     TableView editTable = new EditView( new EditData() );
@@ -95,12 +95,12 @@ public class DemoWindow
     editTab.setText( "Edit" );
     editTab.setClosable( false );
     editTab.setContent( editTable );
-    //editTable.draw.bind( editTab.selectedProperty() );  TODO
+    editTable.visibleProperty().bind( editTab.selectedProperty() );
 
     // create demo tab pane
     TabPane tabs = new TabPane();
     tabs.getTabs().addAll( defaultTab, largeTab, editTab );
-    //tabs.getSelectionModel().select( editTab );
+    tabs.getSelectionModel().select( editTab );
 
     return tabs;
   }

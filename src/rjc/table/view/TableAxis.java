@@ -37,7 +37,6 @@ public class TableAxis extends AxisSize
   {
     // call super
     super( countProperty );
-    reset();
   }
 
   /******************************************** clear ********************************************/

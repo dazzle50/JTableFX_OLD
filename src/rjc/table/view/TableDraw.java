@@ -23,7 +23,6 @@ import javafx.geometry.Pos;
 import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.paint.Color;
 import javafx.scene.text.Font;
-import rjc.table.Utils;
 import rjc.table.cell.CellText;
 
 /*************************************************************************************************/
@@ -160,13 +159,6 @@ public class TableDraw extends TableXML
       if ( rowIndex != HEADER && y < getColumnHeaderHeight() )
         redrawRow( HEADER );
     }
-  }
-
-  /******************************************** reset ********************************************/
-  public void reset()
-  {
-    // TODO #########################################################################
-    Utils.trace( "RESET" );
   }
 
   /*************************************** redrawColumns *****************************************/
