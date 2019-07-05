@@ -217,17 +217,17 @@ public class TableDraw extends TableXML
   public void redrawOverlay()
   {
     // highlight focus cell with special border
-    if ( getFocusColumnPos() >= FIRSTCELL && getFocusRowPos() >= FIRSTCELL )
+    if ( getFocusColumnPosition() >= FIRSTCELL && getFocusRowPosition() >= FIRSTCELL )
     {
       if ( isTableFocused() )
         gc.setStroke( Color.CORNFLOWERBLUE );
       else
         gc.setStroke( Color.CORNFLOWERBLUE.desaturate() );
 
-      x = getXStartFromColumnPos( getFocusColumnPos() );
-      y = getYStartFromRowPos( getFocusRowPos() );
-      w = getXStartFromColumnPos( getFocusColumnPos() + 1 ) - x;
-      h = getYStartFromRowPos( getFocusRowPos() + 1 ) - y;
+      x = getXStartFromColumnPos( getFocusColumnPosition() );
+      y = getYStartFromRowPos( getFocusRowPosition() );
+      w = getXStartFromColumnPos( getFocusColumnPosition() + 1 ) - x;
+      h = getYStartFromRowPos( getFocusRowPosition() + 1 ) - y;
 
       // clip drawing to table body
       gc.save();

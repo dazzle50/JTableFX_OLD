@@ -34,16 +34,27 @@ public class TableScrollBar extends ScrollBar
 {
   private TableAxis       m_axis;                   // associated table axis
   private Timeline        m_timeline;               // used for animated table scrolling
-  private int             m_scrollingTo      = -1;  // destination scroll-bar value for current animation
+  private int             m_scrollingTo;            // destination scroll-bar value for current animation
+  private long            m_lastScrollNanos;        // last time scroll bar value changed
+  private Animation       m_animation;              // currently active animation
 
   final public static int SIZE               = 18;  // pixels
   final public static int SCROLL_TO_DURATION = 100; // milliseconds
+  final public static int INVALID            = -2;  // no active animation destination
+
+  // types of scroll bar animations
+  public static enum Animation
+  {
+    NONE, POSITION, START, END
+  }
 
   /**************************************** constructor ******************************************/
   public TableScrollBar( TableAxis axis, Orientation orientation )
   {
     // create scroll bar
     m_axis = axis;
+    m_scrollingTo = INVALID;
+    m_animation = Animation.NONE;
     setOrientation( orientation );
 
     // set width/height
@@ -59,6 +70,12 @@ public class TableScrollBar extends ScrollBar
       setMaxWidth( USE_PREF_SIZE );
       setMinHeight( SIZE );
     }
+
+    // record last time scroll bar value changed
+    valueProperty().addListener( ( observable, oldV, newV ) -> m_lastScrollNanos = System.nanoTime() );
+
+    // change cursor to default when mouse enters
+    setOnMouseEntered( event -> setCursor( Cursors.DEFAULT ) );
   }
 
   /****************************************** increment ******************************************/
@@ -66,7 +83,7 @@ public class TableScrollBar extends ScrollBar
   public void increment()
   {
     // increase scroll bar value to next table cell boundary
-    int headerSize = m_axis.getCellSize( TableAxis.HEADER );
+    int headerSize = m_axis.getHeaderSize();
     int pos = m_axis.getPositionFromCoordinate( headerSize, (int) getValue() );
     int nextPos = m_axis.getNext( pos );
     int start = m_axis.getStartFromPosition( nextPos, 0 ) - headerSize;
@@ -79,7 +96,7 @@ public class TableScrollBar extends ScrollBar
   public void decrement()
   {
     // decrease scroll bar value to next table cell boundary
-    int headerSize = m_axis.getCellSize( TableAxis.HEADER );
+    int headerSize = m_axis.getHeaderSize();
     int pos = m_axis.getPositionFromCoordinate( headerSize, (int) getValue() );
     int start = m_axis.getStartFromPosition( pos, 0 ) - headerSize;
 
@@ -101,7 +118,7 @@ public class TableScrollBar extends ScrollBar
       return;
 
     // check if need to scroll towards start to show cell start
-    int start = m_axis.getStartFromPosition( position, (int) getValue() ) - m_axis.getCellSize( TableView.HEADER );
+    int start = m_axis.getStartFromPosition( position, (int) getValue() ) - m_axis.getHeaderSize();
     if ( start < 0 )
     {
       animate( (int) getValue() + start, SCROLL_TO_DURATION );
@@ -115,6 +132,53 @@ public class TableScrollBar extends ScrollBar
       end = -start;
     if ( end < 0 )
       animate( (int) getValue() - end, SCROLL_TO_DURATION );
+  }
+
+  /***************************************** scrollToEnd *****************************************/
+  public void scrollToEnd( double speed )
+  {
+    // animate scroll to end of axis if not already there
+    if ( isVisible() && getValue() < getMax() )
+    {
+      // if last scroll value change less than SCROLL_TO_DURATION ago, update value to make animation smoother
+      double pixelsPerSec = speed * Math.sqrt( speed );
+      long elapsedNanos = System.nanoTime() - m_lastScrollNanos;
+      if ( elapsedNanos < SCROLL_TO_DURATION * 1e6 )
+        setValue( getValue() + elapsedNanos * pixelsPerSec / 1e9 );
+
+      // setup new animation
+      double ms = ( getMax() - getValue() ) * 1e3 / pixelsPerSec;
+      m_scrollingTo = INVALID;
+      animate( (int) getMax(), (int) ms );
+      m_animation = Animation.END;
+    }
+  }
+
+  /**************************************** scrollToStart ****************************************/
+  public void scrollToStart( double speed )
+  {
+    // animate scroll to beginning of axis if not already there
+    if ( isVisible() && getValue() > 0 )
+    {
+      // if last scroll value change less than SCROLL_TO_DURATION ago, update value to make animation smoother
+      double pixelsPerSec = speed * Math.sqrt( speed );
+      long elapsedNanos = System.nanoTime() - m_lastScrollNanos;
+      if ( elapsedNanos < SCROLL_TO_DURATION * 1e6 )
+        setValue( getValue() - elapsedNanos * pixelsPerSec / 1e9 );
+
+      // setup new animation
+      double ms = getValue() * 1000.0 / pixelsPerSec;
+      m_scrollingTo = INVALID;
+      animate( 0, (int) ms );
+      m_animation = Animation.START;
+    }
+  }
+
+  /**************************************** getAnimation *****************************************/
+  public Animation getAnimation()
+  {
+    // return current in progress animation
+    return m_animation;
   }
 
   /******************************************* animate *******************************************/
@@ -139,9 +203,11 @@ public class TableScrollBar extends ScrollBar
     m_timeline.setOnFinished( event ->
     {
       m_timeline = null;
-      m_scrollingTo = -1;
+      m_scrollingTo = INVALID;
+      m_animation = Animation.NONE;
     } );
     m_timeline.play();
+    m_animation = Animation.POSITION;
   }
 
   /*************************************** finishAnimation ***************************************/
@@ -150,6 +216,27 @@ public class TableScrollBar extends ScrollBar
     // finish animation by jumping to end
     if ( m_timeline != null )
       m_timeline.jumpTo( "end" );
+  }
+
+  /**************************************** stopAnimation ****************************************/
+  public void stopAnimation()
+  {
+    // stop animation where it is
+    if ( m_timeline != null )
+    {
+      m_timeline.pause();
+      m_timeline = null;
+      m_scrollingTo = INVALID;
+      m_animation = Animation.NONE;
+    }
+  }
+
+  /************************************ stopAnimationStartEnd ************************************/
+  public void stopAnimationStartEnd()
+  {
+    // stop any scrolling to edges
+    if ( m_animation == Animation.START || m_animation == Animation.END )
+      stopAnimation();
   }
 
   /****************************************** toString *******************************************/

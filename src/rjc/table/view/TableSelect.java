@@ -84,8 +84,9 @@ public class TableSelect extends TableNavigate
   public void setCurrentSelection()
   {
     // set current selection area to rectangle between focus and select cells
-    if ( getFocusColumnPos() > HEADER )
-      setCurrentSelection( getFocusColumnPos(), getFocusRowPos(), getSelectColumnPos(), getSelectRowPos() );
+    if ( getFocusColumnPosition() > HEADER )
+      setCurrentSelection( getFocusColumnPosition(), getFocusRowPosition(), getSelectColumnPosition(),
+          getSelectRowPosition() );
   }
 
   /************************************* setCurrentSelection *************************************/
@@ -223,27 +224,31 @@ public class TableSelect extends TableNavigate
   }
 
   /*********************************** setSelectFocusPosition ************************************/
-  protected void setSelectFocusPosition( int columnPos, int rowPos, boolean setFocus, boolean clearSelection )
+  protected void setSelectFocusPosition( int columnPos, int rowPos, boolean setFocus, boolean clearSelection,
+      boolean scroll )
   {
     // clear previous selections
     if ( clearSelection )
       clearAllSelection();
 
     // set table select & focus cell positions
-    setSelectColumnPos( columnPos );
-    setSelectRowPos( rowPos );
-    if ( setFocus || getFocusColumnPos() < FIRSTCELL )
+    setSelectColumnPosition( columnPos );
+    setSelectRowPosition( rowPos );
+    if ( setFocus || getFocusColumnPosition() < FIRSTCELL )
     {
-      setFocusColumnPos( columnPos );
-      setFocusRowPos( rowPos );
+      setFocusColumnPosition( columnPos );
+      setFocusRowPosition( rowPos );
     }
     setCurrentSelection();
 
     // scroll table if necessary to show cell position
-    if ( columnPos < AFTER )
-      m_hScrollBar.scrollTo( columnPos );
-    if ( rowPos < AFTER )
-      m_vScrollBar.scrollTo( rowPos );
+    if ( scroll )
+    {
+      if ( columnPos < AFTER )
+        m_hScrollBar.scrollTo( columnPos );
+      if ( rowPos < AFTER )
+        m_vScrollBar.scrollTo( rowPos );
+    }
   }
 
   /****************************************** toString *******************************************/

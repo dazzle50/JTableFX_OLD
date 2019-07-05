@@ -63,6 +63,7 @@ public class TableView extends TableDraw
 
     // react to mouse events
     m_canvas.setOnMouseExited( event -> mouseExited( event ) );
+    m_canvas.setOnMouseEntered( event -> mouseEntered( event ) );
     m_canvas.setOnMouseMoved( event -> mouseMoved( event ) );
     m_canvas.setOnMouseDragged( event -> mouseDragged( event ) );
     m_canvas.setOnMouseReleased( event -> mouseReleased( event ) );
@@ -164,7 +165,7 @@ public class TableView extends TableDraw
     // return header cell background
     if ( m_rowIndex == HEADER )
     {
-      if ( m_columnPos == getFocusColumnPos() )
+      if ( m_columnPos == getFocusColumnPosition() )
         return Color.LIGHTYELLOW;
       else
         return hasColumnSelection( m_columnPos ) ? Color.gray( 0.85 ) : Color.gray( 0.95 );
@@ -172,7 +173,7 @@ public class TableView extends TableDraw
 
     if ( m_columnIndex == HEADER )
     {
-      if ( m_rowPos == getFocusRowPos() )
+      if ( m_rowPos == getFocusRowPosition() )
         return Color.LIGHTYELLOW;
       else
         return hasRowSelection( m_rowPos ) ? Color.gray( 0.85 ) : Color.gray( 0.95 );
@@ -185,14 +186,14 @@ public class TableView extends TableDraw
   protected Paint getCellBackgroundPaintSelected()
   {
     // return selected cell background
-    if ( m_rowPos == getFocusRowPos() && m_columnPos == getFocusColumnPos() )
+    if ( m_rowPos == getFocusRowPosition() && m_columnPos == getFocusColumnPosition() )
       return getCellBackgroundPaintDefault();
 
     Color selected = Color.rgb( 51, 153, 255 );
     for ( int count = getSelectionCount( m_columnPos, m_rowPos ); count > 1; count-- )
       selected = selected.desaturate();
 
-    if ( m_rowPos == getSelectRowPos() && m_columnPos == getSelectColumnPos() )
+    if ( m_rowPos == getSelectRowPosition() && m_columnPos == getSelectColumnPosition() )
       selected = selected.desaturate();
 
     return isTableFocused() ? selected : selected.desaturate();
@@ -203,7 +204,7 @@ public class TableView extends TableDraw
   {
     // return cell text paint
     if ( isCellSelected( m_columnPos, m_rowPos )
-        && !( m_rowPos == getFocusRowPos() && m_columnPos == getFocusColumnPos() ) )
+        && !( m_rowPos == getFocusRowPosition() && m_columnPos == getFocusColumnPosition() ) )
       return Color.WHITE;
     else
       return Color.BLACK;

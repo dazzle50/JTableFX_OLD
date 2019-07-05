@@ -38,30 +38,22 @@ public class LargeView extends TableView
     super( data );
 
     // when mouse moved redraw old and new column to move highlighting
-    getMouseColumnProperty().addListener( ( observable, oldColumn, newColumn ) ->
+    getMouseColumnPositionProperty().addListener( ( observable, oldColumn, newColumn ) ->
     {
       int old_index = m_highlightColumnIndex;
-      int newPos = newColumn.intValue();
-      if ( newPos > BEFORE && newPos < AFTER )
-      {
-        m_highlightColumnIndex = m_columns.getIndexFromPosition( newPos );
-        redrawColumn( m_highlightColumnIndex );
-      }
+      m_highlightColumnIndex = m_columns.getIndexFromPosition( newColumn.intValue() );
       redrawColumn( old_index );
+      redrawColumn( m_highlightColumnIndex );
       redrawOverlay();
     } );
 
     // when mouse moved redraw old and new row to move highlighting
-    getMouseRowProperty().addListener( ( observable, oldRow, newRow ) ->
+    getMouseRowPositionProperty().addListener( ( observable, oldRow, newRow ) ->
     {
       int old_index = m_highlightRowIndex;
-      int newPos = newRow.intValue();
-      if ( newPos > BEFORE && newPos < AFTER )
-      {
-        m_highlightRowIndex = m_rows.getIndexFromPosition( newPos );
-        redrawRow( m_highlightRowIndex );
-      }
+      m_highlightRowIndex = m_rows.getIndexFromPosition( newRow.intValue() );
       redrawRow( old_index );
+      redrawRow( m_highlightRowIndex );
       redrawOverlay();
     } );
   }

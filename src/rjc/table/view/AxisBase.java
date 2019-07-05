@@ -78,11 +78,11 @@ public class AxisBase
       return m_indexFromPosition.indexOf( index );
 
     // if not in mapping but within count, then return index as not re-ordered
-    if ( index >= HEADER && index < getCount() )
+    if ( index >= INVALID && index < getCount() )
       return index;
 
-    // index is out of bounds, so throw exception
-    throw new IndexOutOfBoundsException( "index=" + index + " but count=" + getCount() );
+    // index is out of bounds so return invalid
+    return INVALID;
   }
 
   /************************************ getIndexFromPosition *************************************/
@@ -93,11 +93,11 @@ public class AxisBase
       return m_indexFromPosition.get( position );
 
     // if not in mapping but within count, then return position as not re-ordered
-    if ( position >= HEADER && position < getCount() )
+    if ( position >= INVALID && position < getCount() )
       return position;
 
-    // position is out of bounds, so throw exception
-    throw new IndexOutOfBoundsException( "position=" + position + " but count=" + getCount() );
+    // position is out of bounds so return invalid
+    return INVALID;
   }
 
   /**************************************** movePosition *****************************************/
