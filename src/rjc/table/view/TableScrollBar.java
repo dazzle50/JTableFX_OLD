@@ -144,7 +144,7 @@ public class TableScrollBar extends ScrollBar
       double pixelsPerSec = speed * Math.sqrt( speed );
       long elapsedNanos = System.nanoTime() - m_lastScrollNanos;
       if ( elapsedNanos < SCROLL_TO_DURATION * 1e6 )
-        setValue( getValue() + elapsedNanos * pixelsPerSec / 1e9 );
+        setValue( Math.min( getValue() + elapsedNanos * pixelsPerSec / 1e9, getMax() ) );
 
       // setup new animation
       double ms = ( getMax() - getValue() ) * 1e3 / pixelsPerSec;
@@ -158,13 +158,13 @@ public class TableScrollBar extends ScrollBar
   public void scrollToStart( double speed )
   {
     // animate scroll to beginning of axis if not already there
-    if ( isVisible() && getValue() > 0 )
+    if ( isVisible() && getValue() > getMin() )
     {
       // if last scroll value change less than SCROLL_TO_DURATION ago, update value to make animation smoother
       double pixelsPerSec = speed * Math.sqrt( speed );
       long elapsedNanos = System.nanoTime() - m_lastScrollNanos;
       if ( elapsedNanos < SCROLL_TO_DURATION * 1e6 )
-        setValue( getValue() - elapsedNanos * pixelsPerSec / 1e9 );
+        setValue( Math.max( getValue() - elapsedNanos * pixelsPerSec / 1e9, getMin() ) );
 
       // setup new animation
       double ms = getValue() * 1000.0 / pixelsPerSec;
@@ -185,7 +185,7 @@ public class TableScrollBar extends ScrollBar
   public void animate( int newValue, int duration_ms )
   {
     // ensure new value is valid
-    newValue = Utils.clamp( newValue, 0, (int) getMax() );
+    newValue = Utils.clamp( newValue, (int) getMin(), (int) getMax() );
 
     // if already scrolling to specified new-value, no need to start new animation
     if ( newValue == m_scrollingTo )

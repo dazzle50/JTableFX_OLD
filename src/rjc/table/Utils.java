@@ -29,7 +29,7 @@ import javafx.scene.control.Control;
 
 public class Utils
 {
-  public static final String      VERSION            = "v0.0.2-alpha WIP";
+  public static final String      VERSION            = "v0.0.2";
 
   public static final String      STYLE_ERROR        = "-fx-text-fill: red;";
   public static final String      STYLE_NORMAL       = "-fx-text-fill: black;";

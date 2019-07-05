@@ -5,7 +5,7 @@ An open source project for JavaFX that aims to provide a flexible and configurab
 
 * User interface control implemented using model-view-controller architecture pattern
 * Highly configurable look and behaviour via method overloading
-* Memory efficient for large tables
+* Memory & performance efficient for large tables
 * Navigation and interaction by mouse and keyboard
 * Data model defines table size plus getting and setting values
 * Default table view implementation supports (not all implemented yet)
