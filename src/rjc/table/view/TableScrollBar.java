@@ -83,7 +83,7 @@ public class TableScrollBar extends ScrollBar
   public void increment()
   {
     // increase scroll bar value to next table cell boundary
-    int headerSize = m_axis.getHeaderSize();
+    int headerSize = m_axis.getHeaderPixels();
     int pos = m_axis.getPositionFromCoordinate( headerSize, (int) getValue() );
     int nextPos = m_axis.getNext( pos );
     int start = m_axis.getStartFromPosition( nextPos, 0 ) - headerSize;
@@ -96,7 +96,7 @@ public class TableScrollBar extends ScrollBar
   public void decrement()
   {
     // decrease scroll bar value to next table cell boundary
-    int headerSize = m_axis.getHeaderSize();
+    int headerSize = m_axis.getHeaderPixels();
     int pos = m_axis.getPositionFromCoordinate( headerSize, (int) getValue() );
     int start = m_axis.getStartFromPosition( pos, 0 ) - headerSize;
 
@@ -118,7 +118,7 @@ public class TableScrollBar extends ScrollBar
       return;
 
     // check if need to scroll towards start to show cell start
-    int start = m_axis.getStartFromPosition( position, (int) getValue() ) - m_axis.getHeaderSize();
+    int start = m_axis.getStartFromPosition( position, (int) getValue() ) - m_axis.getHeaderPixels();
     if ( start < 0 )
     {
       animate( (int) getValue() + start, SCROLL_TO_DURATION );

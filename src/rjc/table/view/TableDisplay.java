@@ -18,6 +18,8 @@
 
 package rjc.table.view;
 
+import javafx.beans.property.ReadOnlyDoubleProperty;
+import javafx.beans.property.ReadOnlyDoubleWrapper;
 import javafx.scene.canvas.Canvas;
 import rjc.table.data.TableData;
 
@@ -27,22 +29,52 @@ import rjc.table.data.TableData;
 
 public class TableDisplay extends TableParent
 {
-  protected TableView      m_view;                         // shortcut to table view
-  protected TableData      m_data;                         // shortcut to table data
+  protected TableView                 m_view;                                           // shortcut to table view
+  protected TableData                 m_data;                                           // shortcut to table data
 
-  protected TableAxis      m_columns;                      // axis for vertical columns
-  protected TableAxis      m_rows;                         // axis for horizontal rows
+  protected TableAxis                 m_columns;                                        // axis for vertical columns
+  protected TableAxis                 m_rows;                                           // axis for horizontal rows
 
-  protected TableScrollBar m_vScrollBar;                   // vertical scroll bar
-  protected TableScrollBar m_hScrollBar;                   // horizontal scroll bar
-  protected Canvas         m_canvas;                       // canvas for table column & row headers and body cells
+  protected TableScrollBar            m_vScrollBar;                                     // vertical scroll bar
+  protected TableScrollBar            m_hScrollBar;                                     // horizontal scroll bar
+  protected Canvas                    m_canvas;                                         // canvas for table column & row headers and body cells
+
+  // observable double for table-view zoom
+  final private ReadOnlyDoubleWrapper m_zoomProperty = new ReadOnlyDoubleWrapper( 1.0 );
 
   // column & row index starts at 0 for table body, index of -1 is for axis header
-  final static public int  INVALID   = TableAxis.INVALID;
-  final static public int  HEADER    = TableAxis.HEADER;
-  final static public int  FIRSTCELL = TableAxis.FIRSTCELL;
-  final static public int  BEFORE    = TableAxis.BEFORE;
-  final static public int  AFTER     = TableAxis.AFTER;
+  final static public int             INVALID        = TableAxis.INVALID;
+  final static public int             HEADER         = TableAxis.HEADER;
+  final static public int             FIRSTCELL      = TableAxis.FIRSTCELL;
+  final static public int             BEFORE         = TableAxis.BEFORE;
+  final static public int             AFTER          = TableAxis.AFTER;
+
+  /******************************************* setZoom *******************************************/
+  public void setZoom( double zoom )
+  {
+    // check zoom scale is valid
+    if ( zoom < 0.01 || zoom >= 100.0 )
+      throw new IllegalArgumentException( "Zoom scale not valid " + zoom );
+
+    // set zoom scale for table-view and both axis
+    m_columns.setZoom( zoom );
+    m_rows.setZoom( zoom );
+    m_zoomProperty.set( zoom );
+  }
+
+  /******************************************* getZoom *******************************************/
+  public double getZoom()
+  {
+    // return current zoom scale
+    return m_zoomProperty.get();
+  }
+
+  /*************************************** getZoomProperty ***************************************/
+  public ReadOnlyDoubleProperty getZoomProperty()
+  {
+    // return zoom property
+    return m_zoomProperty.getReadOnlyProperty();
+  }
 
   /******************************************* resize ********************************************/
   @Override
@@ -182,28 +214,28 @@ public class TableDisplay extends TableParent
   public int getTableWidth()
   {
     // return width in pixels of all whole visible table including header
-    return m_columns.getHeaderSize() + m_columns.getBodySize();
+    return m_columns.getHeaderPixels() + m_columns.getBodyPixels();
   }
 
   /************************************** getTableHeight *****************************************/
   public int getTableHeight()
   {
     // return height in pixels of all whole visible table including header
-    return m_rows.getHeaderSize() + m_rows.getBodySize();
+    return m_rows.getHeaderPixels() + m_rows.getBodyPixels();
   }
 
   /************************************ getColumnHeaderHeight ************************************/
   public int getColumnHeaderHeight()
   {
     // return table column header height
-    return m_rows.getHeaderSize();
+    return m_rows.getHeaderPixels();
   }
 
   /************************************** getRowHeaderWidth **************************************/
   public int getRowHeaderWidth()
   {
     // return table row header width
-    return m_columns.getHeaderSize();
+    return m_columns.getHeaderPixels();
   }
 
   /*********************************** getXStartFromColumnPos ************************************/

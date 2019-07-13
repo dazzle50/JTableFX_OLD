@@ -80,4 +80,45 @@ public class TableAxis extends AxisSize
     // TODO
   }
 
+  /****************************************** getFirst *******************************************/
+  public int getFirst()
+  {
+    // return first cell body position visible
+    return getNext( HEADER );
+  }
+
+  /******************************************* getLast *******************************************/
+  public int getLast()
+  {
+    // return last cell body position visible
+    return getPrevious( getCount() );
+  }
+
+  /******************************************* getNext *******************************************/
+  public int getNext( int position )
+  {
+    // return next cell body position visible, or last if there isn't one
+    int max = getCount() - 1;
+    boolean hidden = true;
+    while ( position < max && hidden )
+      hidden = isPositionHidden( ++position );
+
+    if ( hidden )
+      return getLast();
+    return position;
+  }
+
+  /***************************************** getPrevious *****************************************/
+  public int getPrevious( int position )
+  {
+    // return previous cell body position visible, or first if there isn't one
+    boolean hidden = true;
+    while ( position > FIRSTCELL && hidden )
+      hidden = isPositionHidden( --position );
+
+    if ( hidden )
+      return getFirst();
+    return position;
+  }
+
 }

@@ -31,10 +31,11 @@ import javafx.beans.property.ReadOnlyIntegerWrapper;
 
 public class AxisSize extends AxisBase
 {
-  // variables defining default & minimum cell pixel size (width or height)
+  // variables defining default & minimum cell size (width or height) equals pixels if zoom is 1.0
   private int                          m_defaultSize;
   private int                          m_minimumSize;
   private int                          m_headerSize;
+  private double                       m_zoom                   = 1.0;
 
   // exceptions to default size, -ve means hidden
   final private Map<Integer, Integer>  m_sizeExceptions         = new HashMap<Integer, Integer>();
@@ -43,7 +44,7 @@ public class AxisSize extends AxisBase
   final private ArrayList<Integer>     m_cellPositionStartCache = new ArrayList<Integer>();
 
   // observable integer for axis total body size in pixels (excludes header)
-  final private ReadOnlyIntegerWrapper m_bodySizeCache          = new ReadOnlyIntegerWrapper( INVALID );
+  final private ReadOnlyIntegerWrapper m_bodyPixelsCache        = new ReadOnlyIntegerWrapper( INVALID );
 
   /***************************************** constructor *****************************************/
   public AxisSize( ReadOnlyIntegerProperty countProperty )
@@ -55,7 +56,7 @@ public class AxisSize extends AxisBase
     countProperty.addListener( ( observable, oldCount, newCount ) ->
     {
       // set cached body size to invalid and remove any exceptions beyond count
-      m_bodySizeCache.set( INVALID );
+      m_bodyPixelsCache.set( INVALID );
       int count = newCount.intValue();
       for ( int key : m_sizeExceptions.keySet() )
         if ( key >= count )
@@ -77,16 +78,33 @@ public class AxisSize extends AxisBase
     m_defaultSize = 100;
     m_minimumSize = 20;
     m_headerSize = 40;
+    m_zoom = 1.0;
     m_sizeExceptions.clear();
     m_cellPositionStartCache.clear();
-    m_bodySizeCache.set( INVALID );
+    m_bodyPixelsCache.set( INVALID );
   }
 
-  /***************************************** getBodySize *****************************************/
-  public int getBodySize()
+  /******************************************* setZoom *******************************************/
+  public void setZoom( double zoom )
+  {
+    // set zoom scale for this axis
+    m_zoom = zoom;
+    m_cellPositionStartCache.clear();
+    m_bodyPixelsCache.set( INVALID );
+  }
+
+  /******************************************** zoom *********************************************/
+  private int zoom( int size )
+  {
+    // convenience method to return pixels from size
+    return (int) ( size * m_zoom );
+  }
+
+  /**************************************** getBodyPixels ****************************************/
+  public int getBodyPixels()
   {
     // return axis total body size in pixels (excludes header) 
-    if ( m_bodySizeCache.get() == INVALID )
+    if ( m_bodyPixelsCache.get() == INVALID )
     {
       // cached size is invalid, so re-calculate size of table body cells
       int defaultCount = getCount();
@@ -95,22 +113,22 @@ public class AxisSize extends AxisBase
       for ( int key : m_sizeExceptions.keySet() )
       {
         defaultCount--;
-        int size = m_sizeExceptions.get( key );
+        int size = zoom( m_sizeExceptions.get( key ) );
         if ( size > 0 )
           bodySize += size;
       }
 
-      m_bodySizeCache.set( bodySize + defaultCount * m_defaultSize );
+      m_bodyPixelsCache.set( bodySize + defaultCount * zoom( m_defaultSize ) );
     }
 
-    return m_bodySizeCache.get();
+    return m_bodyPixelsCache.get();
   }
 
-  /************************************* getBodySizeProperty *************************************/
-  final public ReadOnlyIntegerProperty getBodySizeProperty()
+  /************************************ getBodyPixelsProperty ************************************/
+  final public ReadOnlyIntegerProperty getBodyPixelsProperty()
   {
     // return read-only property for body size in pixels (excludes header)
-    return m_bodySizeCache.getReadOnlyProperty();
+    return m_bodyPixelsCache.getReadOnlyProperty();
   }
 
   /*************************************** getDefaultSize ****************************************/
@@ -142,7 +160,7 @@ public class AxisSize extends AxisBase
         setMinimumSize( defaultSize );
 
       m_defaultSize = defaultSize;
-      m_bodySizeCache.set( INVALID );
+      m_bodyPixelsCache.set( INVALID );
       m_cellPositionStartCache.clear();
     }
   }
@@ -174,7 +192,7 @@ public class AxisSize extends AxisBase
             entry.setValue( -minSize );
         }
 
-        m_bodySizeCache.set( INVALID );
+        m_bodyPixelsCache.set( INVALID );
         m_cellPositionStartCache.clear();
       }
 
@@ -182,11 +200,11 @@ public class AxisSize extends AxisBase
     }
   }
 
-  /**************************************** getHeaderSize ****************************************/
-  public int getHeaderSize()
+  /*************************************** getHeaderPixels ***************************************/
+  public int getHeaderPixels()
   {
-    // return header cell size
-    return m_headerSize;
+    // return header cell size in pixels
+    return zoom( m_headerSize );
   }
 
   /**************************************** setHeaderSize ****************************************/
@@ -218,6 +236,20 @@ public class AxisSize extends AxisBase
     return size;
   }
 
+  /**************************************** getCellPixels ****************************************/
+  public int getCellPixels( int cellIndex )
+  {
+    // return cell size in pixels
+    return zoom( getCellSize( cellIndex ) );
+  }
+
+  /**************************************** setCellPixels ****************************************/
+  public void setCellPixels( int cellIndex, int newPixels )
+  {
+    // set cell size in pixels taking zoom into account
+    setCellSize( cellIndex, (int) ( newPixels / m_zoom ) );
+  }
+
   /***************************************** setCellSize *****************************************/
   public void setCellSize( int cellIndex, int newSize )
   {
@@ -236,8 +268,8 @@ public class AxisSize extends AxisBase
     // if new size is different, update body size and truncate cell position start cache if needed
     if ( newSize != oldSize )
     {
-      if ( m_bodySizeCache.get() != INVALID )
-        m_bodySizeCache.set( m_bodySizeCache.get() - oldSize + newSize );
+      if ( m_bodyPixelsCache.get() != INVALID )
+        m_bodyPixelsCache.set( (int) ( m_bodyPixelsCache.get() - zoom( oldSize ) + zoom( newSize ) ) );
 
       // truncate cell position start cache if size greater than cell position
       int cellPos = getPositionFromIndex( cellIndex ) + 1;
@@ -273,13 +305,13 @@ public class AxisSize extends AxisBase
     {
       // position zero starts after header
       if ( m_cellPositionStartCache.isEmpty() )
-        m_cellPositionStartCache.add( m_headerSize );
+        m_cellPositionStartCache.add( getHeaderPixels() );
 
       int position = m_cellPositionStartCache.size() - 1;
       int start = m_cellPositionStartCache.get( position );
       while ( cellPosition > position )
       {
-        start += getCellSize( getIndexFromPosition( position++ ) );
+        start += getCellPixels( getIndexFromPosition( position++ ) );
         m_cellPositionStartCache.add( start );
       }
     }
@@ -296,12 +328,12 @@ public class AxisSize extends AxisBase
       return BEFORE;
 
     // check if header
-    if ( coordinate < m_headerSize )
+    if ( coordinate < getHeaderPixels() )
       return HEADER;
 
     // check if after table
     coordinate += scroll;
-    if ( coordinate >= getBodySize() + m_headerSize )
+    if ( coordinate >= getBodyPixels() + getHeaderPixels() )
       return AFTER;
 
     // check within start cache
@@ -311,7 +343,7 @@ public class AxisSize extends AxisBase
     {
       while ( coordinate > start )
       {
-        start += getCellSize( getIndexFromPosition( position++ ) );
+        start += getCellPixels( getIndexFromPosition( position++ ) );
         m_cellPositionStartCache.add( start );
       }
       return coordinate == start ? position : position - 1;
@@ -347,8 +379,8 @@ public class AxisSize extends AxisBase
     if ( oldSize > 0 )
     {
       m_sizeExceptions.put( index, -oldSize );
-      if ( m_bodySizeCache.get() != INVALID )
-        m_bodySizeCache.set( m_bodySizeCache.get() - oldSize );
+      if ( m_bodyPixelsCache.get() != INVALID )
+        m_bodyPixelsCache.set( m_bodyPixelsCache.get() - zoom( oldSize ) );
 
       // truncate cell position start cache if size greater than position
       if ( m_cellPositionStartCache.size() > position )
@@ -369,54 +401,13 @@ public class AxisSize extends AxisBase
       else
         m_sizeExceptions.put( index, -oldSize );
 
-      if ( m_bodySizeCache.get() != INVALID )
-        m_bodySizeCache.set( m_bodySizeCache.get() - oldSize );
+      if ( m_bodyPixelsCache.get() != INVALID )
+        m_bodyPixelsCache.set( m_bodyPixelsCache.get() - zoom( oldSize ) );
 
       // truncate cell position start cache if size greater than position
       if ( m_cellPositionStartCache.size() > position )
         m_cellPositionStartCache.subList( position, m_cellPositionStartCache.size() ).clear();
     }
-  }
-
-  /****************************************** getFirst *******************************************/
-  public int getFirst()
-  {
-    // return first cell body position visible
-    return getNext( HEADER );
-  }
-
-  /******************************************* getLast *******************************************/
-  public int getLast()
-  {
-    // return last cell body position visible
-    return getPrevious( getCount() );
-  }
-
-  /******************************************* getNext *******************************************/
-  public int getNext( int position )
-  {
-    // return next cell body position visible, or last if there isn't one
-    int max = getCount() - 1;
-    boolean hidden = true;
-    while ( position < max && hidden )
-      hidden = isPositionHidden( ++position );
-
-    if ( hidden )
-      return getLast();
-    return position;
-  }
-
-  /***************************************** getPrevious *****************************************/
-  public int getPrevious( int position )
-  {
-    // return previous cell body position visible, or first if there isn't one
-    boolean hidden = true;
-    while ( position > FIRSTCELL && hidden )
-      hidden = isPositionHidden( --position );
-
-    if ( hidden )
-      return getFirst();
-    return position;
   }
 
 }

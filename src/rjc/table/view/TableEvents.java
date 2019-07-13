@@ -251,10 +251,45 @@ public class TableEvents extends TableSelect
           openEditor( m_data.getValue( columnIndex, rowIndex ) );
           break;
 
+        case MINUS:
+        case SUBTRACT:
+          // zoom out (Ctrl-minus)
+          if ( ctrl )
+            setViewZoom( getZoom() / Math.pow( 2.0, 0.0625 ) );
+          break;
+
+        case EQUALS:
+        case ADD:
+          // zoom in (Ctrl-plus)
+          if ( ctrl )
+            setViewZoom( getZoom() * Math.pow( 2.0, 0.0625 ) );
+          break;
+
+        case DIGIT0:
+          // zoom 1:1 (Ctrl-0)
+          if ( ctrl )
+            setViewZoom( 1.0 );
+          break;
+
         default: // anything else
+          //Utils.trace( "DEFAULT " + event.getCode() );
           break;
       }
 
+  }
+
+  /***************************************** setViewZoom *****************************************/
+  public void setViewZoom( double zoom )
+  {
+    // set zoom scale for this view
+    setZoom( zoom );
+
+    layoutDisplay();
+    m_cellXend = INVALID;
+    m_cellYend = INVALID;
+    checkMouseCellPosition();
+    checkMouseCursor();
+    redraw();
   }
 
   /***************************************** openEditor ******************************************/
@@ -381,7 +416,7 @@ public class TableEvents extends TableSelect
       else
         m_resizeIndex = m_columns.getIndexFromPosition( getMouseColumnPosition() );
 
-      m_resizeOffset = m_x - m_columns.getCellSize( m_resizeIndex );
+      m_resizeOffset = m_x - m_columns.getCellPixels( m_resizeIndex );
     }
 
     // check if row resize started
@@ -392,7 +427,7 @@ public class TableEvents extends TableSelect
       else
         m_resizeIndex = m_rows.getIndexFromPosition( getMouseRowPosition() );
 
-      m_resizeOffset = m_y - m_rows.getCellSize( m_resizeIndex );
+      m_resizeOffset = m_y - m_rows.getCellPixels( m_resizeIndex );
     }
 
     // check if whole table selected
@@ -506,7 +541,7 @@ public class TableEvents extends TableSelect
     // check if column resizing
     if ( getCursor() == Cursors.H_RESIZE && m_resizeIndex >= FIRSTCELL )
     {
-      m_columns.setCellSize( m_resizeIndex, m_x - m_resizeOffset );
+      m_columns.setCellPixels( m_resizeIndex, m_x - m_resizeOffset );
       m_cellXend = INVALID;
       widthChange( getXStartFromColumnPos( m_columns.getPositionFromIndex( m_resizeIndex ) ),
           (int) m_canvas.getWidth() );
@@ -517,7 +552,7 @@ public class TableEvents extends TableSelect
     // check if row resizing
     if ( getCursor() == Cursors.V_RESIZE && m_resizeIndex >= FIRSTCELL )
     {
-      m_rows.setCellSize( m_resizeIndex, m_y - m_resizeOffset );
+      m_rows.setCellPixels( m_resizeIndex, m_y - m_resizeOffset );
       m_cellYend = INVALID;
       heightChange( getYStartFromRowPos( m_rows.getPositionFromIndex( m_resizeIndex ) ), (int) m_canvas.getWidth() );
       layoutDisplay();

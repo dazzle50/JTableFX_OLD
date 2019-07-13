@@ -120,14 +120,22 @@ public class TableView extends TableDraw
   protected Font getCellTextFont()
   {
     // return cell text font (includes family, weight, posture, size)
-    return Font.getDefault();
+    Font font = Font.getDefault();
+    if ( getZoom() == 1.0 )
+      return font;
+
+    return Font.font( font.getFamily(), getZoom() * font.getSize() );
   }
 
   /************************************** getCellTextInsets **************************************/
   protected Insets getCellTextInsets()
   {
     // return cell text insets
-    return CELL_TEXT_INSERTS;
+    if ( getZoom() == 1.0 )
+      return CELL_TEXT_INSERTS;
+
+    return new Insets( CELL_TEXT_INSERTS.getTop() * getZoom(), CELL_TEXT_INSERTS.getRight() * getZoom(),
+        CELL_TEXT_INSERTS.getBottom() * getZoom(), CELL_TEXT_INSERTS.getLeft() * getZoom() );
   }
 
   /************************************* getCellBorderPaint **************************************/

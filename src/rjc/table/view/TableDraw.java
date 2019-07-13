@@ -53,8 +53,8 @@ public class TableDraw extends TableXML
       m_rowPos = m_rows.getPositionFromIndex( rowIndex );
       x = getXStartFromColumnPos( m_columnPos );
       y = getYStartFromRowPos( m_rowPos );
-      w = m_columns.getCellSize( columnIndex );
-      h = m_rows.getCellSize( rowIndex );
+      w = m_columns.getCellPixels( columnIndex );
+      h = m_rows.getCellPixels( rowIndex );
       drawCell();
 
       // redraw column header if overlaps row
@@ -80,7 +80,7 @@ public class TableDraw extends TableXML
       int minRowPos = getRowPositionAtY( getColumnHeaderHeight() );
       int maxRowPos = getRowPositionAtY( (int) m_canvas.getHeight() );
       x = getXStartFromColumnPos( m_columnPos );
-      w = m_columns.getCellSize( columnIndex );
+      w = m_columns.getCellPixels( columnIndex );
 
       // redraw all body cells between min and max row positions inclusive
       int max = m_data.getRowCount() - 1;
@@ -127,7 +127,7 @@ public class TableDraw extends TableXML
       int minColumnPos = getColumnPositionAtX( getRowHeaderWidth() );
       int maxColumnPos = getColumnPositionAtX( (int) m_canvas.getWidth() );
       y = getYStartFromRowPos( m_rowPos );
-      h = m_rows.getCellSize( rowIndex );
+      h = m_rows.getCellPixels( rowIndex );
 
       // redraw all body cells between min and max column positions inclusive
       int max = m_data.getColumnCount() - 1;

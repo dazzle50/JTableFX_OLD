@@ -18,6 +18,7 @@
 
 package rjc.table.demo;
 
+import javafx.application.Platform;
 import javafx.scene.Scene;
 import javafx.scene.control.Menu;
 import javafx.scene.control.MenuBar;
@@ -49,6 +50,7 @@ public class DemoWindow
     m_menus = makeMenuBar();
     m_tabs = makeTabs();
     m_statusBar = new TextField( "Started" );
+    m_statusBar.setFocusTraversable( false );
 
     // create demo window layout
     GridPane grid = new GridPane();
@@ -64,8 +66,8 @@ public class DemoWindow
     stage.setTitle( "JTableFX " + Utils.VERSION + " demo application" );
 
     // TEMP placing and sizing for my convenience #############
-    //stage.setX( -1100 );
-    //stage.setY( 700 );
+    stage.setX( -1100 );
+    stage.setY( 700 );
     stage.setWidth( 1000 );
     stage.show();
   }
@@ -100,7 +102,10 @@ public class DemoWindow
     // create demo tab pane
     TabPane tabs = new TabPane();
     tabs.getTabs().addAll( defaultTab, largeTab, editTab );
-    tabs.getSelectionModel().select( editTab );
+
+    // when selected tab changes, request focus for the tab contents 
+    tabs.getSelectionModel().selectedItemProperty()
+        .addListener( ( observable, oldT, newT ) -> Platform.runLater( () -> ( newT.getContent() ).requestFocus() ) );
 
     return tabs;
   }
