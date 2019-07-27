@@ -25,7 +25,9 @@ import javafx.scene.canvas.Canvas;
 import javafx.scene.paint.Color;
 import javafx.scene.paint.Paint;
 import javafx.scene.text.Font;
+import javafx.scene.text.FontPosture;
 import javafx.scene.text.FontSmoothingType;
+import javafx.scene.text.FontWeight;
 import rjc.table.data.TableData;
 
 /*************************************************************************************************/
@@ -116,26 +118,39 @@ public class TableView extends TableDraw
     return Pos.CENTER;
   }
 
-  /************************************** getCellTextFont ****************************************/
-  protected Font getCellTextFont()
+  /************************************* getCellTextFamily ***************************************/
+  protected String getCellTextFamily()
   {
-    // return cell text font (includes family, weight, posture, size)
-    Font font = Font.getDefault();
-    if ( getZoom() == 1.0 )
-      return font;
+    // return cell text family
+    return Font.getDefault().getFamily();
+  }
 
-    return Font.font( font.getFamily(), getZoom() * font.getSize() );
+  /************************************** getCellTextSize ****************************************/
+  protected double getCellTextSize()
+  {
+    // return cell text family
+    return Font.getDefault().getSize();
+  }
+
+  /************************************* getCellTextWeight ***************************************/
+  protected FontWeight getCellTextWeight()
+  {
+    // return cell text weight
+    return FontWeight.NORMAL;
+  }
+
+  /************************************* getCellTextPosture **************************************/
+  protected FontPosture getCellTextPosture()
+  {
+    // return cell text posture
+    return FontPosture.REGULAR;
   }
 
   /************************************** getCellTextInsets **************************************/
   protected Insets getCellTextInsets()
   {
     // return cell text insets
-    if ( getZoom() == 1.0 )
-      return CELL_TEXT_INSERTS;
-
-    return new Insets( CELL_TEXT_INSERTS.getTop() * getZoom(), CELL_TEXT_INSERTS.getRight() * getZoom(),
-        CELL_TEXT_INSERTS.getBottom() * getZoom(), CELL_TEXT_INSERTS.getLeft() * getZoom() );
+    return CELL_TEXT_INSERTS;
   }
 
   /************************************* getCellBorderPaint **************************************/

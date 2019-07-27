@@ -281,15 +281,36 @@ public class TableEvents extends TableSelect
   /***************************************** setViewZoom *****************************************/
   public void setViewZoom( double zoom )
   {
+    // is focus or select cells visible
+    boolean focusVisible = m_hScrollBar.isPosVisible( getFocusColumnPosition() )
+        && m_vScrollBar.isPosVisible( getFocusRowPosition() );
+    boolean selectVisible = m_hScrollBar.isPosVisible( getSelectColumnPosition() )
+        && m_vScrollBar.isPosVisible( getSelectRowPosition() );
+
     // set zoom scale for this view
     setZoom( zoom );
 
+    // adjust table display and redraw
     layoutDisplay();
     m_cellXend = INVALID;
     m_cellYend = INVALID;
     checkMouseCellPosition();
     checkMouseCursor();
     redraw();
+
+    // scroll if appropriate to keep focus and/or select cells visible
+    if ( focusVisible )
+    {
+      m_hScrollBar.scrollToPos( getFocusColumnPosition() );
+      m_vScrollBar.scrollToPos( getFocusRowPosition() );
+    }
+    if ( selectVisible )
+    {
+      m_hScrollBar.scrollToPos( getSelectColumnPosition() );
+      m_vScrollBar.scrollToPos( getSelectRowPosition() );
+    }
+    m_hScrollBar.finishAnimation();
+    m_vScrollBar.finishAnimation();
   }
 
   /***************************************** openEditor ******************************************/
@@ -499,7 +520,7 @@ public class TableEvents extends TableSelect
     m_cellXend = INVALID;
     m_cellYend = INVALID;
     checkMouseCellPosition();
-    if ( m_selecting == Selecting.NONE )
+    if ( m_selecting == Selecting.NONE && m_resizeIndex == INVALID )
       checkMouseCursor();
 
     m_vScrollBar.stopAnimation();
@@ -604,7 +625,7 @@ public class TableEvents extends TableSelect
         {
           setCurrentSelection( getFocusColumnPosition(), FIRSTCELL, columnPos, AFTER );
           setSelectColumnPosition( columnPos );
-          m_hScrollBar.scrollTo( columnPos );
+          m_hScrollBar.scrollToPos( columnPos );
           redraw();
         }
         return;
@@ -619,7 +640,7 @@ public class TableEvents extends TableSelect
         {
           setCurrentSelection( FIRSTCELL, getFocusRowPosition(), AFTER, rowPos );
           setSelectRowPosition( rowPos );
-          m_vScrollBar.scrollTo( rowPos );
+          m_vScrollBar.scrollToPos( rowPos );
           redraw();
         }
         return;

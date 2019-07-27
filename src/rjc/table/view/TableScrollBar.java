@@ -110,8 +110,27 @@ public class TableScrollBar extends ScrollBar
     }
   }
 
-  /****************************************** scrollTo *******************************************/
-  public void scrollTo( int position )
+  /***************************************** isPosVisible ****************************************/
+  public boolean isPosVisible( int position )
+  {
+    // check if position is in bounds
+    if ( position < TableAxis.FIRSTCELL || position >= m_axis.getCount() )
+      return false;
+
+    // check if position start is beyond canvas 
+    double max = getOrientation() == Orientation.HORIZONTAL ? getWidth() : getHeight();
+    if ( isVisible() && m_axis.getStartFromPosition( position, (int) getValue() ) > max )
+      return false;
+
+    // check if position end is before canvas
+    if ( isVisible() && m_axis.getStartFromPosition( position + 1, (int) getValue() ) < getMin() )
+      return false;
+
+    return true;
+  }
+
+  /***************************************** scrollToPos *****************************************/
+  public void scrollToPos( int position )
   {
     // if scroll bar not visible, no need to scroll
     if ( !isVisible() )

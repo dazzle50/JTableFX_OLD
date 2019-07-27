@@ -65,6 +65,9 @@ public class DemoWindow
     stage.setScene( scene );
     stage.setTitle( "JTableFX " + Utils.VERSION + " demo application" );
 
+    // select tab contents
+    Platform.runLater( () -> ( m_tabs.getSelectionModel().getSelectedItem().getContent() ).requestFocus() );
+
     // TEMP placing and sizing for my convenience #############
     stage.setX( -1100 );
     stage.setY( 700 );

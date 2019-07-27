@@ -188,6 +188,10 @@ public class CellText
   /************************************** truncateEllipsis ***************************************/
   private void truncateEllipsis( String cellText, double maxWidth )
   {
+    // if no usable width, don't add any line
+    if ( maxWidth < 1.0 )
+      return;
+
     // need to shorten text to fit maximum width (but still showing as much as possible)
     int currentLen = cellText.length();
     int testLen = (int) ( currentLen * maxWidth / bounds.getWidth() );
@@ -219,6 +223,12 @@ public class CellText
       }
       while ( testWidth > maxWidth );
 
+      if ( testWidth < 0.0 )
+      {
+        node.setText( ELLIPSIS );
+        testWidth = node.getBoundsInLocal().getWidth();
+      }
+
       Line line = new Line();
       line.txt = node.getText();
       line.w = testWidth;
@@ -230,6 +240,9 @@ public class CellText
   private double getWidthEllipsis( String text, int length )
   {
     // return bounds width of substring of text with ellipsis added
+    if ( length <= 0 )
+      return -1.0;
+
     node.setText( text.substring( 0, length ) + ELLIPSIS );
     return node.getBoundsInLocal().getWidth();
   }

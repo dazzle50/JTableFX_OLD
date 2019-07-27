@@ -231,10 +231,16 @@ public class TableSelect extends TableNavigate
     if ( clearSelection )
       clearAllSelection();
 
+    // check column & row positions are valid
+    if ( columnPos < FIRSTCELL )
+      columnPos = FIRSTCELL;
+    if ( rowPos < FIRSTCELL )
+      rowPos = FIRSTCELL;
+
     // set table select & focus cell positions
     setSelectColumnPosition( columnPos );
     setSelectRowPosition( rowPos );
-    if ( setFocus || getFocusColumnPosition() < FIRSTCELL )
+    if ( setFocus || getFocusColumnPosition() < FIRSTCELL || getFocusRowPosition() < FIRSTCELL )
     {
       setFocusColumnPosition( columnPos );
       setFocusRowPosition( rowPos );
@@ -245,9 +251,9 @@ public class TableSelect extends TableNavigate
     if ( scroll )
     {
       if ( columnPos < AFTER )
-        m_hScrollBar.scrollTo( columnPos );
+        m_hScrollBar.scrollToPos( columnPos );
       if ( rowPos < AFTER )
-        m_vScrollBar.scrollTo( rowPos );
+        m_vScrollBar.scrollToPos( rowPos );
     }
   }
 
