@@ -107,8 +107,8 @@ public class DemoWindow
     tabs.getTabs().addAll( defaultTab, largeTab, editTab );
 
     // when selected tab changes, request focus for the tab contents 
-    tabs.getSelectionModel().selectedItemProperty()
-        .addListener( ( observable, oldT, newT ) -> Platform.runLater( () -> ( newT.getContent() ).requestFocus() ) );
+    tabs.getSelectionModel().selectedItemProperty().addListener(
+        ( observable, oldTab, newTab ) -> Platform.runLater( () -> ( newTab.getContent() ).requestFocus() ) );
 
     return tabs;
   }

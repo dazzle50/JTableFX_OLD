@@ -20,6 +20,8 @@ package rjc.table.demo;
 
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
+import rjc.table.cell.CellEditorBase;
+import rjc.table.cell.EditorText;
 import rjc.table.view.TableView;
 
 /*************************************************************************************************/
@@ -62,6 +64,14 @@ public class EditView extends TableView
   {
     // return cell text insets
     return CELL_TEXT_INSERTS;
+  }
+
+  /**************************************** getCellEditor ****************************************/
+  @Override
+  public CellEditorBase getCellEditor()
+  {
+    // return cell editor, or null if cell is read-only
+    return new EditorText();
   }
 
 }

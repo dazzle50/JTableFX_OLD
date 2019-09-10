@@ -28,6 +28,8 @@ import javafx.scene.text.Font;
 import javafx.scene.text.FontPosture;
 import javafx.scene.text.FontSmoothingType;
 import javafx.scene.text.FontWeight;
+import rjc.table.Colors;
+import rjc.table.cell.CellEditorBase;
 import rjc.table.data.TableData;
 
 /*************************************************************************************************/
@@ -157,7 +159,7 @@ public class TableView extends TableDraw
   protected Paint getCellBorderPaint()
   {
     // return cell border paint
-    return Color.gray( 0.8 );
+    return Colors.CELL_BORDER;
   }
 
   /*********************************** getCellBackgroundPaint ************************************/
@@ -179,7 +181,7 @@ public class TableView extends TableDraw
   protected Paint getCellBackgroundPaintDefault()
   {
     // default table cell background
-    return Color.WHITE;
+    return Colors.CELL_DEFAULT_FILL;
   }
 
   /******************************** getCellBackgroundPaintHeader *********************************/
@@ -189,17 +191,17 @@ public class TableView extends TableDraw
     if ( m_rowIndex == HEADER )
     {
       if ( m_columnPos == getFocusColumnPosition() )
-        return Color.LIGHTYELLOW;
+        return Colors.HEADER_FOCUS;
       else
-        return hasColumnSelection( m_columnPos ) ? Color.gray( 0.85 ) : Color.gray( 0.95 );
+        return hasColumnSelection( m_columnPos ) ? Colors.HEADER_SELECTED_FILL : Colors.HEADER_DEFAULT_FILL;
     }
 
     if ( m_columnIndex == HEADER )
     {
       if ( m_rowPos == getFocusRowPosition() )
-        return Color.LIGHTYELLOW;
+        return Colors.HEADER_FOCUS;
       else
-        return hasRowSelection( m_rowPos ) ? Color.gray( 0.85 ) : Color.gray( 0.95 );
+        return hasRowSelection( m_rowPos ) ? Colors.HEADER_SELECTED_FILL : Colors.HEADER_DEFAULT_FILL;
     }
 
     throw new IllegalArgumentException( "Not header " + m_columnIndex + " " + m_rowIndex );
@@ -212,7 +214,7 @@ public class TableView extends TableDraw
     if ( m_rowPos == getFocusRowPosition() && m_columnPos == getFocusColumnPosition() )
       return getCellBackgroundPaintDefault();
 
-    Color selected = Color.rgb( 51, 153, 255 );
+    Color selected = Colors.CELL_SELECTED_FILL;
     for ( int count = getSelectionCount( m_columnPos, m_rowPos ); count > 1; count-- )
       selected = selected.desaturate();
 
@@ -228,9 +230,16 @@ public class TableView extends TableDraw
     // return cell text paint
     if ( isCellSelected( m_columnPos, m_rowPos )
         && !( m_rowPos == getFocusRowPosition() && m_columnPos == getFocusColumnPosition() ) )
-      return Color.WHITE;
+      return Colors.TEXT_SELECTED;
     else
-      return Color.BLACK;
+      return Colors.TEXT_DEFAULT;
+  }
+
+  /**************************************** getCellEditor ****************************************/
+  public CellEditorBase getCellEditor()
+  {
+    // return cell editor, or null if cell is read-only
+    return null;
   }
 
 }

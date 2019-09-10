@@ -18,9 +18,12 @@
 
 package rjc.table.view;
 
+import java.util.HashSet;
+
 import javafx.beans.property.ReadOnlyListProperty;
 import javafx.beans.property.ReadOnlyListWrapper;
 import javafx.collections.FXCollections;
+import rjc.table.Utils;
 
 /*************************************************************************************************/
 /************************************* Table area selection **************************************/
@@ -58,6 +61,12 @@ public class TableSelect extends TableNavigate
     }
   }
 
+  public class SelectedSet
+  {
+    public boolean          all; // all columns or rows selected
+    public HashSet<Integer> set;
+  }
+
   // observable list of selected areas for this table view (should always include focus cell)
   final private ReadOnlyListWrapper<Selected> m_selected = new ReadOnlyListWrapper<>(
       FXCollections.observableArrayList() );
@@ -77,7 +86,7 @@ public class TableSelect extends TableNavigate
   {
     // select entire table
     clearAllSelection();
-    setCurrentSelection( FIRSTCELL, FIRSTCELL, m_data.getColumnCount(), m_data.getRowCount() );
+    setCurrentSelection( FIRSTCELL, FIRSTCELL, AFTER, AFTER );
   }
 
   /************************************* setCurrentSelection *************************************/
@@ -192,6 +201,78 @@ public class TableSelect extends TableNavigate
       }
 
     return true;
+  }
+
+  /************************************* getSelectedColumns **************************************/
+  public SelectedSet getSelectedColumns()
+  {
+    // return return list of selected column positions
+    SelectedSet columns = new SelectedSet();
+    columns.all = false;
+    columns.set = new HashSet<>();
+
+    int first = m_columns.getFirst();
+    int last = m_columns.getLast();
+    int top = m_rows.getFirst();
+    int bottom = m_rows.getLast();
+
+    // loop through the selected areas
+    for ( Selected area : m_selected )
+    {
+      // if whole table selected then set all and exit
+      if ( area.c1 <= first && area.c2 >= last && area.r1 <= top && area.r2 >= bottom )
+      {
+        columns.all = true;
+        columns.set = null;
+        return columns;
+      }
+
+      // if columns selected then to list
+      if ( area.r1 <= top && area.r2 >= bottom )
+      {
+        for ( int column = area.c1; column <= area.c2; column++ )
+          columns.set.add( column );
+      }
+    }
+
+    Utils.trace( columns.all, columns.set );
+    return columns;
+  }
+
+  /*************************************** getSelectedRows ***************************************/
+  public SelectedSet getSelectedRows()
+  {
+    // return return list of selected row positions
+    SelectedSet rows = new SelectedSet();
+    rows.all = false;
+    rows.set = new HashSet<>();
+
+    int first = m_columns.getFirst();
+    int last = m_columns.getLast();
+    int top = m_rows.getFirst();
+    int bottom = m_rows.getLast();
+
+    // loop through the selected areas
+    for ( Selected area : m_selected )
+    {
+      // if whole table selected then set all and exit
+      if ( area.c1 <= first && area.c2 >= last && area.r1 <= top && area.r2 >= bottom )
+      {
+        rows.all = true;
+        rows.set = null;
+        return rows;
+      }
+
+      // if rows selected then to list
+      if ( area.c1 <= first && area.c2 >= last )
+      {
+        for ( int row = area.r1; row <= area.r2; row++ )
+          rows.set.add( row );
+      }
+    }
+
+    Utils.trace( rows.all, rows.set );
+    return rows;
   }
 
   /**************************************** isRowSelected ****************************************/

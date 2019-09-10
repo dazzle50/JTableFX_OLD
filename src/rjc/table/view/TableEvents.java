@@ -23,6 +23,7 @@ import javafx.scene.input.MouseButton;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.input.ScrollEvent;
 import rjc.table.Utils;
+import rjc.table.cell.CellEditorBase;
 import rjc.table.view.TableScrollBar.Animation;
 
 /*************************************************************************************************/
@@ -316,8 +317,16 @@ public class TableEvents extends TableSelect
   /***************************************** openEditor ******************************************/
   protected void openEditor( Object value )
   {
-    // open editor at focus cell
-    Utils.trace( "EDIT - NOT YET IMPLEMENTED !!! value = ", value );
+    // get editor for focus cell
+    m_view.m_columnPos = getFocusColumnPosition();
+    m_view.m_rowPos = getFocusRowPosition();
+    m_view.m_columnIndex = m_columns.getIndexFromPosition( m_view.m_columnPos );
+    m_view.m_rowIndex = m_rows.getIndexFromPosition( m_view.m_rowPos );
+    CellEditorBase editor = m_view.getCellEditor();
+
+    // open editor if provided and valid value
+    if ( editor != null && editor.isValueValid( value ) )
+      editor.open( value, m_view );
   }
 
   /************************************** insertKeyPressed ***************************************/

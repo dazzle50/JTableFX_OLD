@@ -21,8 +21,8 @@ package rjc.table.view;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.canvas.GraphicsContext;
-import javafx.scene.paint.Color;
 import javafx.scene.text.Font;
+import rjc.table.Colors;
 import rjc.table.cell.CellText;
 
 /*************************************************************************************************/
@@ -220,9 +220,9 @@ public class TableDraw extends TableXML
     if ( getFocusColumnPosition() >= FIRSTCELL && getFocusRowPosition() >= FIRSTCELL )
     {
       if ( isTableFocused() )
-        gc.setStroke( Color.CORNFLOWERBLUE );
+        gc.setStroke( Colors.OVERLAY_FOCUS );
       else
-        gc.setStroke( Color.CORNFLOWERBLUE.desaturate() );
+        gc.setStroke( Colors.OVERLAY_FOCUS.desaturate() );
 
       x = getXStartFromColumnPos( getFocusColumnPosition() );
       y = getYStartFromRowPos( getFocusRowPosition() );
