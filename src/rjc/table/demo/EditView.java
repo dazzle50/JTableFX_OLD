@@ -70,8 +70,11 @@ public class EditView extends TableView
   @Override
   public CellEditorBase getCellEditor()
   {
-    // return cell editor, or null if cell is read-only
-    return new EditorText();
+    // return text editor for column SECTION_TEXT
+    if ( m_columnIndex == EditData.SECTION_TEXT )
+      return new EditorText();
+
+    return null;
   }
 
 }

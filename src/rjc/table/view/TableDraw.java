@@ -271,17 +271,9 @@ public class TableDraw extends TableXML
   /**************************************** drawCellText *****************************************/
   protected void drawCellText( String cellText )
   {
-    // get text inserts adjusted for zoom
-    Insets insets = m_view.getCellTextInsets();
-    if ( getZoom() != 1.0 )
-      insets = new Insets( insets.getTop() * getZoom(), insets.getRight() * getZoom(), insets.getBottom() * getZoom(),
-          insets.getLeft() * getZoom() );
-
-    // get font adjusted for zoom
-    Font font = Font.font( m_view.getCellTextFamily(), m_view.getCellTextWeight(), m_view.getCellTextPosture(),
-        m_view.getCellTextSize() * getZoom() );
-
-    // get alignment and convert string into text lines
+    // get text inserts, font, alignment, and convert string into text lines
+    Insets insets = m_view.getZoomTextInsets();
+    Font font = m_view.getZoomFont();
     Pos alignment = m_view.getCellTextAlignment();
     CellText lines = new CellText( cellText, font, insets, alignment, w, h );
 

@@ -130,7 +130,42 @@ public class EditData extends TableData
   public boolean setValue( int columnIndex, int rowIndex, Object newValue )
   {
     // returns true if cell value successfully set for specified cell index
-    Utils.trace( columnIndex, rowIndex, newValue );
+    try
+    {
+      switch ( columnIndex )
+      {
+        case SECTION_TEXT:
+          m_text[rowIndex] = (String) newValue;
+          break;
+        case SECTION_INTEGER:
+          m_integer[rowIndex] = (int) newValue;
+          break;
+        case SECTION_DOUBLE:
+          m_double[rowIndex] = (double) newValue;
+          break;
+        case SECTION_DATE:
+          m_date[rowIndex] = (Date) newValue;
+          break;
+        case SECTION_TIME:
+          m_time[rowIndex] = (Time) newValue;
+          break;
+        case SECTION_DATETIME:
+          m_datetime[rowIndex] = (DateTime) newValue;
+          break;
+        default:
+          throw new IllegalArgumentException( "Column index = " + columnIndex );
+      }
+
+      redrawViews();
+      return true;
+    }
+    catch ( Exception exception )
+    {
+      // exception occurred
+      Utils.trace( exception );
+    }
+
+    // no successful setting value
     return false;
   }
 

@@ -19,6 +19,7 @@
 package rjc.table.cell;
 
 import javafx.beans.property.SimpleStringProperty;
+import javafx.geometry.Rectangle2D;
 import javafx.scene.control.Control;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
@@ -35,6 +36,8 @@ public class CellEditorBase
 
   private Control                     m_control;             // primary control that has focus
   private TableView                   m_view;                // associated table view
+  private int                         m_columnIndex;         // table view column index
+  private int                         m_rowIndex;            // table view row index
 
   /***************************************** constructor *****************************************/
   public CellEditorBase()
@@ -46,11 +49,40 @@ public class CellEditorBase
   /********************************************* open ********************************************/
   public void open( Object value, TableView view )
   {
-    // store variables
-    m_cellEditorInProgress = this;
+    // check editor is set
+    if ( m_control == null )
+      throw new IllegalStateException( "Editor control not set" );
+
+    // set editor position & size
     m_view = view;
-    setValue( value );
+    int columnPos = view.getFocusColumnPosition();
+    int rowPos = view.getFocusRowPosition();
+    m_columnIndex = view.getColumnsAxis().getIndexFromPosition( columnPos );
+    m_rowIndex = view.getRowsAxis().getIndexFromPosition( rowPos );
+    Rectangle2D cell = view.setCellContext( columnPos, rowPos );
+
+    m_control.setLayoutX( cell.getMinX() - 1 );
+    m_control.setLayoutY( cell.getMinY() - 1 );
+    m_control.setMaxSize( cell.getWidth() + 1, cell.getHeight() + 1 );
+    m_control.setMinSize( cell.getWidth() + 1, cell.getHeight() + 1 );
+
+    // if control derived from XTextField then set min & max width
+    if ( m_control instanceof XTextField )
+    {
+      double max = view.getWidth() - cell.getMinX() - 1;
+      double min = cell.getWidth() + 1;
+      if ( min > max )
+        min = max;
+      ( (XTextField) m_control ).setPadding( view.getZoomTextInsets() );
+      ( (XTextField) m_control ).setFont( view.getZoomFont() );
+      ( (XTextField) m_control ).setWidths( min, max );
+    }
+
+    // display editor, give focus, and set editor value
+    m_cellEditorInProgress = this;
+    m_view.add( m_control );
     m_control.requestFocus();
+    setValue( value );
   }
 
   /******************************************** close ********************************************/
@@ -59,6 +91,7 @@ public class CellEditorBase
     // clear any error message, remove control from table, and give focus back to table
     m_cellEditorInProgress = null;
     m_errorMessage.set( null );
+    m_view.remove( m_control );
     m_view.requestFocus();
     if ( commit )
       commit();
@@ -67,20 +100,21 @@ public class CellEditorBase
   /******************************************** commit ********************************************/
   public void commit()
   {
-    // commit value
+    // attempt to commit editor value to data source
+    m_view.getTableData().setValue( m_columnIndex, m_rowIndex, getValue() );
   }
 
   /******************************************* getValue ******************************************/
   public Object getValue()
   {
-    // get editor text
+    // get editor value - normally overloaded
     return null;
   }
 
   /******************************************* setValue ******************************************/
   public void setValue( Object value )
   {
-    // set editor text
+    // set editor value - normally overloaded
   }
 
   /****************************************** endEditing *****************************************/
@@ -95,7 +129,7 @@ public class CellEditorBase
   public Boolean isError()
   {
     // return if editor in error state
-    return m_errorMessage.get() == null;
+    return m_errorMessage.get() != null && !m_errorMessage.get().isEmpty();
   }
 
   /***************************************** isValueValid ****************************************/
@@ -108,7 +142,7 @@ public class CellEditorBase
   /***************************************** setControl ******************************************/
   public void setControl( Control control )
   {
-    // set focus control
+    // set editor main control
     m_control = control;
 
     // add listener to end editing if focus lost
@@ -131,7 +165,7 @@ public class CellEditorBase
   /***************************************** getControl ******************************************/
   public Control getControl()
   {
-    // return focus control
+    // return editor main control
     return m_control;
   }
 }

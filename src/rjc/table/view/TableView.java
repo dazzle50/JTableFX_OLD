@@ -21,6 +21,7 @@ package rjc.table.view;
 import javafx.geometry.Insets;
 import javafx.geometry.Orientation;
 import javafx.geometry.Pos;
+import javafx.geometry.Rectangle2D;
 import javafx.scene.canvas.Canvas;
 import javafx.scene.paint.Color;
 import javafx.scene.paint.Paint;
@@ -155,6 +156,26 @@ public class TableView extends TableDraw
     return CELL_TEXT_INSERTS;
   }
 
+  /************************************** getZoomTextInsets **************************************/
+  public Insets getZoomTextInsets()
+  {
+    // get text inserts adjusted for zoom
+    Insets insets = m_view.getCellTextInsets();
+    if ( getZoom() != 1.0 )
+      insets = new Insets( insets.getTop() * getZoom(), insets.getRight() * getZoom(), insets.getBottom() * getZoom(),
+          insets.getLeft() * getZoom() );
+
+    return insets;
+  }
+
+  /**************************************** getZoomFont ******************************************/
+  public Font getZoomFont()
+  {
+    // get font adjusted for zoom
+    return Font.font( m_view.getCellTextFamily(), m_view.getCellTextWeight(), m_view.getCellTextPosture(),
+        m_view.getCellTextSize() * getZoom() );
+  }
+
   /************************************* getCellBorderPaint **************************************/
   protected Paint getCellBorderPaint()
   {
@@ -240,6 +261,24 @@ public class TableView extends TableDraw
   {
     // return cell editor, or null if cell is read-only
     return null;
+  }
+
+  /*************************************** setCellContext ****************************************/
+  public Rectangle2D setCellContext( int columnPos, int rowPos )
+  {
+    // set the cell context for getCellXXXXXX methods
+    m_columnPos = columnPos;
+    m_rowPos = rowPos;
+
+    m_columnIndex = m_columns.getIndexFromPosition( columnPos );
+    m_rowIndex = m_rows.getIndexFromPosition( rowPos );
+
+    x = getXStartFromColumnPos( m_columnPos );
+    y = getYStartFromRowPos( m_rowPos );
+    w = m_columns.getCellPixels( m_columnIndex );
+    h = m_rows.getCellPixels( m_rowIndex );
+
+    return new Rectangle2D( x, y, w, h );
   }
 
 }

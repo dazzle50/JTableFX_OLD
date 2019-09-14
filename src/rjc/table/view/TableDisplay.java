@@ -210,6 +210,27 @@ public class TableDisplay extends TableParent
     m_canvas.setHeight( visibleHeight );
   }
 
+  /**************************************** getTableData *****************************************/
+  public TableData getTableData()
+  {
+    // return the view's data source
+    return m_data;
+  }
+
+  /*************************************** getColumnsAxis ****************************************/
+  public TableAxis getColumnsAxis()
+  {
+    // return the view's columns axis
+    return m_columns;
+  }
+
+  /***************************************** getRowsAxis *****************************************/
+  public TableAxis getRowsAxis()
+  {
+    // return the view's rows axis
+    return m_rows;
+  }
+
   /*************************************** getTableWidth *****************************************/
   public int getTableWidth()
   {

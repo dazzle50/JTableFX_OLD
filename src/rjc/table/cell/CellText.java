@@ -90,7 +90,7 @@ public class CellText
       }
 
       // not last line, so truncate at space if can
-      cellText = truncateLine( cellText, width - insets.getLeft() - insets.getRight() );
+      cellText = truncateLine( cellText, width );
     }
 
     // position the lines depending on the cell text alignment
