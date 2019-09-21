@@ -18,63 +18,40 @@
 
 package rjc.table.cell;
 
-import javafx.scene.input.KeyCode;
-
 /*************************************************************************************************/
-/******************************* Table cell editor for simple text *******************************/
+/****************************** Table cell spin editor for double ********************************/
 /*************************************************************************************************/
 
-public class EditorText extends CellEditorBase
+public class EditorDouble extends CellEditorBase
 {
-  private XTextField editor = new XTextField();
+  private NumberSpinField m_spin = new NumberSpinField();
 
   /**************************************** constructor ******************************************/
-  public EditorText()
+  public EditorDouble()
   {
-    // create text table cell editor
+    // create spin table cell editor for double
     super();
-    setControl( editor );
-
-    // close the editor and move editor focus on table if up or down arrows pressed
-    getControl().setOnKeyPressed( event ->
-    {
-      if ( event.getCode() == KeyCode.UP )
-      {
-        event.consume();
-        // TODO move( MoveDirection.UP );
-      }
-
-      if ( event.getCode() == KeyCode.DOWN )
-      {
-        event.consume();
-        // TODO move( MoveDirection.DOWN );
-      }
-    } );
+    m_spin.setFormat( "0.0", 1 );
+    setControl( m_spin );
   }
 
   /******************************************* getValue ******************************************/
   @Override
   public Object getValue()
   {
-    // get editor text
-    return editor.getText();
+    // get editor double value
+    return m_spin.getDouble();
   }
 
   /******************************************* setValue ******************************************/
   @Override
   public void setValue( Object value )
   {
-    // set editor text
-    String str = value == null ? "" : value.toString();
-    editor.setText( str );
-    editor.positionCaret( str.length() );
-  }
-
-  /****************************************** setAllowed *****************************************/
-  public void setAllowed( String regex )
-  {
-    // regular expression that limits what can be entered into editor
-    editor.setAllowed( regex );
+    // set value depending on type
+    if ( value instanceof Double )
+      m_spin.setDouble( (double) value );
+    else
+      m_spin.setValue( value.toString() );
   }
 
 }

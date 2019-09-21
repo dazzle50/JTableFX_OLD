@@ -18,7 +18,8 @@
 
 package rjc.table.cell;
 
-import javafx.beans.property.SimpleStringProperty;
+import javafx.beans.property.ReadOnlyStringProperty;
+import javafx.beans.property.ReadOnlyStringWrapper;
 import javafx.geometry.Rectangle2D;
 import javafx.scene.control.Control;
 import javafx.scene.input.KeyCode;
@@ -31,19 +32,20 @@ import rjc.table.view.TableView;
 
 public class CellEditorBase
 {
-  private static CellEditorBase       m_cellEditorInProgress;
-  private static SimpleStringProperty m_errorMessage;
+  private static CellEditorBase        m_cellEditorInProgress;
+  private static ReadOnlyStringWrapper m_errorMessage;
 
-  private Control                     m_control;             // primary control that has focus
-  private TableView                   m_view;                // associated table view
-  private int                         m_columnIndex;         // table view column index
-  private int                         m_rowIndex;            // table view row index
+  private Control                      m_control;             // primary control that has focus
+  private TableView                    m_view;                // associated table view
+  private int                          m_columnIndex;         // table view column index
+  private int                          m_rowIndex;            // table view row index
 
   /***************************************** constructor *****************************************/
   public CellEditorBase()
   {
     // initialise variables
-    m_errorMessage = new SimpleStringProperty();
+    if ( m_errorMessage == null )
+      m_errorMessage = new ReadOnlyStringWrapper();
   }
 
   /********************************************* open ********************************************/
@@ -125,6 +127,20 @@ public class CellEditorBase
       m_cellEditorInProgress.close( !m_cellEditorInProgress.isError() );
   }
 
+  /******************************************* setError ******************************************/
+  public void setError( String message )
+  {
+    // set error message, null means no error
+    m_errorMessage.set( message );
+  }
+
+  /*************************************** getErrorProperty **************************************/
+  public ReadOnlyStringProperty getErrorProperty()
+  {
+    // set error message, null means no error
+    return m_errorMessage.getReadOnlyProperty();
+  }
+
   /******************************************* isError *******************************************/
   public Boolean isError()
   {
@@ -136,6 +152,9 @@ public class CellEditorBase
   public boolean isValueValid( Object value )
   {
     // return if value is valid for starting cell editor
+    if ( m_control instanceof XTextField )
+      return value == null || ( (XTextField) m_control ).isAllowed( value.toString() );
+
     return true;
   }
 

@@ -21,6 +21,8 @@ package rjc.table.demo;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import rjc.table.cell.CellEditorBase;
+import rjc.table.cell.EditorDouble;
+import rjc.table.cell.EditorInteger;
 import rjc.table.cell.EditorText;
 import rjc.table.view.TableView;
 
@@ -70,9 +72,16 @@ public class EditView extends TableView
   @Override
   public CellEditorBase getCellEditor()
   {
-    // return text editor for column SECTION_TEXT
-    if ( m_columnIndex == EditData.SECTION_TEXT )
-      return new EditorText();
+    // return editor appropriate for cell
+    switch ( m_columnIndex )
+    {
+      case EditData.SECTION_TEXT:
+        return new EditorText();
+      case EditData.SECTION_INTEGER:
+        return new EditorInteger();
+      case EditData.SECTION_DOUBLE:
+        return new EditorDouble();
+    }
 
     return null;
   }
