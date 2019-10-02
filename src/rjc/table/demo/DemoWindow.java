@@ -29,6 +29,7 @@ import javafx.scene.control.TextField;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.Priority;
 import javafx.stage.Stage;
+import rjc.table.Status;
 import rjc.table.Utils;
 import rjc.table.data.TableData;
 import rjc.table.view.TableView;
@@ -39,9 +40,10 @@ import rjc.table.view.TableView;
 
 public class DemoWindow
 {
-  private MenuBar   m_menus;     // menu bar at top of window
-  private TextField m_statusBar; // status bar at bottom of window
-  private TabPane   m_tabs;      // tabs pane to show the demos
+  private static TextField m_statusBar; // status bar at bottom of window
+
+  private MenuBar          m_menus;     // menu bar at top of window
+  private TabPane          m_tabs;      // tabs pane to show the demos
 
   /**************************************** constructor ******************************************/
   public DemoWindow( Stage stage )
@@ -51,6 +53,7 @@ public class DemoWindow
     m_tabs = makeTabs();
     m_statusBar = new TextField( "Started" );
     m_statusBar.setFocusTraversable( false );
+    m_statusBar.setEditable( false );
 
     // create demo window layout
     GridPane grid = new GridPane();
@@ -147,6 +150,9 @@ public class DemoWindow
 
     benchmark.setOnAction( event ->
     {
+      // run benchmark once to get over any first-run unique delays
+      test.run();
+
       // run benchmark requested number of times
       long[] nanos = new long[count + 1];
       Utils.trace( "######### BENCHMARK START - " + name + " " + count + " times" );
@@ -158,13 +164,24 @@ public class DemoWindow
       }
 
       // report each run duration
+      long min = Long.MAX_VALUE;
+      long max = Long.MIN_VALUE;
       for ( int num = 0; num < count; num++ )
-        report( "Run " + ( num + 1 ) + " duration =", nanos[num + 1] - nanos[num] );
+      {
+        long nano = nanos[num + 1] - nanos[num];
+        report( "Run " + ( num + 1 ) + " duration =", nano );
+        if ( nano < min )
+          min = nano;
+        if ( nano > max )
+          max = nano;
+      }
 
       // report total & average duration
       long total = nanos[count] - nanos[0];
       report( "  Total duration =", total );
       report( "Average duration =", total / count );
+      report( "Minimum duration =", min );
+      report( "Maximum duration =", max );
     } );
 
     return benchmark;
@@ -196,6 +213,14 @@ public class DemoWindow
     }
 
     Utils.trace( "BENCHMARK " + text + String.format( "%8.3f", nanos / div ) + units );
+  }
+
+  /****************************************** setStatus ******************************************/
+  public static void setStatus( Status status )
+  {
+    // set status bar to show status
+    m_statusBar.setText( status == null ? null : status.getMessage() );
+    m_statusBar.setStyle( status == null ? null : status.getStyle() );
   }
 
 }

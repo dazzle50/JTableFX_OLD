@@ -21,8 +21,6 @@ package rjc.table;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 
-import javafx.scene.control.Control;
-
 /*************************************************************************************************/
 /******************* Miscellaneous utility public static methods and variables *******************/
 /*************************************************************************************************/
@@ -30,9 +28,6 @@ import javafx.scene.control.Control;
 public class Utils
 {
   public static final String      VERSION            = "v0.0.3-alpha WIP";
-
-  public static final String      STYLE_ERROR        = "-fx-text-fill: red;";
-  public static final String      STYLE_NORMAL       = "-fx-text-fill: black;";
 
   public static DateTimeFormatter timestampFormatter = DateTimeFormatter.ofPattern( "uuuu-MM-dd HH:mm:ss.SSS" );
 
@@ -128,29 +123,6 @@ public class Utils
     if ( obj1 != null )
       return obj1.equals( obj2 );
     return obj2.equals( obj1 );
-  }
-
-  /****************************************** setError *******************************************/
-  public static void setError( Control control )
-  {
-    // set error state
-    control.setId( STYLE_ERROR );
-    control.setStyle( STYLE_ERROR );
-  }
-
-  /***************************************** setNoError ******************************************/
-  public static void setNoError( Control control )
-  {
-    // remove error state
-    control.setId( null );
-    control.setStyle( STYLE_NORMAL );
-  }
-
-  /******************************************* isError *******************************************/
-  public static Boolean isError( Control control )
-  {
-    // return if control in error state
-    return control == null || control.getId() == STYLE_ERROR;
   }
 
   /******************************************** clamp ********************************************/

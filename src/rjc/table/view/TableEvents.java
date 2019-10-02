@@ -672,7 +672,7 @@ public class TableEvents extends TableSelect
   }
 
   /**************************************** mouseScroll ******************************************/
-  protected void mouseScroll( ScrollEvent event )
+  public void mouseScroll( ScrollEvent event )
   {
     // scroll up or down depending on mouse wheel scroll event
     if ( m_vScrollBar.isVisible() )

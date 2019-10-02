@@ -18,12 +18,14 @@
 
 package rjc.table.cell;
 
-import javafx.beans.property.ReadOnlyStringProperty;
-import javafx.beans.property.ReadOnlyStringWrapper;
+import javafx.beans.property.ReadOnlyObjectProperty;
+import javafx.beans.property.ReadOnlyObjectWrapper;
 import javafx.geometry.Rectangle2D;
 import javafx.scene.control.Control;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
+import rjc.table.Status;
+import rjc.table.Status.Level;
 import rjc.table.view.TableView;
 
 /*************************************************************************************************/
@@ -32,20 +34,20 @@ import rjc.table.view.TableView;
 
 public class CellEditorBase
 {
-  private static CellEditorBase        m_cellEditorInProgress;
-  private static ReadOnlyStringWrapper m_errorMessage;
+  private static CellEditorBase         m_cellEditorInProgress;
 
-  private Control                      m_control;             // primary control that has focus
-  private TableView                    m_view;                // associated table view
-  private int                          m_columnIndex;         // table view column index
-  private int                          m_rowIndex;            // table view row index
+  private Control                       m_control;             // primary control that has focus
+  private TableView                     m_view;                // associated table view
+  private int                           m_columnIndex;         // table view column index
+  private int                           m_rowIndex;            // table view row index
+
+  private ReadOnlyObjectWrapper<Status> m_status;              // error status of cell editor
 
   /***************************************** constructor *****************************************/
   public CellEditorBase()
   {
     // initialise variables
-    if ( m_errorMessage == null )
-      m_errorMessage = new ReadOnlyStringWrapper();
+    m_status = new ReadOnlyObjectWrapper<>();
   }
 
   /********************************************* open ********************************************/
@@ -68,17 +70,26 @@ public class CellEditorBase
     m_control.setMaxSize( cell.getWidth() + 1, cell.getHeight() + 1 );
     m_control.setMinSize( cell.getWidth() + 1, cell.getHeight() + 1 );
 
-    // if control derived from XTextField then set min & max width
+    // if control derived from XTextField 
     if ( m_control instanceof XTextField )
     {
+      // set min & max width
+      XTextField field = ( (XTextField) m_control );
       double max = view.getWidth() - cell.getMinX() - 1;
       double min = cell.getWidth() + 1;
       if ( min > max )
         min = max;
-      ( (XTextField) m_control ).setPadding( view.getZoomTextInsets() );
-      ( (XTextField) m_control ).setFont( view.getZoomFont() );
-      ( (XTextField) m_control ).setWidths( min, max );
+      field.setPadding( view.getZoomTextInsets() );
+      field.setFont( view.getZoomFont() );
+      field.setWidths( min, max );
+
+      // listen to text field status
+      field.getStatusProperty().addListener( ( observable, oldS, newS ) -> m_status.set( newS ) );
     }
+
+    // if control derived from NumberSpinField add wheel scroll listener
+    if ( m_control instanceof NumberSpinField )
+      view.setOnScroll( event -> ( (NumberSpinField) m_control ).mouseScroll( event ) );
 
     // display editor, give focus, and set editor value
     m_cellEditorInProgress = this;
@@ -92,8 +103,9 @@ public class CellEditorBase
   {
     // clear any error message, remove control from table, and give focus back to table
     m_cellEditorInProgress = null;
-    m_errorMessage.set( null );
+    m_status.set( null );
     m_view.remove( m_control );
+    m_view.setOnScroll( event -> m_view.mouseScroll( event ) );
     m_view.requestFocus();
     if ( commit )
       commit();
@@ -127,25 +139,19 @@ public class CellEditorBase
       m_cellEditorInProgress.close( !m_cellEditorInProgress.isError() );
   }
 
-  /******************************************* setError ******************************************/
-  public void setError( String message )
-  {
-    // set error message, null means no error
-    m_errorMessage.set( message );
-  }
-
-  /*************************************** getErrorProperty **************************************/
-  public ReadOnlyStringProperty getErrorProperty()
-  {
-    // set error message, null means no error
-    return m_errorMessage.getReadOnlyProperty();
-  }
-
   /******************************************* isError *******************************************/
   public Boolean isError()
   {
     // return if editor in error state
-    return m_errorMessage.get() != null && !m_errorMessage.get().isEmpty();
+    var level = m_status.get() == null ? null : m_status.get().getSeverity();
+    return level == Level.ERROR || level == Level.FATAL;
+  }
+
+  /************************************** getStatusProperty **************************************/
+  public ReadOnlyObjectProperty<Status> getStatusProperty()
+  {
+    // return read only status property
+    return m_status.getReadOnlyProperty();
   }
 
   /***************************************** isValueValid ****************************************/

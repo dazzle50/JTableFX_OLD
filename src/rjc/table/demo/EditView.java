@@ -72,18 +72,20 @@ public class EditView extends TableView
   @Override
   public CellEditorBase getCellEditor()
   {
-    // return editor appropriate for cell
-    switch ( m_columnIndex )
-    {
-      case EditData.SECTION_TEXT:
-        return new EditorText();
-      case EditData.SECTION_INTEGER:
-        return new EditorInteger();
-      case EditData.SECTION_DOUBLE:
-        return new EditorDouble();
-    }
+    // determine editor appropriate for cell
+    CellEditorBase editor = null;
+    if ( m_columnIndex == EditData.SECTION_TEXT )
+      editor = new EditorText();
+    if ( m_columnIndex == EditData.SECTION_INTEGER )
+      editor = new EditorInteger();
+    if ( m_columnIndex == EditData.SECTION_DOUBLE )
+      editor = new EditorDouble();
 
-    return null;
+    // listen to editor status
+    if ( editor != null )
+      editor.getStatusProperty().addListener( ( property, oldS, newS ) -> DemoWindow.setStatus( newS ) );
+
+    return editor;
   }
 
 }

@@ -24,7 +24,7 @@ import java.util.regex.Pattern;
 import javafx.scene.input.KeyEvent;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.input.ScrollEvent;
-import rjc.table.Utils;
+import rjc.table.Status;
 
 /*************************************************************************************************/
 /***************************** Generic spin editor for number values *****************************/
@@ -43,6 +43,9 @@ public class NumberSpinField extends XTextField
 
   private DecimalFormat   m_numberFormat;      // number decimal format
   private NumberSpinField m_wrapField;         // spin field for wrap support
+
+  private Status          m_rangeError;        // text associated with number being out of range
+  private Status          m_rangeNormal;       // text associated with number being in range
 
   /**************************************** constructor ******************************************/
   public NumberSpinField()
@@ -64,9 +67,15 @@ public class NumberSpinField extends XTextField
       // if spinner value not in range, set control into error state
       double num = getDouble();
       if ( num < m_minValue || num > m_maxValue || getValue().length() < 1 )
-        setStyle( Utils.STYLE_ERROR );
+      {
+        setStatus( m_rangeError );
+        setStyle( m_rangeError.getStyle() );
+      }
       else
-        setStyle( Utils.STYLE_NORMAL );
+      {
+        setStatus( m_rangeNormal );
+        setStyle( m_rangeNormal.getStyle() );
+      }
     } );
 
   }
@@ -139,7 +148,7 @@ public class NumberSpinField extends XTextField
     m_maxFractionDigits = maxFractionDigits;
     m_numberFormat = new DecimalFormat( format );
     m_numberFormat.setMaximumFractionDigits( maxFractionDigits );
-    determineAllowed();
+    setRange( m_minValue, m_maxValue );
   }
 
   /******************************************* setRange ******************************************/
@@ -150,6 +159,9 @@ public class NumberSpinField extends XTextField
       throw new IllegalArgumentException( "Min greater than max! " + minValue + " " + maxValue );
 
     // set range and number of digits after decimal point
+    m_rangeNormal = new Status();
+    m_rangeError = new Status( Status.Level.ERROR,
+        "Value not between " + m_numberFormat.format( minValue ) + " and " + m_numberFormat.format( maxValue ) );
     m_minValue = minValue;
     m_maxValue = maxValue;
     determineAllowed();
@@ -283,8 +295,8 @@ public class NumberSpinField extends XTextField
     }
   }
 
-  /***************************************** scrollEvent *****************************************/
-  public void scrollEvent( ScrollEvent event )
+  /***************************************** mouseScroll *****************************************/
+  public void mouseScroll( ScrollEvent event )
   {
     // increment or decrement value depending on mouse wheel scroll event
     if ( event.getDeltaY() > 0 )

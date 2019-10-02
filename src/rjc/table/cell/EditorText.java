@@ -18,8 +18,6 @@
 
 package rjc.table.cell;
 
-import javafx.scene.input.KeyCode;
-
 /*************************************************************************************************/
 /******************************* Table cell editor for simple text *******************************/
 /*************************************************************************************************/
@@ -34,22 +32,6 @@ public class EditorText extends CellEditorBase
     // create text table cell editor
     super();
     setControl( editor );
-
-    // close the editor and move editor focus on table if up or down arrows pressed
-    getControl().setOnKeyPressed( event ->
-    {
-      if ( event.getCode() == KeyCode.UP )
-      {
-        event.consume();
-        // TODO move( MoveDirection.UP );
-      }
-
-      if ( event.getCode() == KeyCode.DOWN )
-      {
-        event.consume();
-        // TODO move( MoveDirection.DOWN );
-      }
-    } );
   }
 
   /******************************************* getValue ******************************************/

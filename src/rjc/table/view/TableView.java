@@ -67,18 +67,18 @@ public class TableView extends TableDraw
     visibleProperty().addListener( ( observable, oldV, newV ) -> redraw() );
 
     // react to mouse events
-    m_canvas.setOnMouseExited( event -> mouseExited( event ) );
-    m_canvas.setOnMouseEntered( event -> mouseEntered( event ) );
-    m_canvas.setOnMouseMoved( event -> mouseMoved( event ) );
-    m_canvas.setOnMouseDragged( event -> mouseDragged( event ) );
-    m_canvas.setOnMouseReleased( event -> mouseReleased( event ) );
-    m_canvas.setOnMousePressed( event -> mousePressed( event ) );
-    m_canvas.setOnMouseClicked( event -> mouseClicked( event ) );
-    m_canvas.setOnScroll( event -> mouseScroll( event ) );
+    setOnMouseExited( event -> mouseExited( event ) );
+    setOnMouseEntered( event -> mouseEntered( event ) );
+    setOnMouseMoved( event -> mouseMoved( event ) );
+    setOnMouseDragged( event -> mouseDragged( event ) );
+    setOnMouseReleased( event -> mouseReleased( event ) );
+    setOnMousePressed( event -> mousePressed( event ) );
+    setOnMouseClicked( event -> mouseClicked( event ) );
+    setOnScroll( event -> mouseScroll( event ) );
 
     // react to keyboard events
-    m_canvas.setOnKeyPressed( event -> keyPressed( event ) );
-    m_canvas.setOnKeyTyped( event -> keyTyped( event ) );
+    setOnKeyPressed( event -> keyPressed( event ) );
+    setOnKeyTyped( event -> keyTyped( event ) );
 
     // react to scroll bar position value changes
     m_hScrollBar.valueProperty().addListener( ( observable, oldV, newV ) -> tableScrolled() );
