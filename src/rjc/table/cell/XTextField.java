@@ -67,8 +67,9 @@ public class XTextField extends TextField
       if ( m_minWidth > 0.0 && m_maxWidth > m_minWidth )
       {
         Text text = new Text( newText );
+        text.setFont( getFont() );
         double width = text.getLayoutBounds().getWidth() + getPadding().getLeft() + getPadding().getRight()
-            + BUTTONS_PADDING;
+            + 2 * BUTTONS_PADDING;
         if ( width < m_minWidth )
           width = m_minWidth;
         if ( width > m_maxWidth )

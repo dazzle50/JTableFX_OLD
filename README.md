@@ -14,6 +14,7 @@ An open source project for JavaFX that aims to provide a flexible and configurab
     * Cell, column, and row selection
     * Column and row resizing and hiding
     * Column and row re-ordering
+    * Zoom in and out (Ctrl +/-/0)
 * Utility support methods 
 
 ## Demo application

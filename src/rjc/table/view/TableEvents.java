@@ -292,6 +292,7 @@ public class TableEvents extends TableSelect
     setZoom( zoom );
 
     // adjust table display and redraw
+    CellEditorBase.endEditing();
     layoutDisplay();
     m_cellXend = INVALID;
     m_cellYend = INVALID;
