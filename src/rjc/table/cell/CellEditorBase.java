@@ -20,12 +20,12 @@ package rjc.table.cell;
 
 import javafx.beans.property.ReadOnlyObjectProperty;
 import javafx.beans.property.ReadOnlyObjectWrapper;
-import javafx.geometry.Rectangle2D;
 import javafx.scene.control.Control;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
 import rjc.table.Status;
 import rjc.table.Status.Level;
+import rjc.table.view.TableCell;
 import rjc.table.view.TableView;
 
 /*************************************************************************************************/
@@ -37,9 +37,7 @@ public class CellEditorBase
   private static CellEditorBase         m_cellEditorInProgress;
 
   private Control                       m_control;             // primary control that has focus
-  private TableView                     m_view;                // associated table view
-  private int                           m_columnIndex;         // table view column index
-  private int                           m_rowIndex;            // table view row index
+  private TableCell                     m_cell;                // table cell context
 
   private ReadOnlyObjectWrapper<Status> m_status;              // error status of cell editor
 
@@ -51,36 +49,31 @@ public class CellEditorBase
   }
 
   /********************************************* open ********************************************/
-  public void open( Object value, TableView view )
+  public void open( Object value, TableCell cell )
   {
     // check editor is set
     if ( m_control == null )
       throw new IllegalStateException( "Editor control not set" );
 
     // set editor position & size
-    m_view = view;
-    int columnPos = view.getFocusColumnPosition();
-    int rowPos = view.getFocusRowPosition();
-    m_columnIndex = view.getColumnsAxis().getIndexFromPosition( columnPos );
-    m_rowIndex = view.getRowsAxis().getIndexFromPosition( rowPos );
-    Rectangle2D cell = view.setCellContext( columnPos, rowPos );
-
-    m_control.setLayoutX( cell.getMinX() - 1 );
-    m_control.setLayoutY( cell.getMinY() - 1 );
-    m_control.setMaxSize( cell.getWidth() + 1, cell.getHeight() + 1 );
-    m_control.setMinSize( cell.getWidth() + 1, cell.getHeight() + 1 );
+    m_cell = cell;
+    m_control.setLayoutX( cell.x - 1 );
+    m_control.setLayoutY( cell.y - 1 );
+    m_control.setMaxSize( cell.w + 1, cell.h + 1 );
+    m_control.setMinSize( cell.w + 1, cell.h + 1 );
 
     // if control derived from XTextField 
+    TableView view = cell.view;
     if ( m_control instanceof XTextField )
     {
       // set min & max width
       XTextField field = ( (XTextField) m_control );
-      double max = view.getWidth() - cell.getMinX() - 1;
-      double min = cell.getWidth() + 1;
+      double max = view.getWidth() - cell.x - 1;
+      double min = view.getWidth() + 1;
       if ( min > max )
         min = max;
-      field.setPadding( view.getZoomTextInsets() );
-      field.setFont( view.getZoomFont() );
+      field.setPadding( view.getZoomTextInsets( cell ) );
+      field.setFont( view.getZoomFont( cell ) );
       field.setWidths( min, max );
 
       // listen to text field status
@@ -93,7 +86,7 @@ public class CellEditorBase
 
     // display editor, give focus, and set editor value
     m_cellEditorInProgress = this;
-    m_view.add( m_control );
+    view.add( m_control );
     m_control.requestFocus();
     setValue( value );
   }
@@ -104,9 +97,9 @@ public class CellEditorBase
     // clear any error message, remove control from table, and give focus back to table
     m_cellEditorInProgress = null;
     m_status.set( null );
-    m_view.remove( m_control );
-    m_view.setOnScroll( event -> m_view.mouseScroll( event ) );
-    m_view.requestFocus();
+    m_cell.view.remove( m_control );
+    m_cell.view.setOnScroll( event -> m_cell.view.mouseScroll( event ) );
+    m_cell.view.requestFocus();
     if ( commit )
       commit();
   }
@@ -115,7 +108,7 @@ public class CellEditorBase
   public void commit()
   {
     // attempt to commit editor value to data source
-    m_view.getTableData().setValue( m_columnIndex, m_rowIndex, getValue() );
+    m_cell.view.getData().setValue( m_cell.columnIndex, m_cell.rowIndex, getValue() );
   }
 
   /******************************************* getValue ******************************************/

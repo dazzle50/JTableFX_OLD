@@ -24,6 +24,7 @@ import rjc.table.cell.CellEditorBase;
 import rjc.table.cell.EditorDouble;
 import rjc.table.cell.EditorInteger;
 import rjc.table.cell.EditorText;
+import rjc.table.view.TableCell;
 import rjc.table.view.TableView;
 
 /*************************************************************************************************/
@@ -40,20 +41,20 @@ public class EditView extends TableView
     // construct customised table view
     super( data );
 
-    m_columns.setCellSize( EditData.SECTION_READONLY, 120 );
-    m_columns.setCellSize( EditData.SECTION_TEXT, 120 );
-    m_columns.setCellSize( EditData.SECTION_INTEGER, 80 );
-    m_columns.setCellSize( EditData.SECTION_DOUBLE, 80 );
-    m_columns.setCellSize( EditData.SECTION_DATETIME, 200 );
+    getColumns().setCellSize( EditData.SECTION_READONLY, 120 );
+    getColumns().setCellSize( EditData.SECTION_TEXT, 120 );
+    getColumns().setCellSize( EditData.SECTION_INTEGER, 80 );
+    getColumns().setCellSize( EditData.SECTION_DOUBLE, 80 );
+    getColumns().setCellSize( EditData.SECTION_DATETIME, 200 );
   }
 
   /************************************ getCellTextAlignment *************************************/
   @Override
-  protected Pos getCellTextAlignment()
+  protected Pos getCellTextAlignment( TableCell cell )
   {
     // return left alignment for the two text columns
-    if ( m_rowIndex > HEADER )
-      if ( m_columnIndex == EditData.SECTION_READONLY || m_columnIndex == EditData.SECTION_TEXT )
+    if ( cell.rowIndex > HEADER )
+      if ( cell.columnIndex == EditData.SECTION_READONLY || cell.columnIndex == EditData.SECTION_TEXT )
         return Pos.CENTER_LEFT;
 
     // otherwise centre alignment
@@ -62,7 +63,7 @@ public class EditView extends TableView
 
   /************************************** getCellTextInsets **************************************/
   @Override
-  protected Insets getCellTextInsets()
+  protected Insets getCellTextInsets( TableCell cell )
   {
     // return cell text insets
     return CELL_TEXT_INSERTS;
@@ -70,15 +71,15 @@ public class EditView extends TableView
 
   /**************************************** getCellEditor ****************************************/
   @Override
-  public CellEditorBase getCellEditor()
+  public CellEditorBase getCellEditor( TableCell cell )
   {
     // determine editor appropriate for cell
     CellEditorBase editor = null;
-    if ( m_columnIndex == EditData.SECTION_TEXT )
+    if ( cell.columnIndex == EditData.SECTION_TEXT )
       editor = new EditorText();
-    if ( m_columnIndex == EditData.SECTION_INTEGER )
+    if ( cell.columnIndex == EditData.SECTION_INTEGER )
       editor = new EditorInteger();
-    if ( m_columnIndex == EditData.SECTION_DOUBLE )
+    if ( cell.columnIndex == EditData.SECTION_DOUBLE )
       editor = new EditorDouble();
 
     // listen to editor status

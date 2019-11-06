@@ -18,22 +18,16 @@
 
 package rjc.table.view;
 
-import javafx.beans.property.ReadOnlyIntegerProperty;
-import javafx.beans.property.ReadOnlyIntegerWrapper;
-
 /*************************************************************************************************/
-/**************************** Table focus & select cell functionality ****************************/
+/************************** Table focus, select & mouse cell positions ***************************/
 /*************************************************************************************************/
 
 public class TableNavigate extends TableDisplay
 {
-  // observable integers for focus, select and mouse cell positions
-  final private ReadOnlyIntegerWrapper m_focusColumnPos  = new ReadOnlyIntegerWrapper( INVALID );
-  final private ReadOnlyIntegerWrapper m_focusRowPos     = new ReadOnlyIntegerWrapper( INVALID );
-  final private ReadOnlyIntegerWrapper m_selectColumnPos = new ReadOnlyIntegerWrapper( INVALID );
-  final private ReadOnlyIntegerWrapper m_selectRowPos    = new ReadOnlyIntegerWrapper( INVALID );
-  final private ReadOnlyIntegerWrapper m_mouseColumnPos  = new ReadOnlyIntegerWrapper( INVALID );
-  final private ReadOnlyIntegerWrapper m_mouseRowPos     = new ReadOnlyIntegerWrapper( INVALID );
+  // observable cell position properties
+  final private CellProperty m_focusCell  = new CellProperty();
+  final private CellProperty m_selectCell = new CellProperty();
+  final private CellProperty m_mouseCell  = new CellProperty();
 
   // directions of focus movement
   public static enum MoveDirection
@@ -41,58 +35,79 @@ public class TableNavigate extends TableDisplay
     LEFT, RIGHT, UP, DOWN, NONE
   }
 
+  /************************************ getFocusCellProperty *************************************/
+  public CellProperty getFocusCellProperty()
+  {
+    // return focus cell position property
+    return m_focusCell;
+  }
+
+  /************************************ getSelectCellProperty ************************************/
+  public CellProperty getSelectCellProperty()
+  {
+    // return select cell position property
+    return m_selectCell;
+  }
+
+  /************************************ getMouseCellProperty *************************************/
+  public CellProperty getMouseCellProperty()
+  {
+    // return mouse cell position property
+    return m_mouseCell;
+  }
+
   /****************************************** moveFocus ******************************************/
   public void moveFocus( MoveDirection direction )
   {
     // TODO if areas selected
-    int columnPos = getFocusColumnPosition();
-    int rowPos = getFocusRowPosition();
+    int columnPos = getFocusCellProperty().getColumnPos();
+    int rowPos = getFocusCellProperty().getRowPos();
     //Utils.trace( "TODO - different behaviour for selected areas", m_view.getSelectionCount() );
 
     // otherwise move within full visible table
     switch ( direction )
     {
       case DOWN:
-        rowPos = m_rows.getNext( rowPos );
-        if ( rowPos == getFocusRowPosition() )
+        rowPos = getRows().getNext( rowPos );
+        if ( rowPos == getFocusCellProperty().getRowPos() )
         {
-          rowPos = m_rows.getFirst();
-          columnPos = m_columns.getNext( columnPos );
-          if ( columnPos == getFocusColumnPosition() )
-            columnPos = m_columns.getFirst();
+          rowPos = getRows().getFirst();
+          columnPos = getColumns().getNext( columnPos );
+          if ( columnPos == getFocusCellProperty().getColumnPos() )
+            columnPos = getColumns().getFirst();
         }
         break;
 
       case UP:
-        rowPos = m_rows.getPrevious( rowPos );
-        if ( rowPos == getFocusRowPosition() )
+        rowPos = getRows().getPrevious( rowPos );
+        if ( rowPos == getFocusCellProperty().getRowPos() )
         {
-          rowPos = m_rows.getLast();
-          columnPos = m_columns.getPrevious( columnPos );
-          if ( columnPos == getFocusColumnPosition() )
-            columnPos = m_columns.getLast();
+          rowPos = getRows().getLast();
+          columnPos = getColumns().getPrevious( columnPos );
+          if ( columnPos == getFocusCellProperty().getColumnPos() )
+            columnPos = getColumns().getLast();
         }
         break;
 
       case LEFT:
-        columnPos = m_columns.getPrevious( columnPos );
-        if ( columnPos == getFocusColumnPosition() )
+        columnPos = getColumns().getPrevious( columnPos );
+        if ( columnPos == getFocusCellProperty().getColumnPos() )
         {
-          columnPos = m_columns.getLast();
-          rowPos = m_rows.getPrevious( rowPos );
-          if ( rowPos == getFocusRowPosition() )
-            rowPos = m_rows.getLast();
+          columnPos = getColumns().getLast();
+          rowPos = getRows().getPrevious( rowPos );
+          if ( rowPos == getFocusCellProperty().getRowPos() )
+            rowPos = getRows().getLast();
         }
         break;
 
       case RIGHT:
-        columnPos = m_columns.getNext( columnPos );
-        if ( columnPos == getFocusColumnPosition() )
+        columnPos = getColumns().getNext( columnPos );
+        if ( columnPos == getFocusCellProperty().getColumnPos() )
         {
-          columnPos = m_columns.getFirst();
-          rowPos = m_rows.getNext( rowPos );
-          if ( rowPos == getFocusRowPosition() )
-            rowPos = m_rows.getFirst();
+          columnPos = getColumns().getFirst();
+          rowPos = getRows().getNext( rowPos );
+          if ( rowPos == getFocusCellProperty().getRowPos() )
+            rowPos = getRows().getFirst();
         }
         break;
 
@@ -101,133 +116,7 @@ public class TableNavigate extends TableDisplay
     }
 
     // update select & focus cell positions
-    m_view.setSelectFocusPosition( columnPos, rowPos, true, true, true );
-  }
-
-  /******************************* getFocusColumnPositionProperty ********************************/
-  public ReadOnlyIntegerProperty getFocusColumnPositionProperty()
-  {
-    // return focus cell column position property
-    return m_focusColumnPos.getReadOnlyProperty();
-  }
-
-  /******************************* getSelectColumnPositionProperty *******************************/
-  public ReadOnlyIntegerProperty getSelectColumnPositionProperty()
-  {
-    // return select cell column position property
-    return m_selectColumnPos.getReadOnlyProperty();
-  }
-
-  /******************************* getMouseColumnPositionProperty ********************************/
-  public ReadOnlyIntegerProperty getMouseColumnPositionProperty()
-  {
-    // return mouse cell column position property
-    return m_mouseColumnPos.getReadOnlyProperty();
-  }
-
-  /********************************* getFocusRowPositionProperty *********************************/
-  public ReadOnlyIntegerProperty getFocusRowPositionProperty()
-  {
-    // return focus cell row position property
-    return m_focusRowPos.getReadOnlyProperty();
-  }
-
-  /******************************** getSelectRowPositionProperty *********************************/
-  public ReadOnlyIntegerProperty getSelectRowPositionProperty()
-  {
-    // return select cell row position property
-    return m_selectRowPos.getReadOnlyProperty();
-  }
-
-  /********************************* getMouseRowPositionProperty *********************************/
-  public ReadOnlyIntegerProperty getMouseRowPositionProperty()
-  {
-    // return mouse cell row position property
-    return m_mouseRowPos.getReadOnlyProperty();
-  }
-
-  /*********************************** getFocusColumnPosition ************************************/
-  public int getFocusColumnPosition()
-  {
-    // return focus cell column position
-    return m_focusColumnPos.get();
-  }
-
-  /*********************************** getSelectColumnPosition ***********************************/
-  public int getSelectColumnPosition()
-  {
-    // return select cell column position
-    return m_selectColumnPos.get();
-  }
-
-  /*********************************** getMouseColumnPosition ************************************/
-  public int getMouseColumnPosition()
-  {
-    // return mouse cell column position
-    return m_mouseColumnPos.get();
-  }
-
-  /************************************* getFocusRowPosition *************************************/
-  public int getFocusRowPosition()
-  {
-    // return focus cell row position
-    return m_focusRowPos.get();
-  }
-
-  /************************************ getSelectRowPosition *************************************/
-  public int getSelectRowPosition()
-  {
-    // return select cell row position
-    return m_selectRowPos.get();
-  }
-
-  /************************************* getMouseRowPosition *************************************/
-  public int getMouseRowPosition()
-  {
-    // return mouse cell row position
-    return m_mouseRowPos.get();
-  }
-
-  /*********************************** setFocusColumnPosition ************************************/
-  public void setFocusColumnPosition( int position )
-  {
-    // set focus cell column position
-    m_focusColumnPos.set( position );
-  }
-
-  /************************************* setFocusRowPosition *************************************/
-  public void setFocusRowPosition( int position )
-  {
-    // set focus cell row position
-    m_focusRowPos.set( position );
-  }
-
-  /*********************************** setSelectColumnPosition ***********************************/
-  public void setSelectColumnPosition( int position )
-  {
-    // set select cell column position
-    m_selectColumnPos.set( position );
-  }
-
-  /************************************ setSelectRowPosition *************************************/
-  public void setSelectRowPosition( int position )
-  {
-    // set select cell row position
-    m_selectRowPos.set( position );
-  }
-
-  /*********************************** setMouseColumnPosition ************************************/
-  public void setMouseColumnPosition( int position )
-  {
-    // set focus cell column position
-    m_mouseColumnPos.set( position );
-  }
-
-  /************************************* setMouseRowPosition *************************************/
-  public void setMouseRowPosition( int position )
-  {
-    // set focus cell row position
-    m_mouseRowPos.set( position );
+    getView().setSelectFocusPosition( columnPos, rowPos, true, true, true );
   }
 
 }

@@ -72,9 +72,9 @@ public class DemoWindow
     Platform.runLater( () -> ( m_tabs.getSelectionModel().getSelectedItem().getContent() ).requestFocus() );
 
     // TEMP placing and sizing for my convenience #############
-    //stage.setX( -1100 );
-    //stage.setY( 700 );
-    //stage.setWidth( 1000 );
+    stage.setX( -1100 );
+    stage.setY( 700 );
+    stage.setWidth( 1000 );
     stage.show();
   }
 

@@ -26,6 +26,8 @@ import javafx.scene.control.ScrollBar;
 import javafx.util.Duration;
 import rjc.table.Utils;
 import rjc.table.cell.CellEditorBase;
+import rjc.table.view.axis.TableAxis;
+import rjc.table.view.cursor.Cursors;
 
 /*************************************************************************************************/
 /*************** Extended version of ScrollBar with special increment & decrement ****************/
@@ -76,7 +78,7 @@ public class TableScrollBar extends ScrollBar
     valueProperty().addListener( ( observable, oldV, newV ) ->
     {
       m_lastScrollNanos = System.nanoTime();
-      CellEditorBase.endEditing();
+      CellEditorBase.endEditing(); // REMOVE
     } );
 
     // change cursor to default when mouse enters

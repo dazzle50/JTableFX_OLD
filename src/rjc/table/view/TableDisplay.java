@@ -20,8 +20,11 @@ package rjc.table.view;
 
 import javafx.beans.property.ReadOnlyDoubleProperty;
 import javafx.beans.property.ReadOnlyDoubleWrapper;
+import javafx.geometry.Orientation;
 import javafx.scene.canvas.Canvas;
+import javafx.scene.text.FontSmoothingType;
 import rjc.table.data.TableData;
+import rjc.table.view.axis.TableAxis;
 
 /*************************************************************************************************/
 /************************ Table view display with canvas and scroll bars *************************/
@@ -29,15 +32,15 @@ import rjc.table.data.TableData;
 
 public class TableDisplay extends TableParent
 {
-  protected TableView                 m_view;                                           // shortcut to table view
-  protected TableData                 m_data;                                           // shortcut to table data
+  private TableView                   m_view;                                           // shortcut to table view
+  private TableData                   m_data;                                           // shortcut to table data
 
-  protected TableAxis                 m_columns;                                        // axis for vertical columns
-  protected TableAxis                 m_rows;                                           // axis for horizontal rows
+  private TableAxis                   m_columns;                                        // axis for vertical columns
+  private TableAxis                   m_rows;                                           // axis for horizontal rows
 
-  protected TableScrollBar            m_vScrollBar;                                     // vertical scroll bar
-  protected TableScrollBar            m_hScrollBar;                                     // horizontal scroll bar
-  protected Canvas                    m_canvas;                                         // canvas for table column & row headers and body cells
+  private TableScrollBar              m_vScrollBar;                                     // vertical scroll bar
+  private TableScrollBar              m_hScrollBar;                                     // horizontal scroll bar
+  private Canvas                      m_canvas;                                         // canvas for table column & row headers and body cells
 
   // observable double for table-view zoom
   final private ReadOnlyDoubleWrapper m_zoomProperty = new ReadOnlyDoubleWrapper( 1.0 );
@@ -48,6 +51,61 @@ public class TableDisplay extends TableParent
   final static public int             FIRSTCELL      = TableAxis.FIRSTCELL;
   final static public int             BEFORE         = TableAxis.BEFORE;
   final static public int             AFTER          = TableAxis.AFTER;
+
+  /***************************************** construct *******************************************/
+  protected void construct( TableView view, TableData data )
+  {
+    // register associated table view and data
+    m_view = view;
+    m_data = data;
+    data.register( m_view );
+
+    // create table canvas, axis and scroll bars
+    m_canvas = new Canvas();
+    m_columns = new TableAxis( data.getColumnCountProperty() );
+    m_rows = new TableAxis( data.getRowCountProperty() );
+    m_hScrollBar = new TableScrollBar( m_columns, Orientation.HORIZONTAL );
+    m_vScrollBar = new TableScrollBar( m_rows, Orientation.VERTICAL );
+
+    // when canvas size changes draw new areas
+    m_canvas.widthProperty()
+        .addListener( ( observable, oldW, newW ) -> widthChange( oldW.intValue(), newW.intValue() ) );
+    m_canvas.heightProperty()
+        .addListener( ( observable, oldH, newH ) -> heightChange( oldH.intValue(), newH.intValue() ) );
+
+    // redraw table when focus changes
+    m_canvas.focusedProperty().addListener( ( observable, oldF, newF ) -> redraw() );
+
+    // redraw table when focus changes or becomes visible
+    visibleProperty().addListener( ( observable, oldV, newV ) -> redraw() );
+
+    // react to mouse events
+    setOnMouseExited( event -> view.mouseExited( event ) );
+    setOnMouseEntered( event -> view.mouseEntered( event ) );
+    setOnMouseMoved( event -> view.mouseMoved( event ) );
+    setOnMouseDragged( event -> view.mouseDragged( event ) );
+    setOnMouseReleased( event -> view.mouseReleased( event ) );
+    setOnMousePressed( event -> view.mousePressed( event ) );
+    setOnMouseClicked( event -> view.mouseClicked( event ) );
+    setOnScroll( event -> view.mouseScroll( event ) );
+
+    // react to keyboard events
+    setOnKeyPressed( event -> view.keyPressed( event ) );
+    setOnKeyTyped( event -> view.keyTyped( event ) );
+
+    // react to scroll bar position value changes
+    m_hScrollBar.valueProperty().addListener( ( observable, oldV, newV ) -> view.tableScrolled() );
+    m_vScrollBar.valueProperty().addListener( ( observable, oldV, newV ) -> view.tableScrolled() );
+
+    // add canvas and scroll bars to parent displayed children
+    add( m_canvas );
+    add( m_vScrollBar );
+    add( m_hScrollBar );
+
+    // setup graphics context & reset view
+    m_canvas.getGraphicsContext2D().setFontSmoothingType( FontSmoothingType.LCD );
+    view.reset();
+  }
 
   /******************************************* setZoom *******************************************/
   public void setZoom( double zoom )
@@ -114,15 +172,15 @@ public class TableDisplay extends TableParent
       if ( minColumnPos <= HEADER )
         minColumnPos = getColumnPositionAtX( getRowHeaderWidth() );
       int maxColumnPos = getColumnPositionAtX( newW );
-      m_view.redrawColumns( minColumnPos, maxColumnPos );
+      getView().redrawColumns( minColumnPos, maxColumnPos );
 
       // check if row header needs to be redrawn
       if ( maxColumnPos == HEADER
           || ( oldW < getRowHeaderWidth() && getXStartFromColumnPos( minColumnPos ) >= getRowHeaderWidth() ) )
-        m_view.redrawColumn( HEADER );
+        getView().redrawColumn( HEADER );
 
       // draw table overlay
-      m_view.redrawOverlay();
+      getView().redrawOverlay();
     }
   }
 
@@ -140,15 +198,15 @@ public class TableDisplay extends TableParent
       if ( minRowPos <= HEADER )
         minRowPos = getRowPositionAtY( getColumnHeaderHeight() );
       int maxRowPos = getRowPositionAtY( newH );
-      m_view.redrawRows( minRowPos, maxRowPos );
+      getView().redrawRows( minRowPos, maxRowPos );
 
       // check if column header needs to be redrawn
       if ( maxRowPos == HEADER
           || ( oldH < getColumnHeaderHeight() && getYStartFromRowPos( minRowPos ) >= getColumnHeaderHeight() ) )
-        m_view.redrawRow( HEADER );
+        getView().redrawRow( HEADER );
 
       // draw table overlay
-      m_view.redrawOverlay();
+      getView().redrawOverlay();
     }
   }
 
@@ -210,81 +268,109 @@ public class TableDisplay extends TableParent
     m_canvas.setHeight( visibleHeight );
   }
 
-  /**************************************** getTableData *****************************************/
-  public TableData getTableData()
+  /******************************************* getView *******************************************/
+  public TableView getView()
+  {
+    // return the table view
+    return m_view;
+  }
+
+  /******************************************* getData *******************************************/
+  public TableData getData()
   {
     // return the view's data source
     return m_data;
   }
 
-  /*************************************** getColumnsAxis ****************************************/
-  public TableAxis getColumnsAxis()
+  /****************************************** getColumns *****************************************/
+  public TableAxis getColumns()
   {
     // return the view's columns axis
     return m_columns;
   }
 
-  /***************************************** getRowsAxis *****************************************/
-  public TableAxis getRowsAxis()
+  /******************************************* getRows *******************************************/
+  public TableAxis getRows()
   {
     // return the view's rows axis
     return m_rows;
+  }
+
+  /****************************************** getCanvas ******************************************/
+  public Canvas getCanvas()
+  {
+    // return canvas where table headers and body are drawn
+    return m_canvas;
+  }
+
+  /************************************ getHorizontalScrollBar ***********************************/
+  public TableScrollBar getHorizontalScrollBar()
+  {
+    // return horizontal scroll bar
+    return m_hScrollBar;
+  }
+
+  /************************************ getVerticalScrollBar *************************************/
+  public TableScrollBar getVerticalScrollBar()
+  {
+    // return vertical scroll bar
+    return m_vScrollBar;
   }
 
   /*************************************** getTableWidth *****************************************/
   public int getTableWidth()
   {
     // return width in pixels of all whole visible table including header
-    return m_columns.getHeaderPixels() + m_columns.getBodyPixels();
+    return getColumns().getHeaderPixels() + getColumns().getBodyPixels();
   }
 
   /************************************** getTableHeight *****************************************/
   public int getTableHeight()
   {
     // return height in pixels of all whole visible table including header
-    return m_rows.getHeaderPixels() + m_rows.getBodyPixels();
+    return getRows().getHeaderPixels() + getRows().getBodyPixels();
   }
 
   /************************************ getColumnHeaderHeight ************************************/
   public int getColumnHeaderHeight()
   {
     // return table column header height
-    return m_rows.getHeaderPixels();
+    return getRows().getHeaderPixels();
   }
 
   /************************************** getRowHeaderWidth **************************************/
   public int getRowHeaderWidth()
   {
     // return table row header width
-    return m_columns.getHeaderPixels();
+    return getColumns().getHeaderPixels();
   }
 
   /*********************************** getXStartFromColumnPos ************************************/
   public int getXStartFromColumnPos( int columnPos )
   {
     // return x coordinate of cell start for specified column position
-    return m_columns.getStartFromPosition( columnPos, (int) m_hScrollBar.getValue() );
+    return getColumns().getStartFromPosition( columnPos, (int) m_hScrollBar.getValue() );
   }
 
   /************************************* getYStartFromRowPos *************************************/
   public int getYStartFromRowPos( int rowPos )
   {
     // return y coordinate of cell start for specified row position
-    return m_rows.getStartFromPosition( rowPos, (int) m_vScrollBar.getValue() );
+    return getRows().getStartFromPosition( rowPos, (int) m_vScrollBar.getValue() );
   }
 
   /*********************************** getColumnPositionAtX **************************************/
   public int getColumnPositionAtX( int x )
   {
     // return column position at specified x coordinate
-    return m_columns.getPositionFromCoordinate( x, (int) m_hScrollBar.getValue() );
+    return getColumns().getPositionFromCoordinate( x, (int) m_hScrollBar.getValue() );
   }
 
   /************************************* getRowPositionAtY ***************************************/
   public int getRowPositionAtY( int y )
   {
     // return row position at specified y coordinate
-    return m_rows.getPositionFromCoordinate( y, (int) m_vScrollBar.getValue() );
+    return getRows().getPositionFromCoordinate( y, (int) m_vScrollBar.getValue() );
   }
 
   /**************************************** requestFocus *****************************************/

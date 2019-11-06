@@ -16,7 +16,7 @@
  *  along with this program.  If not, see http://www.gnu.org/licenses/    *
  **************************************************************************/
 
-package rjc.table.view;
+package rjc.table.view.cursor;
 
 import javafx.scene.Cursor;
 import javafx.scene.ImageCursor;

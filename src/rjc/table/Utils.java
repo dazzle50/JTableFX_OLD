@@ -27,7 +27,7 @@ import java.time.format.DateTimeFormatter;
 
 public class Utils
 {
-  public static final String      VERSION            = "v0.0.3";
+  public static final String      VERSION            = "v0.0.4-alpha WIP";
 
   public static DateTimeFormatter timestampFormatter = DateTimeFormatter.ofPattern( "uuuu-MM-dd HH:mm:ss.SSS" );
 
@@ -129,7 +129,7 @@ public class Utils
   public static int clamp( int val, int min, int max )
   {
     // return integer clamped between supplied min and max
-    return Math.max( min, Math.min( max, val ) );
+    return val > max ? max : val < min ? min : val;
   }
 
 }

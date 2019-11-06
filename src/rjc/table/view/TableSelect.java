@@ -23,6 +23,7 @@ import java.util.HashSet;
 import javafx.beans.property.ReadOnlyListProperty;
 import javafx.beans.property.ReadOnlyListWrapper;
 import javafx.collections.FXCollections;
+import javafx.geometry.Orientation;
 import rjc.table.Utils;
 
 /*************************************************************************************************/
@@ -93,9 +94,9 @@ public class TableSelect extends TableNavigate
   public void setCurrentSelection()
   {
     // set current selection area to rectangle between focus and select cells
-    if ( getFocusColumnPosition() > HEADER )
-      setCurrentSelection( getFocusColumnPosition(), getFocusRowPosition(), getSelectColumnPosition(),
-          getSelectRowPosition() );
+    if ( getFocusCellProperty().getColumnPos() > HEADER )
+      setCurrentSelection( getFocusCellProperty().getColumnPos(), getFocusCellProperty().getRowPos(),
+          getSelectCellProperty().getColumnPos(), getSelectCellProperty().getRowPos() );
   }
 
   /************************************* setCurrentSelection *************************************/
@@ -186,10 +187,10 @@ public class TableSelect extends TableNavigate
   public boolean isColumnSelected( int columnPos )
   {
     // return true if all visible cells in specified column are selected
-    int top = m_rows.getFirst();
-    int bottom = m_rows.getLast();
+    int top = getRows().getFirst();
+    int bottom = getRows().getLast();
     for ( int rowPos = top; rowPos <= bottom; rowPos++ )
-      rows: if ( !m_rows.isPositionHidden( rowPos ) )
+      rows: if ( !getRows().isPositionHidden( rowPos ) )
       {
         for ( Selected area : m_selected )
           if ( area.isSelected( columnPos, rowPos ) )
@@ -211,10 +212,10 @@ public class TableSelect extends TableNavigate
     columns.all = false;
     columns.set = new HashSet<>();
 
-    int first = m_columns.getFirst();
-    int last = m_columns.getLast();
-    int top = m_rows.getFirst();
-    int bottom = m_rows.getLast();
+    int first = getColumns().getFirst();
+    int last = getColumns().getLast();
+    int top = getRows().getFirst();
+    int bottom = getRows().getLast();
 
     // loop through the selected areas
     for ( Selected area : m_selected )
@@ -247,10 +248,10 @@ public class TableSelect extends TableNavigate
     rows.all = false;
     rows.set = new HashSet<>();
 
-    int first = m_columns.getFirst();
-    int last = m_columns.getLast();
-    int top = m_rows.getFirst();
-    int bottom = m_rows.getLast();
+    int first = getColumns().getFirst();
+    int last = getColumns().getLast();
+    int top = getRows().getFirst();
+    int bottom = getRows().getLast();
 
     // loop through the selected areas
     for ( Selected area : m_selected )
@@ -279,10 +280,10 @@ public class TableSelect extends TableNavigate
   public boolean isRowSelected( int rowPos )
   {
     // return true if all visible cells in specified row are selected
-    int left = m_columns.getFirst();
-    int right = m_columns.getLast();
+    int left = getColumns().getFirst();
+    int right = getColumns().getLast();
     for ( int columnPos = left; columnPos <= right; columnPos++ )
-      columns: if ( !m_columns.isPositionHidden( columnPos ) )
+      columns: if ( !getColumns().isPositionHidden( columnPos ) )
       {
         for ( Selected area : m_selected )
           if ( area.isSelected( columnPos, rowPos ) )
@@ -319,23 +320,34 @@ public class TableSelect extends TableNavigate
       rowPos = FIRSTCELL;
 
     // set table select & focus cell positions
-    setSelectColumnPosition( columnPos );
-    setSelectRowPosition( rowPos );
-    if ( setFocus || getFocusColumnPosition() < FIRSTCELL || getFocusRowPosition() < FIRSTCELL )
-    {
-      setFocusColumnPosition( columnPos );
-      setFocusRowPosition( rowPos );
-    }
+    getSelectCellProperty().setPosition( columnPos, rowPos );
+    if ( setFocus || getFocusCellProperty().getColumnPos() < FIRSTCELL
+        || getFocusCellProperty().getRowPos() < FIRSTCELL )
+      getFocusCellProperty().setPosition( columnPos, rowPos );
     setCurrentSelection();
 
     // scroll table if necessary to show cell position
     if ( scroll )
     {
       if ( columnPos < AFTER )
-        m_hScrollBar.scrollToPos( columnPos );
+        getHorizontalScrollBar().scrollToPos( columnPos );
       if ( rowPos < AFTER )
-        m_vScrollBar.scrollToPos( rowPos );
+        getVerticalScrollBar().scrollToPos( rowPos );
     }
+  }
+
+  /***************************************** selectArea ******************************************/
+  public void selectArea( int columnPos1, int rowPos1, int columnPos2, int rowPos2 )
+  {
+    // TODO Auto-generated method stub
+
+  }
+
+  /******************************************* reorder *******************************************/
+  public void reorder( SelectedSet selected, Orientation orientation, int newPos )
+  {
+    // moved selected columns or rows to new position
+    Utils.trace( "NOT YET IMPLEMENTED !!! ", newPos, orientation, selected );
   }
 
   /****************************************** toString *******************************************/

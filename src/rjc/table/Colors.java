@@ -42,4 +42,6 @@ public class Colors
 
   public static final Color BUTTON_ARROW         = Color.BLACK;
   public static final Color BUTTON_BACKGROUND    = Color.gray( 0.85 );
+
+  public static final Color REORDER_LINE         = Color.RED;
 }

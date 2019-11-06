@@ -19,15 +19,11 @@
 package rjc.table.view;
 
 import javafx.geometry.Insets;
-import javafx.geometry.Orientation;
 import javafx.geometry.Pos;
-import javafx.geometry.Rectangle2D;
-import javafx.scene.canvas.Canvas;
 import javafx.scene.paint.Color;
 import javafx.scene.paint.Paint;
 import javafx.scene.text.Font;
 import javafx.scene.text.FontPosture;
-import javafx.scene.text.FontSmoothingType;
 import javafx.scene.text.FontWeight;
 import rjc.table.Colors;
 import rjc.table.cell.CellEditorBase;
@@ -45,122 +41,74 @@ public class TableView extends TableDraw
   public TableView( TableData data )
   {
     // setup and register table view
-    m_view = this;
-    m_data = data;
-    data.register( m_view );
-
-    // create table canvas, axis and scroll bars
-    m_canvas = new Canvas();
-    m_columns = new TableAxis( data.getColumnCountProperty() );
-    m_rows = new TableAxis( data.getRowCountProperty() );
-    m_hScrollBar = new TableScrollBar( m_columns, Orientation.HORIZONTAL );
-    m_vScrollBar = new TableScrollBar( m_rows, Orientation.VERTICAL );
-
-    // when canvas size changes draw new areas
-    m_canvas.widthProperty()
-        .addListener( ( observable, oldW, newW ) -> widthChange( oldW.intValue(), newW.intValue() ) );
-    m_canvas.heightProperty()
-        .addListener( ( observable, oldH, newH ) -> heightChange( oldH.intValue(), newH.intValue() ) );
-
-    // redraw table when focus changes or becomes visible
-    m_canvas.focusedProperty().addListener( ( observable, oldF, newF ) -> redraw() );
-    visibleProperty().addListener( ( observable, oldV, newV ) -> redraw() );
-
-    // react to mouse events
-    setOnMouseExited( event -> mouseExited( event ) );
-    setOnMouseEntered( event -> mouseEntered( event ) );
-    setOnMouseMoved( event -> mouseMoved( event ) );
-    setOnMouseDragged( event -> mouseDragged( event ) );
-    setOnMouseReleased( event -> mouseReleased( event ) );
-    setOnMousePressed( event -> mousePressed( event ) );
-    setOnMouseClicked( event -> mouseClicked( event ) );
-    setOnScroll( event -> mouseScroll( event ) );
-
-    // react to keyboard events
-    setOnKeyPressed( event -> keyPressed( event ) );
-    setOnKeyTyped( event -> keyTyped( event ) );
-
-    // react to scroll bar position value changes
-    m_hScrollBar.valueProperty().addListener( ( observable, oldV, newV ) -> tableScrolled() );
-    m_vScrollBar.valueProperty().addListener( ( observable, oldV, newV ) -> tableScrolled() );
-
-    // add canvas and scroll bars to parent displayed children
-    add( m_canvas );
-    add( m_vScrollBar );
-    add( m_hScrollBar );
-
-    // setup graphics context & reset view
-    gc = m_canvas.getGraphicsContext2D();
-    gc.setFontSmoothingType( FontSmoothingType.LCD );
-    reset();
+    construct( this, data );
   }
 
   /******************************************** reset ********************************************/
   public void reset()
   {
     // reset table view to default settings
-    m_columns.reset();
-    m_rows.reset();
-
-    m_rows.setDefaultSize( 20 );
-    m_rows.setHeaderSize( 20 );
+    getColumns().reset();
+    getRows().reset();
+    getRows().setDefaultSize( 20 );
+    getRows().setHeaderSize( 20 );
   }
 
   /**************************************** getCellText ******************************************/
-  protected String getCellText()
+  protected String getCellText( TableCell cell )
   {
     // return cell value as string
-    Object value = m_data.getValue( m_columnIndex, m_rowIndex );
+    Object value = getData().getValue( cell.columnIndex, cell.rowIndex );
     return value == null ? null : value.toString();
   }
 
   /************************************ getCellTextAlignment *************************************/
-  protected Pos getCellTextAlignment()
+  protected Pos getCellTextAlignment( TableCell cell )
   {
     // return cell text alignment
     return Pos.CENTER;
   }
 
   /************************************* getCellTextFamily ***************************************/
-  protected String getCellTextFamily()
+  protected String getCellTextFamily( TableCell cell )
   {
     // return cell text family
     return Font.getDefault().getFamily();
   }
 
   /************************************** getCellTextSize ****************************************/
-  protected double getCellTextSize()
+  protected double getCellTextSize( TableCell cell )
   {
     // return cell text family
     return Font.getDefault().getSize();
   }
 
   /************************************* getCellTextWeight ***************************************/
-  protected FontWeight getCellTextWeight()
+  protected FontWeight getCellTextWeight( TableCell cell )
   {
     // return cell text weight
     return FontWeight.NORMAL;
   }
 
   /************************************* getCellTextPosture **************************************/
-  protected FontPosture getCellTextPosture()
+  protected FontPosture getCellTextPosture( TableCell cell )
   {
     // return cell text posture
     return FontPosture.REGULAR;
   }
 
   /************************************** getCellTextInsets **************************************/
-  protected Insets getCellTextInsets()
+  protected Insets getCellTextInsets( TableCell cell )
   {
     // return cell text insets
     return CELL_TEXT_INSERTS;
   }
 
   /************************************** getZoomTextInsets **************************************/
-  public Insets getZoomTextInsets()
+  public Insets getZoomTextInsets( TableCell cell )
   {
     // get text inserts adjusted for zoom
-    Insets insets = m_view.getCellTextInsets();
+    Insets insets = getCellTextInsets( cell );
     if ( getZoom() != 1.0 )
       insets = new Insets( insets.getTop() * getZoom(), insets.getRight() * getZoom(), insets.getBottom() * getZoom(),
           insets.getLeft() * getZoom() );
@@ -169,116 +117,99 @@ public class TableView extends TableDraw
   }
 
   /**************************************** getZoomFont ******************************************/
-  public Font getZoomFont()
+  public Font getZoomFont( TableCell cell )
   {
     // get font adjusted for zoom
-    return Font.font( m_view.getCellTextFamily(), m_view.getCellTextWeight(), m_view.getCellTextPosture(),
-        m_view.getCellTextSize() * getZoom() );
+    return Font.font( getCellTextFamily( cell ), getCellTextWeight( cell ), getCellTextPosture( cell ),
+        getCellTextSize( cell ) * getZoom() );
   }
 
   /************************************* getCellBorderPaint **************************************/
-  protected Paint getCellBorderPaint()
+  protected Paint getCellBorderPaint( TableCell cell )
   {
     // return cell border paint
     return Colors.CELL_BORDER;
   }
 
   /*********************************** getCellBackgroundPaint ************************************/
-  protected Paint getCellBackgroundPaint()
+  protected Paint getCellBackgroundPaint( TableCell cell )
   {
     // return cell background paint, starting with header cells
-    if ( m_rowIndex == HEADER || m_columnIndex == HEADER )
-      return getCellBackgroundPaintHeader();
+    if ( cell.rowIndex == HEADER || cell.columnIndex == HEADER )
+      return getCellBackgroundPaintHeader( cell );
 
     // for selected cells
-    if ( isCellSelected( m_columnPos, m_rowPos ) )
-      return getCellBackgroundPaintSelected();
+    if ( isCellSelected( cell.columnPos, cell.rowPos ) )
+      return getCellBackgroundPaintSelected( cell );
 
     // otherwise default background
-    return getCellBackgroundPaintDefault();
+    return getCellBackgroundPaintDefault( cell );
   }
 
   /******************************** getCellBackgroundPaintDefault ********************************/
-  protected Paint getCellBackgroundPaintDefault()
+  protected Paint getCellBackgroundPaintDefault( TableCell cell )
   {
     // default table cell background
     return Colors.CELL_DEFAULT_FILL;
   }
 
   /******************************** getCellBackgroundPaintHeader *********************************/
-  protected Paint getCellBackgroundPaintHeader()
+  protected Paint getCellBackgroundPaintHeader( TableCell cell )
   {
     // return header cell background
-    if ( m_rowIndex == HEADER )
+    if ( cell.rowIndex == HEADER )
     {
-      if ( m_columnPos == getFocusColumnPosition() )
+      if ( cell.columnPos == getFocusCellProperty().getColumnPos() )
         return Colors.HEADER_FOCUS;
       else
-        return hasColumnSelection( m_columnPos ) ? Colors.HEADER_SELECTED_FILL : Colors.HEADER_DEFAULT_FILL;
+        return hasColumnSelection( cell.columnPos ) ? Colors.HEADER_SELECTED_FILL : Colors.HEADER_DEFAULT_FILL;
     }
 
-    if ( m_columnIndex == HEADER )
+    if ( cell.columnIndex == HEADER )
     {
-      if ( m_rowPos == getFocusRowPosition() )
+      if ( cell.rowPos == getFocusCellProperty().getRowPos() )
         return Colors.HEADER_FOCUS;
       else
-        return hasRowSelection( m_rowPos ) ? Colors.HEADER_SELECTED_FILL : Colors.HEADER_DEFAULT_FILL;
+        return hasRowSelection( cell.rowPos ) ? Colors.HEADER_SELECTED_FILL : Colors.HEADER_DEFAULT_FILL;
     }
 
-    throw new IllegalArgumentException( "Not header " + m_columnIndex + " " + m_rowIndex );
+    throw new IllegalArgumentException( "Not header " + cell.columnIndex + " " + cell.rowIndex );
   }
 
   /******************************* getCellBackgroundPaintSelected *********************************/
-  protected Paint getCellBackgroundPaintSelected()
+  protected Paint getCellBackgroundPaintSelected( TableCell cell )
   {
     // return selected cell background
-    if ( m_rowPos == getFocusRowPosition() && m_columnPos == getFocusColumnPosition() )
-      return getCellBackgroundPaintDefault();
+    if ( cell.rowPos == getFocusCellProperty().getRowPos() && cell.columnPos == getFocusCellProperty().getColumnPos() )
+      return getCellBackgroundPaintDefault( cell );
 
     Color selected = Colors.CELL_SELECTED_FILL;
-    for ( int count = getSelectionCount( m_columnPos, m_rowPos ); count > 1; count-- )
+    for ( int count = getSelectionCount( cell.columnPos, cell.rowPos ); count > 1; count-- )
       selected = selected.desaturate();
 
-    if ( m_rowPos == getSelectRowPosition() && m_columnPos == getSelectColumnPosition() )
+    if ( cell.rowPos == getSelectCellProperty().getRowPos()
+        && cell.columnPos == getSelectCellProperty().getColumnPos() )
       selected = selected.desaturate();
 
     return isTableFocused() ? selected : selected.desaturate();
   }
 
   /************************************** getCellTextPaint ***************************************/
-  protected Paint getCellTextPaint()
+  protected Paint getCellTextPaint( TableCell cell )
   {
     // return cell text paint
-    if ( isCellSelected( m_columnPos, m_rowPos )
-        && !( m_rowPos == getFocusRowPosition() && m_columnPos == getFocusColumnPosition() ) )
+    if ( isCellSelected( cell.columnPos, cell.rowPos ) && !( cell.rowPos == getFocusCellProperty().getRowPos()
+        && cell.columnPos == getFocusCellProperty().getColumnPos() ) )
       return Colors.TEXT_SELECTED;
     else
       return Colors.TEXT_DEFAULT;
   }
 
   /**************************************** getCellEditor ****************************************/
-  public CellEditorBase getCellEditor()
+  public CellEditorBase getCellEditor( TableCell cell )
   {
     // return cell editor, or null if cell is read-only
     return null;
-  }
-
-  /*************************************** setCellContext ****************************************/
-  public Rectangle2D setCellContext( int columnPos, int rowPos )
-  {
-    // set the cell context for getCellXXXXXX methods
-    m_columnPos = columnPos;
-    m_rowPos = rowPos;
-
-    m_columnIndex = m_columns.getIndexFromPosition( columnPos );
-    m_rowIndex = m_rows.getIndexFromPosition( rowPos );
-
-    x = getXStartFromColumnPos( m_columnPos );
-    y = getYStartFromRowPos( m_rowPos );
-    w = m_columns.getCellPixels( m_columnIndex );
-    h = m_rows.getCellPixels( m_rowIndex );
-
-    return new Rectangle2D( x, y, w, h );
   }
 
 }
