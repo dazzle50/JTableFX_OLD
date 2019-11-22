@@ -19,8 +19,10 @@
 package rjc.table.view.axis;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Set;
 
 import javafx.beans.property.ReadOnlyIntegerProperty;
 import javafx.beans.property.ReadOnlyIntegerWrapper;
@@ -38,10 +40,10 @@ public class AxisSize extends AxisBase
   private double                       m_zoom                   = 1.0;
 
   // exceptions to default size, -ve means hidden
-  final private Map<Integer, Integer>  m_sizeExceptions         = new HashMap<Integer, Integer>();
+  final private Map<Integer, Integer>  m_sizeExceptions         = new HashMap<>();
 
   // cached cell position start pixel coordinate
-  final private ArrayList<Integer>     m_cellPositionStartCache = new ArrayList<Integer>();
+  final private ArrayList<Integer>     m_cellPositionStartCache = new ArrayList<>();
 
   // observable integer for axis total body size in pixels (excludes header)
   final private ReadOnlyIntegerWrapper m_bodyPixelsCache        = new ReadOnlyIntegerWrapper( INVALID );
@@ -63,9 +65,7 @@ public class AxisSize extends AxisBase
           m_sizeExceptions.remove( key );
 
       // truncate cell position start if size greater than new count
-      count++;
-      if ( m_cellPositionStartCache.size() > count )
-        m_cellPositionStartCache.subList( count, m_cellPositionStartCache.size() ).clear();
+      truncateCache( count, 0 );
     } );
   }
 
@@ -268,13 +268,9 @@ public class AxisSize extends AxisBase
     // if new size is different, update body size and truncate cell position start cache if needed
     if ( newSize != oldSize )
     {
-      if ( m_bodyPixelsCache.get() != INVALID )
-        m_bodyPixelsCache.set( (int) ( m_bodyPixelsCache.get() - zoom( oldSize ) + zoom( newSize ) ) );
-
-      // truncate cell position start cache if size greater than cell position
-      int cellPos = getPositionFromIndex( cellIndex ) + 1;
-      if ( m_cellPositionStartCache.size() > cellPos )
-        m_cellPositionStartCache.subList( cellPos, m_cellPositionStartCache.size() ).clear();
+      int position = getPositionFromIndex( cellIndex ) + 1;
+      int delta = zoom( newSize ) - zoom( oldSize );
+      truncateCache( position, delta );
     }
   }
 
@@ -286,7 +282,11 @@ public class AxisSize extends AxisBase
       throw new IndexOutOfBoundsException( "cell index=" + cellIndex + " but count=" + getCount() );
 
     // remove cell index size exception if exists
-    m_sizeExceptions.remove( cellIndex );
+    if ( m_sizeExceptions.remove( cellIndex ) != null )
+    {
+      m_bodyPixelsCache.set( INVALID );
+      m_cellPositionStartCache.clear();
+    }
   }
 
   /************************************ getStartFromPosition *************************************/
@@ -379,12 +379,7 @@ public class AxisSize extends AxisBase
     if ( oldSize > 0 )
     {
       m_sizeExceptions.put( index, -oldSize );
-      if ( m_bodyPixelsCache.get() != INVALID )
-        m_bodyPixelsCache.set( m_bodyPixelsCache.get() - zoom( oldSize ) );
-
-      // truncate cell position start cache if size greater than position
-      if ( m_cellPositionStartCache.size() > position )
-        m_cellPositionStartCache.subList( position, m_cellPositionStartCache.size() ).clear();
+      truncateCache( position, -zoom( oldSize ) );
     }
   }
 
@@ -401,13 +396,40 @@ public class AxisSize extends AxisBase
       else
         m_sizeExceptions.put( index, -oldSize );
 
-      if ( m_bodyPixelsCache.get() != INVALID )
-        m_bodyPixelsCache.set( m_bodyPixelsCache.get() - zoom( oldSize ) );
-
-      // truncate cell position start cache if size greater than position
-      if ( m_cellPositionStartCache.size() > position )
-        m_cellPositionStartCache.subList( position, m_cellPositionStartCache.size() ).clear();
+      truncateCache( position, -zoom( oldSize ) );
     }
+  }
+
+  /**************************************** truncateCache ****************************************/
+  public void truncateCache( int position, int deltaSize )
+  {
+    // update body size cache if not invalid
+    if ( m_bodyPixelsCache.get() != INVALID )
+      m_bodyPixelsCache.set( m_bodyPixelsCache.get() + deltaSize );
+
+    // truncate cell position start cache if size greater than position
+    if ( m_cellPositionStartCache.size() > position )
+      m_cellPositionStartCache.subList( position, m_cellPositionStartCache.size() ).clear();
+  }
+
+  /**************************************** movePosition *****************************************/
+  @Override
+  final public void movePosition( int oldPosition, int newPosition )
+  {
+    // re-order indexes on axis and truncate cell location cache
+    super.movePosition( oldPosition, newPosition );
+    int pos = Math.min( oldPosition, newPosition );
+    truncateCache( pos, 0 );
+  }
+
+  /**************************************** movePositions ****************************************/
+  @Override
+  public void movePositions( Set<Integer> positions, int newPosition )
+  {
+    // re-order indexes on axis and truncate cell location cache
+    super.movePositions( positions, newPosition );
+    int pos = Math.min( Collections.min( positions ), newPosition );
+    truncateCache( pos, 0 );
   }
 
 }

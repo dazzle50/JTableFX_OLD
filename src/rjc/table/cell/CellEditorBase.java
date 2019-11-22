@@ -69,7 +69,7 @@ public class CellEditorBase
       // set min & max width
       XTextField field = ( (XTextField) m_control );
       double max = view.getWidth() - cell.x - 1;
-      double min = view.getWidth() + 1;
+      double min = cell.w + 1;
       if ( min > max )
         min = max;
       field.setPadding( view.getZoomTextInsets( cell ) );

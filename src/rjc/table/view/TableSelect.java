@@ -23,8 +23,6 @@ import java.util.HashSet;
 import javafx.beans.property.ReadOnlyListProperty;
 import javafx.beans.property.ReadOnlyListWrapper;
 import javafx.collections.FXCollections;
-import javafx.geometry.Orientation;
-import rjc.table.Utils;
 
 /*************************************************************************************************/
 /************************************* Table area selection **************************************/
@@ -57,15 +55,22 @@ public class TableSelect extends TableNavigate
     @Override
     public String toString()
     {
-      return getClass().getSimpleName() + "@" + Integer.toHexString( hashCode() ) + "[c1=" + c1 + " r1=" + r1 + " c2="
-          + c2 + " r2=" + r2 + "]";
+      return getClass().getSimpleName() + "@" + Integer.toHexString( System.identityHashCode( this ) ) + "[c1=" + c1
+          + " r1=" + r1 + " c2=" + c2 + " r2=" + r2 + "]";
     }
   }
 
   public class SelectedSet
   {
-    public boolean          all; // all columns or rows selected
-    public HashSet<Integer> set;
+    public boolean          all = false;          // all columns or rows selected
+    public HashSet<Integer> set = new HashSet<>();
+
+    @Override
+    public String toString()
+    {
+      return getClass().getSimpleName() + "@" + Integer.toHexString( System.identityHashCode( this ) ) + "[" + all + " "
+          + set + "]";
+    }
   }
 
   // observable list of selected areas for this table view (should always include focus cell)
@@ -209,8 +214,6 @@ public class TableSelect extends TableNavigate
   {
     // return return list of selected column positions
     SelectedSet columns = new SelectedSet();
-    columns.all = false;
-    columns.set = new HashSet<>();
 
     int first = getColumns().getFirst();
     int last = getColumns().getLast();
@@ -236,7 +239,6 @@ public class TableSelect extends TableNavigate
       }
     }
 
-    Utils.trace( columns.all, columns.set );
     return columns;
   }
 
@@ -245,8 +247,6 @@ public class TableSelect extends TableNavigate
   {
     // return return list of selected row positions
     SelectedSet rows = new SelectedSet();
-    rows.all = false;
-    rows.set = new HashSet<>();
 
     int first = getColumns().getFirst();
     int last = getColumns().getLast();
@@ -272,7 +272,6 @@ public class TableSelect extends TableNavigate
       }
     }
 
-    Utils.trace( rows.all, rows.set );
     return rows;
   }
 
@@ -343,20 +342,13 @@ public class TableSelect extends TableNavigate
 
   }
 
-  /******************************************* reorder *******************************************/
-  public void reorder( SelectedSet selected, Orientation orientation, int newPos )
-  {
-    // moved selected columns or rows to new position
-    Utils.trace( "NOT YET IMPLEMENTED !!! ", newPos, orientation, selected );
-  }
-
   /****************************************** toString *******************************************/
   @Override
   public String toString()
   {
     // convert to string
-    return getClass().getSimpleName() + "@" + Integer.toHexString( hashCode() ) + "[selected=" + m_selected.size()
-        + "]";
+    return getClass().getSimpleName() + "@" + Integer.toHexString( System.identityHashCode( this ) ) + "[selected="
+        + m_selected.size() + "]";
   }
 
 }

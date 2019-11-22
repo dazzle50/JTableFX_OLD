@@ -55,18 +55,18 @@ public class Reorder
     m_slider = new Canvas();
   }
 
-  /******************************************* isStart *******************************************/
-  public boolean isStarted()
+  /*************************************** getOrientation ****************************************/
+  public Orientation getOrientation()
   {
-    // return true if reordering activity has been started (i.e. table view is set)
-    return m_view != null;
+    // return reordering orientation, or null is not started
+    return m_orientation;
   }
 
   /******************************************** start ********************************************/
   public void start( TableView view, Orientation orientation, SelectedSet selected )
   {
     // checks before start reordering
-    if ( isStarted() )
+    if ( getOrientation() != null )
       throw new IllegalStateException( "Reordering already started" );
     if ( view == null )
       throw new NullPointerException( "TableView must not be null" );
@@ -107,7 +107,7 @@ public class Reorder
   public void setPlacement( int coordinate )
   {
     // update line and slider positions
-    if ( !isStarted() )
+    if ( getOrientation() == null )
       throw new IllegalStateException( "Reordering not started" );
 
     if ( m_orientation == Orientation.HORIZONTAL )
@@ -120,6 +120,20 @@ public class Reorder
       m_pos = coordinate - xs < xe - coordinate ? columnPos : columnPos + 1;
       double x = coordinate - xs < xe - coordinate ? xs : xe;
 
+      // check x is on visible edge
+      if ( x > m_view.getCanvas().getWidth() )
+      {
+        m_pos = m_view.getColumnPositionAtX( (int) m_view.getCanvas().getWidth() );
+        x = m_view.getXStartFromColumnPos( m_pos );
+      }
+      if ( x < m_view.getRowHeaderWidth() )
+      {
+        m_pos = m_view.getColumnPositionAtX( m_view.getRowHeaderWidth() );
+        m_pos = m_view.getColumns().getNext( m_pos );
+        x = m_view.getXStartFromColumnPos( m_pos );
+      }
+
+      // place line on column edge
       m_line.setStartX( x );
       m_line.setEndX( x );
     }
@@ -133,6 +147,20 @@ public class Reorder
       m_pos = coordinate - ys < ye - coordinate ? rowPos : rowPos + 1;
       double y = coordinate - ys < ye - coordinate ? ys : ye;
 
+      // check y is on visible edge
+      if ( y > m_view.getCanvas().getHeight() )
+      {
+        m_pos = m_view.getRowPositionAtY( (int) m_view.getCanvas().getHeight() );
+        y = m_view.getYStartFromRowPos( m_pos );
+      }
+      if ( y < m_view.getColumnHeaderHeight() )
+      {
+        m_pos = m_view.getRowPositionAtY( m_view.getColumnHeaderHeight() );
+        m_pos = m_view.getRows().getNext( m_pos );
+        y = m_view.getYStartFromRowPos( m_pos );
+      }
+
+      // place line on row edge
       m_line.setStartY( y );
       m_line.setEndY( y );
     }
@@ -142,13 +170,21 @@ public class Reorder
   public void end()
   {
     // end any reordering
-    if ( isStarted() )
+    if ( getOrientation() != null )
     {
       // remove line and slider from table, reorder, and end reordering
       m_view.remove( m_line );
       m_view.remove( m_slider );
-      m_view.reorder( m_selected, m_orientation, m_pos );
+
+      // moved selected columns or rows to new position
+      if ( m_orientation == Orientation.HORIZONTAL )
+        m_view.getColumns().movePositions( m_selected.set, m_pos );
+      else
+        m_view.getRows().movePositions( m_selected.set, m_pos );
+
+      m_view.redraw();
       m_view = null;
+      m_orientation = null;
     }
   }
 

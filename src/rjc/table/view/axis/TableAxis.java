@@ -30,7 +30,7 @@ import javafx.beans.property.ReadOnlyIntegerProperty;
 public class TableAxis extends AxisSize
 {
   // set of collapsed positions
-  private Set<Integer> m_collapsed = new HashSet<Integer>();
+  private HashSet<Integer> m_collapsed = new HashSet<>();
 
   /**************************************** constructor ******************************************/
   public TableAxis( ReadOnlyIntegerProperty countProperty )

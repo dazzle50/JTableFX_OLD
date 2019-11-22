@@ -19,6 +19,8 @@
 package rjc.table.view.axis;
 
 import java.util.ArrayList;
+import java.util.Set;
+import java.util.TreeSet;
 
 import javafx.beans.property.ReadOnlyIntegerProperty;
 
@@ -32,7 +34,7 @@ public class AxisBase
   private ReadOnlyIntegerProperty  m_countProperty;
 
   // array mapping from position to index
-  final private ArrayList<Integer> m_indexFromPosition = new ArrayList<Integer>();
+  final private ArrayList<Integer> m_indexFromPosition = new ArrayList<>();
 
   // axis index starts at 0 for table body, index of -1 is for axis header
   final static public int          INVALID             = -2;
@@ -101,7 +103,7 @@ public class AxisBase
   }
 
   /**************************************** movePosition *****************************************/
-  final public void movePosition( int oldPosition, int newPosition )
+  public void movePosition( int oldPosition, int newPosition )
   {
     // check positions are within axis count
     int count = getCount();
@@ -121,7 +123,36 @@ public class AxisBase
 
     // move index from old position to new position
     int index = m_indexFromPosition.remove( oldPosition );
+    if ( newPosition > oldPosition )
+      newPosition--;
     m_indexFromPosition.add( newPosition, index );
+  }
+
+  /**************************************** movePositions ****************************************/
+  public void movePositions( Set<Integer> positions, int newPosition )
+  {
+    // create reverse ordered set by using negative value
+    TreeSet<Integer> list = new TreeSet<>();
+    for ( int pos : positions )
+      list.add( -pos );
+
+    // make sure index from position mapping is big enough
+    int max = Math.max( -list.first(), newPosition );
+    while ( m_indexFromPosition.size() <= max )
+      m_indexFromPosition.add( m_indexFromPosition.size() );
+
+    // remove list from mapping
+    int offset = 0;
+    ArrayList<Integer> toBeMoved = new ArrayList<>();
+    for ( int pos : list )
+    {
+      toBeMoved.add( 0, m_indexFromPosition.remove( -pos ) );
+      if ( -pos < newPosition )
+        offset--;
+    }
+
+    // add list into mapping at correct position
+    m_indexFromPosition.addAll( newPosition + offset, toBeMoved );
   }
 
 }

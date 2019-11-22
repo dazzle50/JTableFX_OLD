@@ -518,8 +518,6 @@ public class TableEvents extends TableSelect
     m_cellXend = INVALID;
     m_cellYend = INVALID;
     checkMouseCellPosition();
-    if ( m_selecting == Selecting.NONE && m_resizeIndex == INVALID )
-      checkMouseCursor();
 
     getVerticalScrollBar().stopAnimation();
     getHorizontalScrollBar().stopAnimation();
@@ -648,19 +646,19 @@ public class TableEvents extends TableSelect
       }
     }
 
-    // check if column reorder TODO
+    // check if column reorder
     if ( getCursor() == Cursors.H_MOVE )
     {
-      if ( !m_reorder.isStarted() )
+      if ( m_reorder.getOrientation() == null )
         m_reorder.start( getView(), Orientation.HORIZONTAL, getSelectedColumns() );
       m_reorder.setPlacement( m_x );
       return;
     }
 
-    // check if row reorder TODO
+    // check if row reorder
     if ( getCursor() == Cursors.V_MOVE )
     {
-      if ( !m_reorder.isStarted() )
+      if ( m_reorder.getOrientation() == null )
         m_reorder.start( getView(), Orientation.VERTICAL, getSelectedRows() );
       m_reorder.setPlacement( m_y );
       return;
@@ -743,6 +741,13 @@ public class TableEvents extends TableSelect
       }
     }
 
+    // if column or row reordering, ensure reorder mark placed correctly
+    if ( m_reorder.getOrientation() == Orientation.HORIZONTAL )
+      m_reorder.setPlacement( m_x );
+    if ( m_reorder.getOrientation() == Orientation.VERTICAL )
+      m_reorder.setPlacement( m_y );
+
+    // redraw table to reflect new scroll values
     redraw();
   }
 

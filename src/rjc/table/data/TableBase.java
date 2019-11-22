@@ -182,8 +182,8 @@ public class TableBase
   public String toString()
   {
     // return as string
-    return getClass().getSimpleName() + "@" + Integer.toHexString( hashCode() ) + "[m_columnCount=" + m_columnCount
-        + " m_rowCount=" + m_rowCount + " m_views=" + m_views + "]";
+    return getClass().getSimpleName() + "@" + Integer.toHexString( System.identityHashCode( this ) ) + "[m_columnCount="
+        + m_columnCount + " m_rowCount=" + m_rowCount + " m_views=" + m_views + "]";
   }
 
 }
