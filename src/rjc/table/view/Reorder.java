@@ -65,6 +65,10 @@ public class Reorder
   /******************************************** start ********************************************/
   public void start( TableView view, Orientation orientation, SelectedSet selected )
   {
+    // is all is selected, do nothing
+    if ( selected != null && selected.all )
+      return;
+
     // checks before start reordering
     if ( getOrientation() != null )
       throw new IllegalStateException( "Reordering already started" );
@@ -73,15 +77,15 @@ public class Reorder
     if ( orientation == null )
       throw new NullPointerException( "Orientation must not be null" );
     if ( selected == null || selected.all || selected.set.isEmpty() )
-      throw new IllegalArgumentException( "Invalid selection " + selected.toString() );
+      throw new IllegalArgumentException( "Invalid selection " + selected );
 
     // prepare line length and reselect just the specified columns or rows 
+    view.clearAllSelection();
     if ( orientation == Orientation.HORIZONTAL )
     {
       m_line.setStartY( 0.0 );
       m_line.setEndY( Math.min( view.getCanvas().getHeight(), view.getTableHeight() ) );
 
-      view.clearAllSelection();
       for ( var columnPos : selected.set )
         view.selectArea( columnPos, TableAxis.FIRSTCELL, columnPos, TableAxis.AFTER );
     }
@@ -90,12 +94,12 @@ public class Reorder
       m_line.setStartX( 0.0 );
       m_line.setEndX( Math.min( view.getCanvas().getWidth(), view.getTableWidth() ) );
 
-      view.clearAllSelection();
       for ( var rowPos : selected.set )
         view.selectArea( TableAxis.FIRSTCELL, rowPos, TableAxis.AFTER, rowPos );
     }
 
     // start reordering
+    view.redraw();
     view.add( m_line );
     // TODO view.add( m_slider );
     m_orientation = orientation;
@@ -176,11 +180,24 @@ public class Reorder
       m_view.remove( m_line );
       m_view.remove( m_slider );
 
-      // moved selected columns or rows to new position
+      // move selected columns or rows to new position
+      m_view.clearAllSelection();
       if ( m_orientation == Orientation.HORIZONTAL )
-        m_view.getColumns().movePositions( m_selected.set, m_pos );
+      {
+        int left = m_pos + m_view.getColumns().movePositions( m_selected.set, m_pos );
+        int right = left + m_selected.set.size() - 1;
+        m_view.setCurrentSelection( left, TableAxis.FIRSTCELL, right, TableAxis.AFTER );
+        m_view.getFocusCellProperty().setColumnPos( left );
+        m_view.getSelectCellProperty().setColumnPos( right );
+      }
       else
-        m_view.getRows().movePositions( m_selected.set, m_pos );
+      {
+        int top = m_pos + m_view.getRows().movePositions( m_selected.set, m_pos );
+        int bottom = top + m_selected.set.size() - 1;
+        m_view.setCurrentSelection( TableAxis.FIRSTCELL, top, TableAxis.AFTER, bottom );
+        m_view.getFocusCellProperty().setRowPos( top );
+        m_view.getSelectCellProperty().setRowPos( bottom );
+      }
 
       m_view.redraw();
       m_view = null;

@@ -25,7 +25,6 @@ import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
 import rjc.table.Status;
 import rjc.table.Status.Level;
-import rjc.table.view.TableCell;
 import rjc.table.view.TableView;
 
 /*************************************************************************************************/
@@ -37,7 +36,7 @@ public class CellEditorBase
   private static CellEditorBase         m_cellEditorInProgress;
 
   private Control                       m_control;             // primary control that has focus
-  private TableCell                     m_cell;                // table cell context
+  private CellContext                   m_cell;                // table cell context
 
   private ReadOnlyObjectWrapper<Status> m_status;              // error status of cell editor
 
@@ -49,7 +48,7 @@ public class CellEditorBase
   }
 
   /********************************************* open ********************************************/
-  public void open( Object value, TableCell cell )
+  public void open( Object value, CellContext cell )
   {
     // check editor is set
     if ( m_control == null )

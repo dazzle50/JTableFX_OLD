@@ -129,7 +129,7 @@ public class AxisBase
   }
 
   /**************************************** movePositions ****************************************/
-  public void movePositions( Set<Integer> positions, int newPosition )
+  public int movePositions( Set<Integer> positions, int newPosition )
   {
     // create reverse ordered set by using negative value
     TreeSet<Integer> list = new TreeSet<>();
@@ -153,6 +153,9 @@ public class AxisBase
 
     // add list into mapping at correct position
     m_indexFromPosition.addAll( newPosition + offset, toBeMoved );
+
+    // return position offset due to moving indexes
+    return offset;
   }
 
 }

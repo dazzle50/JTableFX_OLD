@@ -16,15 +16,16 @@
  *  along with this program.  If not, see http://www.gnu.org/licenses/    *
  **************************************************************************/
 
-package rjc.table.view;
+package rjc.table.cell;
 
 import javafx.scene.canvas.GraphicsContext;
+import rjc.table.view.TableView;
 
 /*************************************************************************************************/
 /************************************ Table cell view context ************************************/
 /*************************************************************************************************/
 
-public class TableCell
+public class CellContext
 {
   public int             columnIndex; // cell column index
   public int             rowIndex;    // cell row index
@@ -39,13 +40,13 @@ public class TableCell
   public double          h;           // height of cell on canvas
 
   /**************************************** constructor ******************************************/
-  public TableCell()
+  public CellContext()
   {
     // create empty table cell context
   }
 
   /**************************************** constructor ******************************************/
-  public TableCell( TableView view, int columnIndex, int rowIndex )
+  public CellContext( TableView view, int columnIndex, int rowIndex )
   {
     // create new table cell context
     setContext( view, columnIndex, rowIndex );

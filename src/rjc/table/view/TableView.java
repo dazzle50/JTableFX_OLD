@@ -26,6 +26,7 @@ import javafx.scene.text.Font;
 import javafx.scene.text.FontPosture;
 import javafx.scene.text.FontWeight;
 import rjc.table.Colors;
+import rjc.table.cell.CellContext;
 import rjc.table.cell.CellEditorBase;
 import rjc.table.data.TableData;
 
@@ -55,7 +56,7 @@ public class TableView extends TableDraw
   }
 
   /**************************************** getCellText ******************************************/
-  protected String getCellText( TableCell cell )
+  protected String getCellText( CellContext cell )
   {
     // return cell value as string
     Object value = getData().getValue( cell.columnIndex, cell.rowIndex );
@@ -63,49 +64,49 @@ public class TableView extends TableDraw
   }
 
   /************************************ getCellTextAlignment *************************************/
-  protected Pos getCellTextAlignment( TableCell cell )
+  protected Pos getCellTextAlignment( CellContext cell )
   {
     // return cell text alignment
     return Pos.CENTER;
   }
 
   /************************************* getCellTextFamily ***************************************/
-  protected String getCellTextFamily( TableCell cell )
+  protected String getCellTextFamily( CellContext cell )
   {
     // return cell text family
     return Font.getDefault().getFamily();
   }
 
   /************************************** getCellTextSize ****************************************/
-  protected double getCellTextSize( TableCell cell )
+  protected double getCellTextSize( CellContext cell )
   {
     // return cell text family
     return Font.getDefault().getSize();
   }
 
   /************************************* getCellTextWeight ***************************************/
-  protected FontWeight getCellTextWeight( TableCell cell )
+  protected FontWeight getCellTextWeight( CellContext cell )
   {
     // return cell text weight
     return FontWeight.NORMAL;
   }
 
   /************************************* getCellTextPosture **************************************/
-  protected FontPosture getCellTextPosture( TableCell cell )
+  protected FontPosture getCellTextPosture( CellContext cell )
   {
     // return cell text posture
     return FontPosture.REGULAR;
   }
 
   /************************************** getCellTextInsets **************************************/
-  protected Insets getCellTextInsets( TableCell cell )
+  protected Insets getCellTextInsets( CellContext cell )
   {
     // return cell text insets
     return CELL_TEXT_INSERTS;
   }
 
   /************************************** getZoomTextInsets **************************************/
-  public Insets getZoomTextInsets( TableCell cell )
+  public Insets getZoomTextInsets( CellContext cell )
   {
     // get text inserts adjusted for zoom
     Insets insets = getCellTextInsets( cell );
@@ -117,7 +118,7 @@ public class TableView extends TableDraw
   }
 
   /**************************************** getZoomFont ******************************************/
-  public Font getZoomFont( TableCell cell )
+  public Font getZoomFont( CellContext cell )
   {
     // get font adjusted for zoom
     return Font.font( getCellTextFamily( cell ), getCellTextWeight( cell ), getCellTextPosture( cell ),
@@ -125,14 +126,14 @@ public class TableView extends TableDraw
   }
 
   /************************************* getCellBorderPaint **************************************/
-  protected Paint getCellBorderPaint( TableCell cell )
+  protected Paint getCellBorderPaint( CellContext cell )
   {
     // return cell border paint
     return Colors.CELL_BORDER;
   }
 
   /*********************************** getCellBackgroundPaint ************************************/
-  protected Paint getCellBackgroundPaint( TableCell cell )
+  protected Paint getCellBackgroundPaint( CellContext cell )
   {
     // return cell background paint, starting with header cells
     if ( cell.rowIndex == HEADER || cell.columnIndex == HEADER )
@@ -147,14 +148,14 @@ public class TableView extends TableDraw
   }
 
   /******************************** getCellBackgroundPaintDefault ********************************/
-  protected Paint getCellBackgroundPaintDefault( TableCell cell )
+  protected Paint getCellBackgroundPaintDefault( CellContext cell )
   {
     // default table cell background
     return Colors.CELL_DEFAULT_FILL;
   }
 
   /******************************** getCellBackgroundPaintHeader *********************************/
-  protected Paint getCellBackgroundPaintHeader( TableCell cell )
+  protected Paint getCellBackgroundPaintHeader( CellContext cell )
   {
     // return header cell background
     if ( cell.rowIndex == HEADER )
@@ -177,7 +178,7 @@ public class TableView extends TableDraw
   }
 
   /******************************* getCellBackgroundPaintSelected *********************************/
-  protected Paint getCellBackgroundPaintSelected( TableCell cell )
+  protected Paint getCellBackgroundPaintSelected( CellContext cell )
   {
     // return selected cell background
     if ( cell.rowPos == getFocusCellProperty().getRowPos() && cell.columnPos == getFocusCellProperty().getColumnPos() )
@@ -195,7 +196,7 @@ public class TableView extends TableDraw
   }
 
   /************************************** getCellTextPaint ***************************************/
-  protected Paint getCellTextPaint( TableCell cell )
+  protected Paint getCellTextPaint( CellContext cell )
   {
     // return cell text paint
     if ( isCellSelected( cell.columnPos, cell.rowPos ) && !( cell.rowPos == getFocusCellProperty().getRowPos()
@@ -206,7 +207,7 @@ public class TableView extends TableDraw
   }
 
   /**************************************** getCellEditor ****************************************/
-  public CellEditorBase getCellEditor( TableCell cell )
+  public CellEditorBase getCellEditor( CellContext cell )
   {
     // return cell editor, or null if cell is read-only
     return null;

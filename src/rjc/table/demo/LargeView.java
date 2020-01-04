@@ -20,7 +20,7 @@ package rjc.table.demo;
 
 import javafx.scene.paint.Color;
 import javafx.scene.paint.Paint;
-import rjc.table.view.TableCell;
+import rjc.table.cell.CellContext;
 import rjc.table.view.TableView;
 
 /*************************************************************************************************/
@@ -49,7 +49,7 @@ public class LargeView extends TableView
 
   /*********************************** getCellBackgroundPaint ************************************/
   @Override
-  protected Paint getCellBackgroundPaint( TableCell cell )
+  protected Paint getCellBackgroundPaint( CellContext cell )
   {
     // get default background paint
     Paint paint = super.getCellBackgroundPaint( cell );

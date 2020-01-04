@@ -22,6 +22,7 @@ import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.text.Font;
 import rjc.table.Colors;
+import rjc.table.cell.CellContext;
 import rjc.table.cell.CellText;
 
 /*************************************************************************************************/
@@ -30,7 +31,7 @@ import rjc.table.cell.CellText;
 
 public class TableDraw extends TableXML
 {
-  private TableCell cell = new TableCell(); // cell being drawn
+  private CellContext cell = new CellContext(); // cell being drawn
 
   /***************************************** redrawCell ******************************************/
   public void redrawCell( int columnIndex, int rowIndex )
@@ -182,7 +183,7 @@ public class TableDraw extends TableXML
   }
 
   /****************************************** drawCell *******************************************/
-  protected void drawCell( TableCell cell )
+  protected void drawCell( CellContext cell )
   {
     // clip drawing to cell boundaries
     cell.gc.save();
@@ -235,7 +236,7 @@ public class TableDraw extends TableXML
   }
 
   /************************************* drawCellBackground **************************************/
-  protected void drawCellBackground( TableCell cell )
+  protected void drawCellBackground( CellContext cell )
   {
     // draw cell background
     cell.gc.setFill( getView().getCellBackgroundPaint( cell ) );
@@ -243,7 +244,7 @@ public class TableDraw extends TableXML
   }
 
   /*************************************** drawCellBorder ****************************************/
-  protected void drawCellBorder( TableCell cell )
+  protected void drawCellBorder( CellContext cell )
   {
     // draw cell border
     cell.gc.setStroke( getView().getCellBorderPaint( cell ) );
@@ -252,14 +253,14 @@ public class TableDraw extends TableXML
   }
 
   /************************************** drawCellContent ****************************************/
-  protected void drawCellContent( TableCell cell )
+  protected void drawCellContent( CellContext cell )
   {
     // draw cell contents
     drawCellText( cell, getView().getCellText( cell ) );
   }
 
   /**************************************** drawCellText *****************************************/
-  protected void drawCellText( TableCell cell, String cellText )
+  protected void drawCellText( CellContext cell, String cellText )
   {
     // get text inserts, font, alignment, and convert string into text lines
     Insets insets = getView().getZoomTextInsets( cell );

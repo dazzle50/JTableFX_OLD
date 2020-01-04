@@ -424,12 +424,12 @@ public class AxisSize extends AxisBase
 
   /**************************************** movePositions ****************************************/
   @Override
-  public void movePositions( Set<Integer> positions, int newPosition )
+  public int movePositions( Set<Integer> positions, int newPosition )
   {
     // re-order indexes on axis and truncate cell location cache
-    super.movePositions( positions, newPosition );
     int pos = Math.min( Collections.min( positions ), newPosition );
     truncateCache( pos, 0 );
+    return super.movePositions( positions, newPosition );
   }
 
 }

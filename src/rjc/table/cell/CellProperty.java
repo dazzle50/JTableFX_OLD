@@ -16,10 +16,10 @@
  *  along with this program.  If not, see http://www.gnu.org/licenses/    *
  **************************************************************************/
 
-package rjc.table.view;
+package rjc.table.cell;
 
 import javafx.beans.property.SimpleObjectProperty;
-import rjc.table.view.CellProperty.CellPosition;
+import rjc.table.cell.CellProperty.CellPosition;
 import rjc.table.view.axis.TableAxis;
 
 /*************************************************************************************************/
@@ -30,8 +30,8 @@ public class CellProperty extends SimpleObjectProperty<CellPosition>
 {
   public class CellPosition
   {
-    protected int columnPos;
-    protected int rowPos;
+    protected int columnPos = TableAxis.INVALID;;
+    protected int rowPos    = TableAxis.INVALID;;
 
     public int getColumnPos()
     {
@@ -52,24 +52,15 @@ public class CellProperty extends SimpleObjectProperty<CellPosition>
 
   }
 
-  private CellPosition m_oldPosition; // old cell position for when ??????
+  private CellPosition m_oldPosition; // old cell position to avoid creating new when setting position
 
   /**************************************** constructor ******************************************/
   public CellProperty()
   {
-    // call super
+    // call super and setup old and current default positions
     super();
-
-    // setup old position
     m_oldPosition = new CellPosition();
-    m_oldPosition.columnPos = TableAxis.INVALID;
-    m_oldPosition.rowPos = TableAxis.INVALID;
-
-    // setup current position
-    CellPosition position = new CellPosition();
-    position.columnPos = TableAxis.INVALID;
-    position.rowPos = TableAxis.INVALID;
-    set( position );
+    set( new CellPosition() );
   }
 
   /**************************************** constructor ******************************************/
@@ -98,14 +89,14 @@ public class CellProperty extends SimpleObjectProperty<CellPosition>
   public void setColumnPos( int position )
   {
     // set column position
-    setPosition( position, get().rowPos );
+    setPosition( position, getRowPos() );
   }
 
   /****************************************** setRowPos ******************************************/
   public void setRowPos( int position )
   {
     // set row position
-    setPosition( get().columnPos, position );
+    setPosition( getColumnPos(), position );
   }
 
   /**************************************** getColumnPos *****************************************/
@@ -128,7 +119,7 @@ public class CellProperty extends SimpleObjectProperty<CellPosition>
   {
     // return as string
     return getClass().getSimpleName() + "@" + Integer.toHexString( System.identityHashCode( this ) ) + "["
-        + get().columnPos + " " + get().rowPos + "]";
+        + getColumnPos() + " " + getRowPos() + "]";
   }
 
 }

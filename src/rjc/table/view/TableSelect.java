@@ -60,7 +60,7 @@ public class TableSelect extends TableNavigate
     }
   }
 
-  public class SelectedSet
+  static public class SelectedSet
   {
     public boolean          all = false;          // all columns or rows selected
     public HashSet<Integer> set = new HashSet<>();
@@ -338,8 +338,10 @@ public class TableSelect extends TableNavigate
   /***************************************** selectArea ******************************************/
   public void selectArea( int columnPos1, int rowPos1, int columnPos2, int rowPos2 )
   {
-    // TODO Auto-generated method stub
-
+    // add new selected area to table selected
+    Selected newArea = new Selected();
+    newArea.set( columnPos1, rowPos1, columnPos2, rowPos2 );
+    m_selected.add( newArea );
   }
 
   /****************************************** toString *******************************************/

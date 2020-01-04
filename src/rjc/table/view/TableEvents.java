@@ -24,6 +24,7 @@ import javafx.scene.input.MouseButton;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.input.ScrollEvent;
 import rjc.table.Utils;
+import rjc.table.cell.CellContext;
 import rjc.table.cell.CellEditorBase;
 import rjc.table.view.TableScrollBar.Animation;
 import rjc.table.view.cursor.Cursors;
@@ -34,19 +35,18 @@ import rjc.table.view.cursor.Cursors;
 
 public class TableEvents extends TableSelect
 {
-  private int              m_x;                            // latest event mouse x coordinate
-  private int              m_y;                            // latest event mouse y coordinate
-  private int              m_cellXstart;                   // current mouse cell X start
-  private int              m_cellXend;                     // current mouse cell X end
-  private int              m_cellYstart;                   // current mouse cell Y start
-  private int              m_cellYend;                     // current mouse cell Y end
+  private int              m_x;                       // latest event mouse x coordinate
+  private int              m_y;                       // latest event mouse y coordinate
+  private int              m_cellXstart;              // current mouse cell X start
+  private int              m_cellXend;                // current mouse cell X end
+  private int              m_cellYstart;              // current mouse cell Y start
+  private int              m_cellYend;                // current mouse cell Y end
 
-  private int              m_resizeIndex  = INVALID;       // column or row index being resized or INVALID
-  private int              m_resizeOffset = INVALID;       // column or row resize offset
-  private Selecting        m_selecting;                    // current cell selecting status
+  private Selecting        m_selecting;               // current cell selecting status
 
-  private static final int PROXIMITY      = 4;             // used to distinguish resize from reorder
-  private static Reorder   m_reorder      = new Reorder(); // supports column and row reordering
+  private static final int PROXIMITY = 4;             // used to distinguish resize from reorder
+  private static Reorder   m_reorder = new Reorder(); // supports column and row reordering
+  private static Resize    m_resize  = new Resize();  // supports column and row resizing
 
   // types of scroll bar animations
   public static enum Selecting
@@ -313,7 +313,7 @@ public class TableEvents extends TableSelect
   protected void openEditor( Object value )
   {
     // get editor for focus cell
-    TableCell cell = new TableCell();
+    CellContext cell = new CellContext();
     cell.setContextPos( getView(), getFocusCellProperty().getColumnPos(), getFocusCellProperty().getRowPos() );
     CellEditorBase editor = getView().getCellEditor( cell );
 
@@ -435,16 +435,14 @@ public class TableEvents extends TableSelect
     if ( getCursor() == Cursors.H_RESIZE && button == MouseButton.PRIMARY )
     {
       int pos = getMouseCellProperty().getColumnPos() - ( m_x - m_cellXstart < m_cellXend - m_x ? 1 : 0 );
-      m_resizeIndex = getColumns().getIndexFromPosition( pos );
-      m_resizeOffset = m_x - getColumns().getCellPixels( m_resizeIndex );
+      m_resize.start( getView(), Orientation.HORIZONTAL, pos, m_x );
     }
 
     // check if row resize started
     if ( getCursor() == Cursors.V_RESIZE && button == MouseButton.PRIMARY )
     {
       int pos = getMouseCellProperty().getRowPos() - ( m_y - m_cellYstart < m_cellYend - m_y ? 1 : 0 );
-      m_resizeIndex = getRows().getIndexFromPosition( pos );
-      m_resizeOffset = m_y - getRows().getCellPixels( m_resizeIndex );
+      m_resize.start( getView(), Orientation.VERTICAL, pos, m_y );
     }
 
     // check if whole table selected
@@ -466,8 +464,7 @@ public class TableEvents extends TableSelect
 
     // stop any selecting, resizing, and reordering
     m_selecting = Selecting.NONE;
-    m_resizeIndex = INVALID;
-    m_resizeOffset = INVALID;
+    m_resize.end();
     m_reorder.end();
 
     // stop any scrolling to edges
@@ -555,26 +552,12 @@ public class TableEvents extends TableSelect
     m_y = (int) event.getY();
 
     // check if column resizing
-    if ( getCursor() == Cursors.H_RESIZE && m_resizeIndex >= FIRSTCELL )
-    {
-      getColumns().setCellPixels( m_resizeIndex, m_x - m_resizeOffset );
-      m_cellXend = INVALID;
-      widthChange( getXStartFromColumnPos( getColumns().getPositionFromIndex( m_resizeIndex ) ),
-          (int) getCanvas().getWidth() );
-      layoutDisplay();
-      return;
-    }
+    if ( getCursor() == Cursors.H_RESIZE )
+      m_resize.resize( m_x );
 
     // check if row resizing
-    if ( getCursor() == Cursors.V_RESIZE && m_resizeIndex >= FIRSTCELL )
-    {
-      getRows().setCellPixels( m_resizeIndex, m_y - m_resizeOffset );
-      m_cellYend = INVALID;
-      heightChange( getYStartFromRowPos( getRows().getPositionFromIndex( m_resizeIndex ) ),
-          (int) getCanvas().getWidth() );
-      layoutDisplay();
-      return;
-    }
+    if ( getCursor() == Cursors.V_RESIZE )
+      m_resize.resize( m_y );
 
     // check mouse cell position after any resizing
     checkMouseCellPosition();
@@ -651,7 +634,8 @@ public class TableEvents extends TableSelect
     {
       if ( m_reorder.getOrientation() == null )
         m_reorder.start( getView(), Orientation.HORIZONTAL, getSelectedColumns() );
-      m_reorder.setPlacement( m_x );
+      if ( m_reorder.getOrientation() == Orientation.HORIZONTAL )
+        m_reorder.setPlacement( m_x );
       return;
     }
 
@@ -660,7 +644,8 @@ public class TableEvents extends TableSelect
     {
       if ( m_reorder.getOrientation() == null )
         m_reorder.start( getView(), Orientation.VERTICAL, getSelectedRows() );
-      m_reorder.setPlacement( m_y );
+      if ( m_reorder.getOrientation() == Orientation.VERTICAL )
+        m_reorder.setPlacement( m_y );
       return;
     }
   }
@@ -746,6 +731,12 @@ public class TableEvents extends TableSelect
       m_reorder.setPlacement( m_x );
     if ( m_reorder.getOrientation() == Orientation.VERTICAL )
       m_reorder.setPlacement( m_y );
+
+    // if column or row resizing, update
+    if ( m_resize.getOrientation() == Orientation.HORIZONTAL )
+      m_resize.resize( m_x );
+    if ( m_resize.getOrientation() == Orientation.VERTICAL )
+      m_resize.resize( m_y );
 
     // redraw table to reflect new scroll values
     redraw();

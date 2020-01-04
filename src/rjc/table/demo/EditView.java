@@ -20,11 +20,11 @@ package rjc.table.demo;
 
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
+import rjc.table.cell.CellContext;
 import rjc.table.cell.CellEditorBase;
 import rjc.table.cell.EditorDouble;
 import rjc.table.cell.EditorInteger;
 import rjc.table.cell.EditorText;
-import rjc.table.view.TableCell;
 import rjc.table.view.TableView;
 
 /*************************************************************************************************/
@@ -50,7 +50,7 @@ public class EditView extends TableView
 
   /************************************ getCellTextAlignment *************************************/
   @Override
-  protected Pos getCellTextAlignment( TableCell cell )
+  protected Pos getCellTextAlignment( CellContext cell )
   {
     // return left alignment for the two text columns
     if ( cell.rowIndex > HEADER )
@@ -63,7 +63,7 @@ public class EditView extends TableView
 
   /************************************** getCellTextInsets **************************************/
   @Override
-  protected Insets getCellTextInsets( TableCell cell )
+  protected Insets getCellTextInsets( CellContext cell )
   {
     // return cell text insets
     return CELL_TEXT_INSERTS;
@@ -71,7 +71,7 @@ public class EditView extends TableView
 
   /**************************************** getCellEditor ****************************************/
   @Override
-  public CellEditorBase getCellEditor( TableCell cell )
+  public CellEditorBase getCellEditor( CellContext cell )
   {
     // determine editor appropriate for cell
     CellEditorBase editor = null;
