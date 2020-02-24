@@ -1,5 +1,5 @@
 /**************************************************************************
- *  Copyright (C) 2019 by Richard Crook                                   *
+ *  Copyright (C) 2020 by Richard Crook                                   *
  *  https://github.com/dazzle50/JTableFX                                  *
  *                                                                        *
  *  This program is free software: you can redistribute it and/or modify  *
@@ -148,16 +148,16 @@ public class AxisSize extends AxisBase
   /*************************************** setDefaultSize ****************************************/
   public void setDefaultSize( int defaultSize )
   {
+    // if requested new default size is smaller than minimum, increase new default to minimum
+    if ( defaultSize < m_minimumSize )
+      defaultSize = m_minimumSize;
+
     // if different, set default cell pixel size and invalidate body size
     if ( m_defaultSize != defaultSize )
     {
       // check requested new default size is at least one
       if ( defaultSize < 1 )
         throw new IllegalArgumentException( "Default size must be at least one " + defaultSize );
-
-      // if size smaller than minimum, increase minimum to size
-      if ( defaultSize < m_minimumSize )
-        setMinimumSize( defaultSize );
 
       m_defaultSize = defaultSize;
       m_bodyPixelsCache.set( INVALID );
@@ -287,6 +287,15 @@ public class AxisSize extends AxisBase
       m_bodyPixelsCache.set( INVALID );
       m_cellPositionStartCache.clear();
     }
+  }
+
+  /************************************* clearSizeExceptions *************************************/
+  public void clearSizeExceptions()
+  {
+    // clear all size exceptions
+    m_sizeExceptions.clear();
+    m_cellPositionStartCache.clear();
+    m_bodyPixelsCache.set( INVALID );
   }
 
   /************************************ getStartFromPosition *************************************/

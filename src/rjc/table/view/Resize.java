@@ -1,5 +1,5 @@
 /**************************************************************************
- *  Copyright (C) 2019 by Richard Crook                                   *
+ *  Copyright (C) 2020 by Richard Crook                                   *
  *  https://github.com/dazzle50/JTableFX                                  *
  *                                                                        *
  *  This program is free software: you can redistribute it and/or modify  *
@@ -95,21 +95,32 @@ public class Resize
     else
     {
       if ( positions.all )
+      {
         // resize all positions
         m_before = position;
+        m_axis.clearSizeExceptions();
+      }
       else
         // resize just current position
         m_indexes.set.add( index );
     }
 
     // calculate offset
-    m_offset -= m_axis.getCellPixels( index );
+    if ( positions.all )
+    {
+      if ( orientation == Orientation.HORIZONTAL )
+        m_offset = view.getXStartFromColumnPos( 0 );
+      else
+        m_offset = view.getYStartFromRowPos( 0 );
+    }
+    else
+      m_offset -= m_axis.getCellPixels( index );
     m_before++;
 
     // start reordering
     m_orientation = orientation;
     m_view = view;
-    view.redraw();
+    resize( coordinate );
   }
 
   /******************************************* resize ********************************************/
@@ -122,8 +133,7 @@ public class Resize
 
     // resize
     if ( m_indexes.all )
-    {
-    }
+      m_axis.setDefaultSize( (int) ( pixels / m_view.getZoom() ) );
     else
       for ( var index : m_indexes.set )
         m_axis.setCellPixels( index, pixels );
