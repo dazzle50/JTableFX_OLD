@@ -48,7 +48,7 @@ public class CellEditorBase
   }
 
   /********************************************* open ********************************************/
-  public void open( Object value, CellContext cell )
+  public void open( Object value, CellStyle cell )
   {
     // check editor is set
     if ( m_control == null )
@@ -71,8 +71,8 @@ public class CellEditorBase
       double min = cell.w + 1;
       if ( min > max )
         min = max;
-      field.setPadding( view.getZoomTextInsets( cell ) );
-      field.setFont( view.getZoomFont( cell ) );
+      field.setPadding( cell.getZoomTextInsets() );
+      field.setFont( cell.getZoomFont() );
       field.setWidths( min, max );
 
       // listen to text field status

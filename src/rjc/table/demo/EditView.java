@@ -21,11 +21,13 @@ package rjc.table.demo;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import rjc.table.cell.CellContext;
+import rjc.table.cell.CellDraw;
 import rjc.table.cell.CellEditorBase;
 import rjc.table.cell.EditorDouble;
 import rjc.table.cell.EditorInteger;
 import rjc.table.cell.EditorText;
 import rjc.table.view.TableView;
+import rjc.table.view.axis.TableAxis;
 
 /*************************************************************************************************/
 /*********************** Example customised table view for editable table ************************/
@@ -48,25 +50,34 @@ public class EditView extends TableView
     getColumns().setCellSize( EditData.SECTION_DATETIME, 200 );
   }
 
-  /************************************ getCellTextAlignment *************************************/
+  /**************************************** getCellDrawer ****************************************/
   @Override
-  protected Pos getCellTextAlignment( CellContext cell )
+  public CellDraw getCellDrawer()
   {
-    // return left alignment for the two text columns
-    if ( cell.rowIndex > HEADER )
-      if ( cell.columnIndex == EditData.SECTION_READONLY || cell.columnIndex == EditData.SECTION_TEXT )
-        return Pos.CENTER_LEFT;
+    // return new instance of class that draws table cells
+    return new CellDraw()
+    {
+      /************************************ getTextAlignment *************************************/
+      @Override
+      protected Pos getTextAlignment()
+      {
+        // return left alignment for the two text columns
+        if ( rowIndex > TableAxis.HEADER )
+          if ( columnIndex == EditData.SECTION_READONLY || columnIndex == EditData.SECTION_TEXT )
+            return Pos.CENTER_LEFT;
 
-    // otherwise centre alignment
-    return Pos.CENTER;
-  }
+        // otherwise centre alignment
+        return Pos.CENTER;
+      }
 
-  /************************************** getCellTextInsets **************************************/
-  @Override
-  protected Insets getCellTextInsets( CellContext cell )
-  {
-    // return cell text insets
-    return CELL_TEXT_INSERTS;
+      /************************************** getTextInsets **************************************/
+      @Override
+      protected Insets getTextInsets()
+      {
+        // return cell text insets
+        return EditView.CELL_TEXT_INSERTS;
+      }
+    };
   }
 
   /**************************************** getCellEditor ****************************************/

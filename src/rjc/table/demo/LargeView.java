@@ -20,7 +20,7 @@ package rjc.table.demo;
 
 import javafx.scene.paint.Color;
 import javafx.scene.paint.Paint;
-import rjc.table.cell.CellContext;
+import rjc.table.cell.CellDraw;
 import rjc.table.view.TableView;
 
 /*************************************************************************************************/
@@ -47,27 +47,36 @@ public class LargeView extends TableView
     } );
   }
 
-  /*********************************** getCellBackgroundPaint ************************************/
+  /**************************************** getCellDrawer ****************************************/
   @Override
-  protected Paint getCellBackgroundPaint( CellContext cell )
+  public CellDraw getCellDrawer()
   {
-    // get default background paint
-    Paint paint = super.getCellBackgroundPaint( cell );
-
-    // if white background
-    if ( paint == Color.WHITE )
+    // return new instance of class that draws table cells
+    return new CellDraw()
     {
-      // highlight cell green where mouse is positioned
-      if ( cell.columnIndex == m_highlightColumnIndex && cell.rowIndex == m_highlightRowIndex )
-        return Color.PALEGREEN;
+      /*********************************** getBackgroundPaint ************************************/
+      @Override
+      protected Paint getBackgroundPaint()
+      {
+        // get default background paint
+        Paint paint = super.getBackgroundPaint();
 
-      // highlight row and column pale green where mouse is positioned
-      if ( cell.columnIndex == m_highlightColumnIndex || cell.rowIndex == m_highlightRowIndex )
-        return Color.PALEGREEN.desaturate().desaturate().desaturate().desaturate();
-    }
+        // if white background
+        if ( paint == Color.WHITE )
+        {
+          // highlight cell green where mouse is positioned
+          if ( columnIndex == m_highlightColumnIndex && rowIndex == m_highlightRowIndex )
+            return Color.PALEGREEN;
 
-    // otherwise default
-    return paint;
+          // highlight row and column pale green where mouse is positioned
+          if ( columnIndex == m_highlightColumnIndex || rowIndex == m_highlightRowIndex )
+            return Color.PALEGREEN.desaturate().desaturate().desaturate().desaturate();
+        }
+
+        // otherwise default
+        return paint;
+      };
+    };
   }
 
   /******************************************** reset ********************************************/

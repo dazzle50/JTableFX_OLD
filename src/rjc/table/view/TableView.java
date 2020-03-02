@@ -18,15 +18,10 @@
 
 package rjc.table.view;
 
-import javafx.geometry.Insets;
-import javafx.geometry.Pos;
-import javafx.scene.paint.Color;
-import javafx.scene.paint.Paint;
-import javafx.scene.text.Font;
-import javafx.scene.text.FontPosture;
-import javafx.scene.text.FontWeight;
+import javafx.scene.canvas.GraphicsContext;
 import rjc.table.Colors;
 import rjc.table.cell.CellContext;
+import rjc.table.cell.CellDraw;
 import rjc.table.cell.CellEditorBase;
 import rjc.table.data.TableData;
 
@@ -34,10 +29,8 @@ import rjc.table.data.TableData;
 /********************************** Base class for table views ***********************************/
 /*************************************************************************************************/
 
-public class TableView extends TableDraw
+public class TableView extends TableXML
 {
-  protected final static Insets CELL_TEXT_INSERTS = new Insets( 0.0, 1.0, 1.0, 0.0 );
-
   /**************************************** constructor ******************************************/
   public TableView( TableData data )
   {
@@ -55,155 +48,11 @@ public class TableView extends TableDraw
     getRows().setHeaderSize( 20 );
   }
 
-  /**************************************** getCellText ******************************************/
-  protected String getCellText( CellContext cell )
+  /**************************************** getCellDrawer ****************************************/
+  public CellDraw getCellDrawer()
   {
-    // return cell value as string
-    Object value = getData().getValue( cell.columnIndex, cell.rowIndex );
-    return value == null ? null : value.toString();
-  }
-
-  /************************************ getCellTextAlignment *************************************/
-  protected Pos getCellTextAlignment( CellContext cell )
-  {
-    // return cell text alignment
-    return Pos.CENTER;
-  }
-
-  /************************************* getCellTextFamily ***************************************/
-  protected String getCellTextFamily( CellContext cell )
-  {
-    // return cell text family
-    return Font.getDefault().getFamily();
-  }
-
-  /************************************** getCellTextSize ****************************************/
-  protected double getCellTextSize( CellContext cell )
-  {
-    // return cell text family
-    return Font.getDefault().getSize();
-  }
-
-  /************************************* getCellTextWeight ***************************************/
-  protected FontWeight getCellTextWeight( CellContext cell )
-  {
-    // return cell text weight
-    return FontWeight.NORMAL;
-  }
-
-  /************************************* getCellTextPosture **************************************/
-  protected FontPosture getCellTextPosture( CellContext cell )
-  {
-    // return cell text posture
-    return FontPosture.REGULAR;
-  }
-
-  /************************************** getCellTextInsets **************************************/
-  protected Insets getCellTextInsets( CellContext cell )
-  {
-    // return cell text insets
-    return CELL_TEXT_INSERTS;
-  }
-
-  /************************************** getZoomTextInsets **************************************/
-  public Insets getZoomTextInsets( CellContext cell )
-  {
-    // get text inserts adjusted for zoom
-    Insets insets = getCellTextInsets( cell );
-    if ( getZoom() != 1.0 )
-      insets = new Insets( insets.getTop() * getZoom(), insets.getRight() * getZoom(), insets.getBottom() * getZoom(),
-          insets.getLeft() * getZoom() );
-
-    return insets;
-  }
-
-  /**************************************** getZoomFont ******************************************/
-  public Font getZoomFont( CellContext cell )
-  {
-    // get font adjusted for zoom
-    return Font.font( getCellTextFamily( cell ), getCellTextWeight( cell ), getCellTextPosture( cell ),
-        getCellTextSize( cell ) * getZoom() );
-  }
-
-  /************************************* getCellBorderPaint **************************************/
-  protected Paint getCellBorderPaint( CellContext cell )
-  {
-    // return cell border paint
-    return Colors.CELL_BORDER;
-  }
-
-  /*********************************** getCellBackgroundPaint ************************************/
-  protected Paint getCellBackgroundPaint( CellContext cell )
-  {
-    // return cell background paint, starting with header cells
-    if ( cell.rowIndex == HEADER || cell.columnIndex == HEADER )
-      return getCellBackgroundPaintHeader( cell );
-
-    // for selected cells
-    if ( isCellSelected( cell.columnPos, cell.rowPos ) )
-      return getCellBackgroundPaintSelected( cell );
-
-    // otherwise default background
-    return getCellBackgroundPaintDefault( cell );
-  }
-
-  /******************************** getCellBackgroundPaintDefault ********************************/
-  protected Paint getCellBackgroundPaintDefault( CellContext cell )
-  {
-    // default table cell background
-    return Colors.CELL_DEFAULT_FILL;
-  }
-
-  /******************************** getCellBackgroundPaintHeader *********************************/
-  protected Paint getCellBackgroundPaintHeader( CellContext cell )
-  {
-    // return header cell background
-    if ( cell.rowIndex == HEADER )
-    {
-      if ( cell.columnPos == getFocusCellProperty().getColumnPos() )
-        return Colors.HEADER_FOCUS;
-      else
-        return hasColumnSelection( cell.columnPos ) ? Colors.HEADER_SELECTED_FILL : Colors.HEADER_DEFAULT_FILL;
-    }
-
-    if ( cell.columnIndex == HEADER )
-    {
-      if ( cell.rowPos == getFocusCellProperty().getRowPos() )
-        return Colors.HEADER_FOCUS;
-      else
-        return hasRowSelection( cell.rowPos ) ? Colors.HEADER_SELECTED_FILL : Colors.HEADER_DEFAULT_FILL;
-    }
-
-    throw new IllegalArgumentException( "Not header " + cell.columnIndex + " " + cell.rowIndex );
-  }
-
-  /******************************* getCellBackgroundPaintSelected *********************************/
-  protected Paint getCellBackgroundPaintSelected( CellContext cell )
-  {
-    // return selected cell background
-    if ( cell.rowPos == getFocusCellProperty().getRowPos() && cell.columnPos == getFocusCellProperty().getColumnPos() )
-      return getCellBackgroundPaintDefault( cell );
-
-    Color selected = Colors.CELL_SELECTED_FILL;
-    for ( int count = getSelectionCount( cell.columnPos, cell.rowPos ); count > 1; count-- )
-      selected = selected.desaturate();
-
-    if ( cell.rowPos == getSelectCellProperty().getRowPos()
-        && cell.columnPos == getSelectCellProperty().getColumnPos() )
-      selected = selected.desaturate();
-
-    return isTableFocused() ? selected : selected.desaturate();
-  }
-
-  /************************************** getCellTextPaint ***************************************/
-  protected Paint getCellTextPaint( CellContext cell )
-  {
-    // return cell text paint
-    if ( isCellSelected( cell.columnPos, cell.rowPos ) && !( cell.rowPos == getFocusCellProperty().getRowPos()
-        && cell.columnPos == getFocusCellProperty().getColumnPos() ) )
-      return Colors.TEXT_SELECTED;
-    else
-      return Colors.TEXT_DEFAULT;
+    // return new instance of class that draws table cells
+    return new CellDraw();
   }
 
   /**************************************** getCellEditor ****************************************/
@@ -211,6 +60,195 @@ public class TableView extends TableDraw
   {
     // return cell editor, or null if cell is read-only
     return null;
+  }
+
+  /***************************************** redrawCell ******************************************/
+  public void redrawCell( int columnIndex, int rowIndex )
+  {
+    // redraw table body or header cell
+    CellDraw cell = getCellDrawer();
+    if ( isVisible() && columnIndex >= HEADER && rowIndex >= HEADER )
+    {
+      cell.setIndex( getView(), columnIndex, rowIndex );
+      cell.draw();
+
+      // redraw column header if overlaps row
+      if ( rowIndex != HEADER && cell.y < getColumnHeaderHeight() )
+        redrawRow( HEADER );
+
+      // redraw row header if overlaps column
+      if ( columnIndex != HEADER && cell.x < getRowHeaderWidth() )
+        redrawColumn( HEADER );
+    }
+  }
+
+  /**************************************** redrawColumn *****************************************/
+  public void redrawColumn( int columnIndex )
+  {
+    // redraw visible bit of column including header
+    if ( isVisible() && columnIndex >= HEADER )
+    {
+      CellDraw cell = getCellDrawer();
+      cell.view = getView();
+      cell.gc = getCanvas().getGraphicsContext2D();
+      cell.columnIndex = columnIndex;
+      cell.columnPos = getColumns().getPositionFromIndex( columnIndex );
+
+      // calculate which rows are visible
+      int minRowPos = getRowPositionAtY( getColumnHeaderHeight() );
+      int maxRowPos = getRowPositionAtY( (int) getCanvas().getHeight() );
+      cell.x = getXStartFromColumnPos( cell.columnPos );
+      cell.w = getColumns().getCellPixels( columnIndex );
+
+      // redraw all body cells between min and max row positions inclusive
+      int max = getData().getRowCount() - 1;
+      if ( minRowPos <= max && maxRowPos >= FIRSTCELL )
+      {
+        if ( minRowPos < FIRSTCELL )
+          minRowPos = FIRSTCELL;
+        if ( maxRowPos > max )
+          maxRowPos = max;
+
+        for ( cell.rowPos = minRowPos; cell.rowPos <= maxRowPos; cell.rowPos++ )
+        {
+          cell.rowIndex = getRows().getIndexFromPosition( cell.rowPos );
+          cell.y = getYStartFromRowPos( cell.rowPos );
+          cell.h = getYStartFromRowPos( cell.rowPos + 1 ) - cell.y;
+          if ( cell.h > 0 )
+            cell.draw();
+        }
+      }
+
+      // redraw column header
+      cell.rowIndex = HEADER;
+      cell.rowPos = HEADER;
+      cell.y = 0.0;
+      cell.h = getColumnHeaderHeight();
+      cell.draw();
+
+      // redraw row header if overlaps column
+      if ( columnIndex != HEADER && cell.x < getRowHeaderWidth() )
+        redrawColumn( HEADER );
+    }
+  }
+
+  /****************************************** redrawRow ******************************************/
+  public void redrawRow( int rowIndex )
+  {
+    // redraw visible bit of row including header
+    if ( isVisible() && rowIndex >= HEADER )
+    {
+      CellDraw cell = getCellDrawer();
+      cell.view = getView();
+      cell.gc = getCanvas().getGraphicsContext2D();
+      cell.rowIndex = rowIndex;
+      cell.rowPos = getRows().getPositionFromIndex( rowIndex );
+
+      // calculate which columns are visible
+      int minColumnPos = getColumnPositionAtX( getRowHeaderWidth() );
+      int maxColumnPos = getColumnPositionAtX( (int) getCanvas().getWidth() );
+      cell.y = getYStartFromRowPos( cell.rowPos );
+      cell.h = getRows().getCellPixels( rowIndex );
+
+      // redraw all body cells between min and max column positions inclusive
+      int max = getData().getColumnCount() - 1;
+      if ( minColumnPos <= max && maxColumnPos >= FIRSTCELL )
+      {
+        if ( minColumnPos < FIRSTCELL )
+          minColumnPos = FIRSTCELL;
+        if ( maxColumnPos > max )
+          maxColumnPos = max;
+
+        for ( cell.columnPos = minColumnPos; cell.columnPos <= maxColumnPos; cell.columnPos++ )
+        {
+          cell.columnIndex = getColumns().getIndexFromPosition( cell.columnPos );
+          cell.x = getXStartFromColumnPos( cell.columnPos );
+          cell.w = getXStartFromColumnPos( cell.columnPos + 1 ) - cell.x;
+          if ( cell.w > 0 )
+            cell.draw();
+        }
+      }
+
+      // redraw row header
+      cell.columnIndex = HEADER;
+      cell.columnPos = HEADER;
+      cell.x = 0.0;
+      cell.w = getRowHeaderWidth();
+      cell.draw();
+
+      // redraw column header if overlaps row
+      if ( rowIndex != HEADER && cell.y < getColumnHeaderHeight() )
+        redrawRow( HEADER );
+    }
+  }
+
+  /*************************************** redrawColumns *****************************************/
+  public void redrawColumns( int minColumnPos, int maxColumnPos )
+  {
+    // redraw all table body columns between min and max column positions inclusive
+    int max = getData().getColumnCount() - 1;
+    if ( minColumnPos <= max && maxColumnPos >= FIRSTCELL )
+    {
+      if ( minColumnPos < FIRSTCELL )
+        minColumnPos = FIRSTCELL;
+      if ( maxColumnPos > max )
+        maxColumnPos = max;
+
+      for ( int pos = minColumnPos; pos <= maxColumnPos; pos++ )
+        redrawColumn( getColumns().getIndexFromPosition( pos ) );
+    }
+  }
+
+  /***************************************** redrawRows ******************************************/
+  public void redrawRows( int minRowPos, int maxRowPos )
+  {
+    // redraw all table body rows between min and max row positions inclusive
+    int max = getData().getRowCount() - 1;
+    if ( minRowPos <= max && maxRowPos >= FIRSTCELL )
+    {
+      if ( minRowPos < FIRSTCELL )
+        minRowPos = FIRSTCELL;
+      if ( maxRowPos > max )
+        maxRowPos = max;
+
+      for ( int pos = minRowPos; pos <= maxRowPos; pos++ )
+        redrawRow( getRows().getIndexFromPosition( pos ) );
+    }
+  }
+
+  /**************************************** redrawOverlay ****************************************/
+  public void redrawOverlay()
+  {
+    // highlight focus cell with special border
+    int focusColumnPos = getFocusCellProperty().getColumnPos();
+    int focusRowPos = getFocusCellProperty().getRowPos();
+
+    if ( focusColumnPos >= FIRSTCELL && focusRowPos >= FIRSTCELL )
+    {
+      GraphicsContext gc = getCanvas().getGraphicsContext2D();
+      if ( isTableFocused() )
+        gc.setStroke( Colors.OVERLAY_FOCUS );
+      else
+        gc.setStroke( Colors.OVERLAY_FOCUS.desaturate() );
+
+      double x = getXStartFromColumnPos( focusColumnPos );
+      double y = getYStartFromRowPos( focusRowPos );
+      double w = getXStartFromColumnPos( focusColumnPos + 1 ) - x;
+      double h = getYStartFromRowPos( focusRowPos + 1 ) - y;
+
+      // clip drawing to table body
+      gc.save();
+      gc.beginPath();
+      gc.rect( getRowHeaderWidth() - 1, getColumnHeaderHeight() - 1, getCanvas().getWidth(), getCanvas().getHeight() );
+      gc.clip();
+
+      // draw special border
+      gc.strokeRect( x - 0.5, y - 0.5, w, h );
+      gc.strokeRect( x + 0.5, y + 0.5, w - 2, h - 2 );
+
+      // remove clip
+      gc.restore();
+    }
   }
 
 }

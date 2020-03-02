@@ -24,7 +24,7 @@ import javafx.scene.input.MouseButton;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.input.ScrollEvent;
 import rjc.table.Utils;
-import rjc.table.cell.CellContext;
+import rjc.table.cell.CellDraw;
 import rjc.table.cell.CellEditorBase;
 import rjc.table.view.TableScrollBar.Animation;
 import rjc.table.view.cursor.Cursors;
@@ -313,8 +313,8 @@ public class TableEvents extends TableSelect
   protected void openEditor( Object value )
   {
     // get editor for focus cell
-    CellContext cell = new CellContext();
-    cell.setContextPos( getView(), getFocusCellProperty().getColumnPos(), getFocusCellProperty().getRowPos() );
+    CellDraw cell = getView().getCellDrawer();
+    cell.setPosition( getView(), getFocusCellProperty().getColumnPos(), getFocusCellProperty().getRowPos() );
     CellEditorBase editor = getView().getCellEditor( cell );
 
     // open editor if provided and valid value

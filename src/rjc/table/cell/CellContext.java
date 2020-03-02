@@ -49,11 +49,11 @@ public class CellContext
   public CellContext( TableView view, int columnIndex, int rowIndex )
   {
     // create new table cell context
-    setContext( view, columnIndex, rowIndex );
+    setIndex( view, columnIndex, rowIndex );
   }
 
-  /***************************************** setContext ******************************************/
-  public void setContext( TableView view, int columnIndex, int rowIndex )
+  /****************************************** setIndex *******************************************/
+  public void setIndex( TableView view, int columnIndex, int rowIndex )
   {
     // set cell context for cell index
     this.view = view;
@@ -69,8 +69,8 @@ public class CellContext
     h = view.getRows().getCellPixels( rowIndex );
   }
 
-  /***************************************** setContext ******************************************/
-  public void setContextPos( TableView view, int columnPos, int rowPos )
+  /***************************************** setPosition *****************************************/
+  public void setPosition( TableView view, int columnPos, int rowPos )
   {
     // set cell context from cell position
     this.view = view;
