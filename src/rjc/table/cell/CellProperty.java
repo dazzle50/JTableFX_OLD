@@ -30,24 +30,24 @@ public class CellProperty extends SimpleObjectProperty<CellPosition>
 {
   public class CellPosition
   {
-    protected int columnPos = TableAxis.INVALID;;
-    protected int rowPos    = TableAxis.INVALID;;
+    protected int m_columnPos = TableAxis.INVALID;;
+    protected int m_rowPos    = TableAxis.INVALID;;
 
     public int getColumnPos()
     {
-      return columnPos;
+      return m_columnPos;
     }
 
     public int getRowPos()
     {
-      return rowPos;
+      return m_rowPos;
     }
 
     @Override
     public String toString()
     {
-      return getClass().getSimpleName() + "@" + Integer.toHexString( System.identityHashCode( this ) ) + "[" + columnPos
-          + " " + rowPos + "]";
+      return getClass().getSimpleName() + "@" + Integer.toHexString( System.identityHashCode( this ) ) + "["
+          + m_columnPos + " " + m_rowPos + "]";
     }
 
   }
@@ -75,11 +75,11 @@ public class CellProperty extends SimpleObjectProperty<CellPosition>
   public void setPosition( int columnPos, int rowPos )
   {
     // if position is change, use oldPosition instead of creating new
-    if ( get().columnPos != columnPos || get().rowPos != rowPos )
+    if ( get().m_columnPos != columnPos || get().m_rowPos != rowPos )
     {
       CellPosition temp = get();
-      m_oldPosition.columnPos = columnPos;
-      m_oldPosition.rowPos = rowPos;
+      m_oldPosition.m_columnPos = columnPos;
+      m_oldPosition.m_rowPos = rowPos;
       set( m_oldPosition );
       m_oldPosition = temp;
     }
@@ -103,14 +103,14 @@ public class CellProperty extends SimpleObjectProperty<CellPosition>
   public int getColumnPos()
   {
     // return column position
-    return get().columnPos;
+    return get().m_columnPos;
   }
 
   /****************************************** getRowPos ******************************************/
   public int getRowPos()
   {
     // return row position
-    return get().rowPos;
+    return get().m_rowPos;
   }
 
   /****************************************** toString *******************************************/

@@ -32,6 +32,9 @@ public class Time
 
   // anything between MIN_VALUE and MAX_VALUE inclusive is valid, anything else invalid
   public static final int            MILLISECONDS_IN_DAY = 24 * 3600 * 1000;
+  public static final int            ONE_SECOND          = 1000;
+  public static final int            ONE_MINUTE          = 60 * 1000;
+  public static final int            ONE_HOUR            = 3600 * 1000;
   public static final Time           MIN_VALUE           = Time.fromMilliseconds( 0 );
   public static final Time           MAX_VALUE           = Time.fromMilliseconds( MILLISECONDS_IN_DAY );
   public static final int            TZ_MS_OFFSET        = OffsetDateTime.now().getOffset().getTotalSeconds() * 1000;

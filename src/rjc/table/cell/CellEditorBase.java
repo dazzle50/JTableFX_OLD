@@ -79,9 +79,15 @@ public class CellEditorBase
       field.getStatusProperty().addListener( ( observable, oldS, newS ) -> m_status.set( newS ) );
     }
 
-    // if control derived from NumberSpinField add wheel scroll listener
+    // if control supports wheel scroll listener
     if ( m_control instanceof NumberSpinField )
       view.setOnScroll( event -> ( (NumberSpinField) m_control ).mouseScroll( event ) );
+    if ( m_control instanceof DateField )
+      view.setOnScroll( event -> ( (DateField) m_control ).mouseScroll( event ) );
+    if ( m_control instanceof TimeField )
+      view.setOnScroll( event -> ( (TimeField) m_control ).mouseScroll( event ) );
+    if ( m_control instanceof DateTimeField )
+      view.setOnScroll( event -> ( (DateTimeField) m_control ).mouseScroll( event ) );
 
     // display editor, give focus, and set editor value
     m_cellEditorInProgress = this;

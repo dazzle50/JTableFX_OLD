@@ -23,9 +23,12 @@ import javafx.geometry.Pos;
 import rjc.table.cell.CellContext;
 import rjc.table.cell.CellDraw;
 import rjc.table.cell.CellEditorBase;
+import rjc.table.cell.EditorDate;
+import rjc.table.cell.EditorDateTime;
 import rjc.table.cell.EditorDouble;
 import rjc.table.cell.EditorInteger;
 import rjc.table.cell.EditorText;
+import rjc.table.cell.EditorTime;
 import rjc.table.view.TableView;
 import rjc.table.view.axis.TableAxis;
 
@@ -92,6 +95,12 @@ public class EditView extends TableView
       editor = new EditorInteger();
     if ( cell.columnIndex == EditData.SECTION_DOUBLE )
       editor = new EditorDouble();
+    if ( cell.columnIndex == EditData.SECTION_DATE )
+      editor = new EditorDate();
+    if ( cell.columnIndex == EditData.SECTION_TIME )
+      editor = new EditorTime();
+    if ( cell.columnIndex == EditData.SECTION_DATETIME )
+      editor = new EditorDateTime();
 
     // listen to editor status
     if ( editor != null )
