@@ -19,98 +19,77 @@
 package rjc.table.cell;
 
 import javafx.beans.property.SimpleObjectProperty;
-import rjc.table.cell.CellProperty.CellPosition;
 import rjc.table.view.axis.TableAxis;
 
 /*************************************************************************************************/
 /*************************** Observable table cell position reference ****************************/
 /*************************************************************************************************/
 
-public class CellProperty extends SimpleObjectProperty<CellPosition>
+public class CellProperty extends SimpleObjectProperty<CellProperty>
 {
-  public class CellPosition
-  {
-    protected int m_columnPos = TableAxis.INVALID;;
-    protected int m_rowPos    = TableAxis.INVALID;;
-
-    public int getColumnPos()
-    {
-      return m_columnPos;
-    }
-
-    public int getRowPos()
-    {
-      return m_rowPos;
-    }
-
-    @Override
-    public String toString()
-    {
-      return getClass().getSimpleName() + "@" + Integer.toHexString( System.identityHashCode( this ) ) + "["
-          + m_columnPos + " " + m_rowPos + "]";
-    }
-
-  }
-
-  private CellPosition m_oldPosition; // old cell position to avoid creating new when setting position
+  private int m_columnPos = TableAxis.INVALID;;
+  private int m_rowPos    = TableAxis.INVALID;;
 
   /**************************************** constructor ******************************************/
   public CellProperty()
   {
-    // call super and setup old and current default positions
-    super();
-    m_oldPosition = new CellPosition();
-    set( new CellPosition() );
+    // construct
   }
 
   /**************************************** constructor ******************************************/
   public CellProperty( int columnPos, int rowPos )
   {
-    // call super and set position
-    super();
-    setPosition( columnPos, rowPos );
+    // construct and set position
+    m_columnPos = columnPos;
+    m_rowPos = rowPos;
   }
 
   /***************************************** setPosition *****************************************/
   public void setPosition( int columnPos, int rowPos )
   {
-    // if position is change, use oldPosition instead of creating new
-    if ( get().m_columnPos != columnPos || get().m_rowPos != rowPos )
+    // if position is change, fire listeners
+    if ( columnPos != m_columnPos || rowPos != m_rowPos )
     {
-      CellPosition temp = get();
-      m_oldPosition.m_columnPos = columnPos;
-      m_oldPosition.m_rowPos = rowPos;
-      set( m_oldPosition );
-      m_oldPosition = temp;
+      m_columnPos = columnPos;
+      m_rowPos = rowPos;
+      fireValueChangedEvent();
     }
   }
 
   /**************************************** setColumnPos *****************************************/
   public void setColumnPos( int position )
   {
-    // set column position
-    setPosition( position, getRowPos() );
+    // if position is change, fire listeners
+    if ( position != m_columnPos )
+    {
+      m_columnPos = position;
+      fireValueChangedEvent();
+    }
   }
 
   /****************************************** setRowPos ******************************************/
   public void setRowPos( int position )
   {
-    // set row position
-    setPosition( getColumnPos(), position );
+    // if position is change, fire listeners
+    if ( position != m_rowPos )
+    {
+      m_rowPos = position;
+      fireValueChangedEvent();
+    }
   }
 
   /**************************************** getColumnPos *****************************************/
   public int getColumnPos()
   {
     // return column position
-    return get().m_columnPos;
+    return m_columnPos;
   }
 
   /****************************************** getRowPos ******************************************/
   public int getRowPos()
   {
     // return row position
-    return get().m_rowPos;
+    return m_rowPos;
   }
 
   /****************************************** toString *******************************************/
@@ -118,8 +97,8 @@ public class CellProperty extends SimpleObjectProperty<CellPosition>
   public String toString()
   {
     // return as string
-    return getClass().getSimpleName() + "@" + Integer.toHexString( System.identityHashCode( this ) ) + "["
-        + getColumnPos() + " " + getRowPos() + "]";
+    return getClass().getSimpleName() + "@" + Integer.toHexString( System.identityHashCode( this ) ) + "[" + m_columnPos
+        + " " + m_rowPos + "]";
   }
 
 }

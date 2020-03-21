@@ -32,8 +32,9 @@ public class Status
     NORMAL, WARNING, ERROR, FATAL
   }
 
-  private static final String STYLE_ERROR  = "-fx-text-fill: red;";
-  private static final String STYLE_NORMAL = "-fx-text-fill: black;";
+  private static final String STYLE_NORMAL  = "-fx-text-fill: black;";
+  private static final String STYLE_WARNING = "-fx-text-fill: orange;";
+  private static final String STYLE_ERROR   = "-fx-text-fill: red;";
 
   /**************************************** constructor ******************************************/
   public Status()
@@ -69,10 +70,18 @@ public class Status
   public String getStyle()
   {
     // return suitable style css for current severity
-    if ( m_severity == Level.ERROR || m_severity == Level.FATAL )
-      return Status.STYLE_ERROR;
-
-    return Status.STYLE_NORMAL;
+    switch ( m_severity )
+    {
+      case NORMAL:
+        return STYLE_NORMAL;
+      case WARNING:
+        return STYLE_WARNING;
+      case ERROR:
+      case FATAL:
+        return STYLE_ERROR;
+      default:
+        throw new UnsupportedOperationException( m_severity.toString() );
+    }
   }
 
   /******************************************* equals ********************************************/

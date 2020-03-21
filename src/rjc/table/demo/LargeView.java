@@ -29,22 +29,14 @@ import rjc.table.view.TableView;
 
 public class LargeView extends TableView
 {
-  private int m_highlightColumnIndex = INVALID;
-  private int m_highlightRowIndex    = INVALID;
-
   /**************************************** constructor ******************************************/
   public LargeView( LargeData data )
   {
     // construct customised table view
     super( data );
 
-    // when mouse moved redraw old and new column to move highlighting
-    getMouseCellProperty().addListener( ( observable, oldCell, newCell ) ->
-    {
-      m_highlightColumnIndex = getColumns().getIndexFromPosition( newCell.getColumnPos() );
-      m_highlightRowIndex = getRows().getIndexFromPosition( newCell.getRowPos() );
-      redraw();
-    } );
+    // when mouse moved to new cell, redraw table to move shading
+    getMouseCellProperty().addListener( ( observable ) -> redraw() );
   }
 
   /**************************************** getCellDrawer ****************************************/
@@ -61,15 +53,18 @@ public class LargeView extends TableView
         // get default background paint
         Paint paint = super.getBackgroundPaint();
 
-        // if white background
+        // if white background shade different colour if mouse pointer on row/column
         if ( paint == Color.WHITE )
         {
+          int col = view.getMouseCellProperty().getColumnPos();
+          int row = view.getMouseCellProperty().getRowPos();
+
           // highlight cell green where mouse is positioned
-          if ( columnIndex == m_highlightColumnIndex && rowIndex == m_highlightRowIndex )
+          if ( columnPos == col && rowPos == row )
             return Color.PALEGREEN;
 
           // highlight row and column pale green where mouse is positioned
-          if ( columnIndex == m_highlightColumnIndex || rowIndex == m_highlightRowIndex )
+          if ( columnPos == col || rowPos == row )
             return Color.PALEGREEN.desaturate().desaturate().desaturate().desaturate();
         }
 
