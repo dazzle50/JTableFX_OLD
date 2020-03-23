@@ -32,6 +32,10 @@ import javafx.stage.Stage;
 import rjc.table.Status;
 import rjc.table.Utils;
 import rjc.table.data.TableData;
+import rjc.table.demo.edit.EditData;
+import rjc.table.demo.edit.EditView;
+import rjc.table.demo.large.LargeData;
+import rjc.table.demo.large.LargeView;
 import rjc.table.view.TableView;
 
 /*************************************************************************************************/
@@ -122,7 +126,8 @@ public class DemoWindow
     // create menu bar
     MenuBar menus = new MenuBar();
     Menu benchmarks = new Menu( "Benchmarks" );
-    menus.getMenus().add( benchmarks );
+    Menu views = new Menu( "View" );
+    menus.getMenus().addAll( benchmarks, views );
 
     // benchmarking
     addBenchmark( benchmarks, "Null", () ->
@@ -137,6 +142,15 @@ public class DemoWindow
       TableView view = (TableView) tab.getContent();
       view.redraw();
     }, 1000 );
+
+    // views
+    MenuItem undowindow = new MenuItem( "Undo Stack ..." );
+    undowindow.setOnAction( event -> Utils.trace( "To be implemented" ) );
+
+    MenuItem newwindow = new MenuItem( "New window ..." );
+    newwindow.setOnAction( event -> Utils.trace( "To be implemented" ) );
+
+    views.getItems().addAll( undowindow, newwindow );
 
     return menus;
   }

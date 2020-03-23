@@ -16,13 +16,14 @@
  *  along with this program.  If not, see http://www.gnu.org/licenses/    *
  **************************************************************************/
 
-package rjc.table.demo;
+package rjc.table.demo.edit;
 
 import rjc.table.Utils;
 import rjc.table.data.Date;
 import rjc.table.data.DateTime;
 import rjc.table.data.TableData;
 import rjc.table.data.Time;
+import rjc.table.undo.UndoStack;
 
 /*************************************************************************************************/
 /******************** Example customised table data source for editable table ********************/
@@ -48,6 +49,8 @@ public class EditData extends TableData
   private Date[]          m_date           = new Date[ROWS];
   private Time[]          m_time           = new Time[ROWS];
   private DateTime[]      m_datetime       = new DateTime[ROWS];
+
+  private UndoStack       m_undostack      = new UndoStack();
 
   /**************************************** constructor ******************************************/
   public EditData()
@@ -129,44 +132,45 @@ public class EditData extends TableData
   @Override
   public boolean setValue( int columnIndex, int rowIndex, Object newValue )
   {
+    // if new value equals old value, exit with no command
+    Object oldValue = getValue( columnIndex, rowIndex );
+    if ( Utils.equal( newValue, oldValue ) )
+      return false;
+
+    // push new command on undo-stack (which in turn calls storeValue)
+    m_undostack.push( new EditCommand( this, columnIndex, rowIndex, oldValue, newValue ) );
+    return true;
+  }
+
+  /***************************************** storeValue ******************************************/
+  public boolean storeValue( int columnIndex, int rowIndex, Object newValue )
+  {
     // returns true if cell value successfully set for specified cell index
-    try
+    switch ( columnIndex )
     {
-      switch ( columnIndex )
-      {
-        case SECTION_TEXT:
-          m_text[rowIndex] = (String) newValue;
-          break;
-        case SECTION_INTEGER:
-          m_integer[rowIndex] = (int) newValue;
-          break;
-        case SECTION_DOUBLE:
-          m_double[rowIndex] = (double) newValue;
-          break;
-        case SECTION_DATE:
-          m_date[rowIndex] = (Date) newValue;
-          break;
-        case SECTION_TIME:
-          m_time[rowIndex] = (Time) newValue;
-          break;
-        case SECTION_DATETIME:
-          m_datetime[rowIndex] = (DateTime) newValue;
-          break;
-        default:
-          throw new IllegalArgumentException( "Column index = " + columnIndex );
-      }
-
-      redrawViews();
-      return true;
-    }
-    catch ( Exception exception )
-    {
-      // exception occurred
-      Utils.trace( exception );
+      case SECTION_TEXT:
+        m_text[rowIndex] = (String) newValue;
+        break;
+      case SECTION_INTEGER:
+        m_integer[rowIndex] = (int) newValue;
+        break;
+      case SECTION_DOUBLE:
+        m_double[rowIndex] = (double) newValue;
+        break;
+      case SECTION_DATE:
+        m_date[rowIndex] = (Date) newValue;
+        break;
+      case SECTION_TIME:
+        m_time[rowIndex] = (Time) newValue;
+        break;
+      case SECTION_DATETIME:
+        m_datetime[rowIndex] = (DateTime) newValue;
+        break;
+      default:
+        throw new IllegalArgumentException( "Column index = " + columnIndex );
     }
 
-    // no successful setting value
-    return false;
+    return true;
   }
 
 }

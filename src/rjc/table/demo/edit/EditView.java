@@ -16,27 +16,37 @@
  *  along with this program.  If not, see http://www.gnu.org/licenses/    *
  **************************************************************************/
 
-package rjc.table.demo;
+package rjc.table.demo.edit;
 
-import javafx.scene.paint.Color;
-import javafx.scene.paint.Paint;
+import rjc.table.cell.CellContext;
 import rjc.table.cell.CellDraw;
+import rjc.table.cell.CellEditorBase;
+import rjc.table.cell.EditorDate;
+import rjc.table.cell.EditorDateTime;
+import rjc.table.cell.EditorDouble;
+import rjc.table.cell.EditorInteger;
+import rjc.table.cell.EditorText;
+import rjc.table.cell.EditorTime;
+import rjc.table.demo.DemoWindow;
 import rjc.table.view.TableView;
 
 /*************************************************************************************************/
-/********************** Example customised table view for extra large table **********************/
+/*********************** Example customised table view for editable table ************************/
 /*************************************************************************************************/
 
-public class LargeView extends TableView
+public class EditView extends TableView
 {
   /**************************************** constructor ******************************************/
-  public LargeView( LargeData data )
+  public EditView( EditData data )
   {
     // construct customised table view
     super( data );
 
-    // when mouse moved to new cell, redraw table to move shading
-    getMouseCellProperty().addListener( ( observable ) -> redraw() );
+    getColumns().setCellSize( EditData.SECTION_READONLY, 120 );
+    getColumns().setCellSize( EditData.SECTION_TEXT, 120 );
+    getColumns().setCellSize( EditData.SECTION_INTEGER, 80 );
+    getColumns().setCellSize( EditData.SECTION_DOUBLE, 80 );
+    getColumns().setCellSize( EditData.SECTION_DATETIME, 200 );
   }
 
   /**************************************** getCellDrawer ****************************************/
@@ -44,43 +54,33 @@ public class LargeView extends TableView
   public CellDraw getCellDrawer()
   {
     // return new instance of class that draws table cells
-    return new CellDraw()
-    {
-      /*********************************** getBackgroundPaint ************************************/
-      @Override
-      protected Paint getBackgroundPaint()
-      {
-        // get default background paint
-        Paint paint = super.getBackgroundPaint();
-
-        // if white background shade different colour if mouse pointer on row/column
-        if ( paint == Color.WHITE )
-        {
-          int col = view.getMouseCellProperty().getColumnPos();
-          int row = view.getMouseCellProperty().getRowPos();
-
-          // highlight cell green where mouse is positioned
-          if ( columnPos == col && rowPos == row )
-            return Color.PALEGREEN;
-
-          // highlight row and column pale green where mouse is positioned
-          if ( columnPos == col || rowPos == row )
-            return Color.PALEGREEN.desaturate().desaturate().desaturate().desaturate();
-        }
-
-        // otherwise default
-        return paint;
-      };
-    };
+    return new EditCellDraw();
   }
 
-  /******************************************** reset ********************************************/
+  /**************************************** getCellEditor ****************************************/
   @Override
-  public void reset()
+  public CellEditorBase getCellEditor( CellContext cell )
   {
-    // reset table view to default settings with wider header
-    super.reset();
-    getColumns().setHeaderSize( 60 );
+    // determine editor appropriate for cell
+    CellEditorBase editor = null;
+    if ( cell.columnIndex == EditData.SECTION_TEXT )
+      editor = new EditorText();
+    if ( cell.columnIndex == EditData.SECTION_INTEGER )
+      editor = new EditorInteger();
+    if ( cell.columnIndex == EditData.SECTION_DOUBLE )
+      editor = new EditorDouble();
+    if ( cell.columnIndex == EditData.SECTION_DATE )
+      editor = new EditorDate();
+    if ( cell.columnIndex == EditData.SECTION_TIME )
+      editor = new EditorTime();
+    if ( cell.columnIndex == EditData.SECTION_DATETIME )
+      editor = new EditorDateTime();
+
+    // listen to editor status
+    if ( editor != null )
+      editor.getStatusProperty().addListener( ( property, oldS, newS ) -> DemoWindow.setStatus( newS ) );
+
+    return editor;
   }
 
 }
