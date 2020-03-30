@@ -50,13 +50,13 @@ public class EditData extends TableData
   private Time[]          m_time           = new Time[ROWS];
   private DateTime[]      m_datetime       = new DateTime[ROWS];
 
-  private UndoStack       m_undostack      = new UndoStack();
+  private UndoStack       m_undostack;
 
   /**************************************** constructor ******************************************/
-  public EditData()
+  public EditData( UndoStack undostack )
   {
     // populate the private variables with table contents
-    super();
+    m_undostack = undostack;
     setColumnCount( SECTION_MAX + 1 );
     setRowCount( ROWS );
 

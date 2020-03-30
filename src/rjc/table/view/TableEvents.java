@@ -551,29 +551,29 @@ public class TableEvents extends TableSelect
     m_x = (int) event.getX();
     m_y = (int) event.getY();
 
-    // check if column resizing
+    // check if column/row resizing
     if ( getCursor() == Cursors.H_RESIZE )
       m_resize.resize( m_x );
-
-    // check if row resizing
     if ( getCursor() == Cursors.V_RESIZE )
       m_resize.resize( m_y );
 
-    // check mouse cell position after any resizing
+    // check mouse cell position (need to do after any resizing)
     checkMouseCellPosition();
 
     // determine whether any horizontal scrolling needed
-    if ( m_x >= getCanvas().getWidth() && m_selecting != Selecting.ROWS )
+    boolean scroll = m_selecting != Selecting.ROWS && getCursor() != Cursors.V_RESIZE && getCursor() != Cursors.V_MOVE;
+    if ( scroll && m_x >= getCanvas().getWidth() )
       getHorizontalScrollBar().scrollToEnd( m_x - getCanvas().getWidth() );
-    else if ( m_x < getRowHeaderWidth() && m_selecting != Selecting.ROWS )
+    else if ( scroll && m_x < getRowHeaderWidth() )
       getHorizontalScrollBar().scrollToStart( getRowHeaderWidth() - m_x );
     else
       getHorizontalScrollBar().stopAnimationStartEnd();
 
     // determine whether any vertical scrolling needed
-    if ( m_y >= getCanvas().getHeight() && m_selecting != Selecting.COLUMNS )
+    scroll = m_selecting != Selecting.COLUMNS && getCursor() != Cursors.H_RESIZE && getCursor() != Cursors.H_MOVE;
+    if ( scroll & m_y >= getCanvas().getHeight() )
       getVerticalScrollBar().scrollToEnd( m_y - getCanvas().getHeight() );
-    else if ( m_y < getColumnHeaderHeight() && m_selecting != Selecting.COLUMNS )
+    else if ( scroll && m_y < getColumnHeaderHeight() )
       getVerticalScrollBar().scrollToStart( getColumnHeaderHeight() - m_y );
     else
       getVerticalScrollBar().stopAnimationStartEnd();

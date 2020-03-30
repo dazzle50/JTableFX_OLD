@@ -19,6 +19,7 @@
 package rjc.table.demo.edit;
 
 import rjc.table.undo.IUndoCommand;
+import rjc.table.view.axis.AxisBase;
 
 /*************************************************************************************************/
 /************************* Example UndoCommand changing table cell value *************************/
@@ -73,7 +74,8 @@ public class EditCommand implements IUndoCommand
   public String text()
   {
     // command description
-    return "Set cell " + m_columnIndex + "," + m_rowIndex + " to " + m_newValue;
+    return m_data.getValue( m_columnIndex, AxisBase.HEADER ) + " " + m_data.getValue( AxisBase.HEADER, m_rowIndex )
+        + " = " + m_newValue;
   }
 
 }

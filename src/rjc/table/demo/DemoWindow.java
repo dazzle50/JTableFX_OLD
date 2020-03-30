@@ -20,6 +20,7 @@ package rjc.table.demo;
 
 import javafx.application.Platform;
 import javafx.scene.Scene;
+import javafx.scene.control.CheckMenuItem;
 import javafx.scene.control.Menu;
 import javafx.scene.control.MenuBar;
 import javafx.scene.control.MenuItem;
@@ -36,6 +37,8 @@ import rjc.table.demo.edit.EditData;
 import rjc.table.demo.edit.EditView;
 import rjc.table.demo.large.LargeData;
 import rjc.table.demo.large.LargeView;
+import rjc.table.undo.UndoStack;
+import rjc.table.undo.UndoStackWindow;
 import rjc.table.view.TableView;
 
 /*************************************************************************************************/
@@ -44,14 +47,26 @@ import rjc.table.view.TableView;
 
 public class DemoWindow
 {
-  private static TextField m_statusBar; // status bar at bottom of window
+  private static TextField m_statusBar;   // status bar at bottom of window
 
-  private MenuBar          m_menus;     // menu bar at top of window
-  private TabPane          m_tabs;      // tabs pane to show the demos
+  private MenuBar          m_menus;       // menu bar at top of window
+  private TabPane          m_tabs;        // tabs pane to show the demos
+  private UndoStack        m_undostack;   // undo-stack for application
+  private UndoStackWindow  m_undoWindow;  // window to interact with undo-stack
+
+  private TableData        m_defaultTable;
+  private LargeData        m_largeTable;
+  private EditData         m_editTable;
 
   /**************************************** constructor ******************************************/
   public DemoWindow( Stage stage )
   {
+    // create demo table data sources
+    m_defaultTable = new TableData();
+    m_largeTable = new LargeData();
+    m_undostack = new UndoStack();
+    m_editTable = new EditData( m_undostack );
+
     // create demo windows contents
     m_menus = makeMenuBar();
     m_tabs = makeTabs();
@@ -72,8 +87,8 @@ public class DemoWindow
     stage.setScene( scene );
     stage.setTitle( "JTableFX " + Utils.VERSION + " demo application" );
 
-    // select tab contents
-    Platform.runLater( () -> ( m_tabs.getSelectionModel().getSelectedItem().getContent() ).requestFocus() );
+    // close demo app when main window is closed (in case other windows are open)
+    stage.setOnHidden( event -> Platform.exit() );
 
     // TEMP placing and sizing for my convenience #############
     stage.setX( -1100 );
@@ -86,36 +101,34 @@ public class DemoWindow
   private TabPane makeTabs()
   {
     // create default table in tab
-    TableView defaultTable = new TableView( new TableData() );
+    TableView defaultView = new TableView( m_defaultTable );
     Tab defaultTab = new Tab();
     defaultTab.setText( "Default" );
     defaultTab.setClosable( false );
-    defaultTab.setContent( defaultTable );
-    defaultTable.visibleProperty().bind( defaultTab.selectedProperty() );
+    defaultTab.setContent( defaultView );
+    defaultView.visibleProperty().bind( defaultTab.selectedProperty() );
 
     // create large table in tab
-    TableView largeTable = new LargeView( new LargeData() );
+    TableView largeView = new LargeView( m_largeTable );
     Tab largeTab = new Tab();
     largeTab.setText( "Large" );
     largeTab.setClosable( false );
-    largeTab.setContent( largeTable );
-    largeTable.visibleProperty().bind( largeTab.selectedProperty() );
+    largeTab.setContent( largeView );
+    largeView.visibleProperty().bind( largeTab.selectedProperty() );
 
     // create editable table in tab
-    TableView editTable = new EditView( new EditData() );
+    TableView editView = new EditView( m_editTable );
     Tab editTab = new Tab();
     editTab.setText( "Edit" );
     editTab.setClosable( false );
-    editTab.setContent( editTable );
-    editTable.visibleProperty().bind( editTab.selectedProperty() );
+    editTab.setContent( editView );
+    editView.visibleProperty().bind( editTab.selectedProperty() );
 
-    // create demo tab pane
+    // create demo tab pane, when selected tab changes request focus for the tab contents
     TabPane tabs = new TabPane();
-    tabs.getTabs().addAll( defaultTab, largeTab, editTab );
-
-    // when selected tab changes, request focus for the tab contents 
     tabs.getSelectionModel().selectedItemProperty().addListener(
         ( observable, oldTab, newTab ) -> Platform.runLater( () -> ( newTab.getContent() ).requestFocus() ) );
+    tabs.getTabs().addAll( defaultTab, largeTab, editTab );
 
     return tabs;
   }
@@ -144,15 +157,46 @@ public class DemoWindow
     }, 1000 );
 
     // views
-    MenuItem undowindow = new MenuItem( "Undo Stack ..." );
-    undowindow.setOnAction( event -> Utils.trace( "To be implemented" ) );
+    CheckMenuItem undowindow = new CheckMenuItem( "Undo Stack ..." );
+    undowindow.setOnAction( event -> showUndoWindow( undowindow ) );
 
     MenuItem newwindow = new MenuItem( "New window ..." );
-    newwindow.setOnAction( event -> Utils.trace( "To be implemented" ) );
+    newwindow.setOnAction( event -> openNewWindow() );
 
     views.getItems().addAll( undowindow, newwindow );
 
     return menus;
+  }
+
+  /**************************************** openNewWindow ****************************************/
+  private void openNewWindow()
+  {
+    // open new window with different views to same data
+    Stage stage = new Stage();
+    TabPane tabs = makeTabs();
+    stage.setScene( new Scene( tabs ) );
+    stage.setTitle( "New window" );
+    stage.show();
+  }
+
+  /*************************************** showUndoWindow ****************************************/
+  private void showUndoWindow( CheckMenuItem menuitem )
+  {
+    // create undo-stack window if not already created
+    if ( m_undoWindow == null )
+    {
+      m_undoWindow = new UndoStackWindow( m_undostack );
+      m_undoWindow.setOnHiding( event -> menuitem.setSelected( false ) );
+    }
+
+    // make the undo-stack window visible or hidden
+    if ( m_undoWindow.isShowing() )
+      m_undoWindow.hide();
+    else
+    {
+      m_undoWindow.show();
+      m_undoWindow.toFront();
+    }
   }
 
   /**************************************** addBenchmark *****************************************/
