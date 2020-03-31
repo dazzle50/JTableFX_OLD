@@ -15,13 +15,19 @@ An open source project for JavaFX that aims to provide a flexible and configurab
     * Column and row resizing and hiding
     * Column and row re-ordering
     * Zoom in and out (Ctrl +/-/0)
-* Utility support methods 
+* Utility support methods including undo-stack
 
 ## Demo application
 
 The project includes a demonstration application that contains multiple examples to exhibit features and how to configure them. 
 
-![Demo](images/Demo-app.png "Demo application")
+![Demo](images/Demo-app.png "Demo application - default table")
+
+![Demo](images/Demo-large.png "Demo application - large table")
+
+![Demo](images/Demo-edit.png "Demo application - edit table")
+
+![Demo](images/Undostack-window.png "Undostack window")
 
 ## Running the demo application from command line
 

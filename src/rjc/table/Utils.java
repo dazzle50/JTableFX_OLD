@@ -27,7 +27,7 @@ import java.time.format.DateTimeFormatter;
 
 public class Utils
 {
-  public static final String      VERSION            = "v0.0.4-alpha WIP";
+  public static final String      VERSION            = "v0.0.4-alpha";
 
   public static DateTimeFormatter timestampFormatter = DateTimeFormatter.ofPattern( "uuuu-MM-dd HH:mm:ss.SSS" );
 
