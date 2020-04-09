@@ -84,7 +84,7 @@ public class UndoStack extends SimpleObjectProperty<UndoStack>
     // remove any commands from stack that haven't been actioned (i.e. above index)
     if ( m_stack.size() > m_index )
     {
-      m_stack.subList( m_index, m_stack.size() - 1 ).clear();
+      m_stack.subList( m_index, m_stack.size() ).clear();
 
       // if stack now shorter than clean-index it will be impossible to return to clean state
       if ( m_stack.size() < m_cleanIndex )
@@ -181,6 +181,21 @@ public class UndoStack extends SimpleObjectProperty<UndoStack>
       update( updates );
       fireValueChangedEvent();
     }
+  }
+
+  /****************************************** toString *******************************************/
+  @Override
+  public String toString()
+  {
+    // return as string
+    StringBuilder str = new StringBuilder(
+        getClass().getSimpleName() + "@" + Integer.toHexString( System.identityHashCode( this ) ) );
+    str.append( "[i=" + m_index );
+    str.append( " c=" + m_cleanIndex );
+    str.append( " s=" + m_stack.size() );
+    for ( IUndoCommand command : m_stack )
+      str.append( " \"" + command.text() + "\"" );
+    return str.toString() + "]";
   }
 
 }

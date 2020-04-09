@@ -90,7 +90,57 @@ public class TableEvents extends TableSelect
     int rowPos = shift ? getSelectCellProperty().getRowPos() : getFocusCellProperty().getRowPos();
     event.consume();
 
-    // handle arrow keys
+    // handle control keys
+    if ( ctrl && !alt )
+      switch ( event.getCode() )
+      {
+        case A: // select whole table (Ctrl-A)
+          controlAPressed();
+          return;
+
+        case X: // cut cells contents (Ctrl-X)
+          controlXPressed();
+          return;
+
+        case C: // copy cells contents (Ctrl-C)
+          controlCPressed();
+          return;
+
+        case V: // paste cells contents (Ctrl-V)
+          controlVPressed();
+          return;
+
+        case D: // fill-down cells contents (Ctrl-D)
+          controlDPressed();
+          return;
+
+        case Z: // undo command (Ctrl-V)
+          controlZPressed();
+          return;
+
+        case Y: // redo command (Ctrl-Y)
+          controlYPressed();
+          return;
+
+        case MINUS: // zoom out (Ctrl-minus)
+        case SUBTRACT:
+          setViewZoom( getZoom() / Math.pow( 2.0, 0.0625 ) );
+          return;
+
+        case EQUALS: // zoom in (Ctrl-plus)
+        case ADD:
+          setViewZoom( getZoom() * Math.pow( 2.0, 0.0625 ) );
+          return;
+
+        case DIGIT0: // reset zoom 1:1 (Ctrl-0)
+          setViewZoom( 1.0 );
+          return;
+
+        default:
+          break;
+      }
+
+    // handle arrow, page, home, end, insert, delete, F2 & F5 keys
     if ( !alt )
       switch ( event.getCode() )
       {
@@ -99,28 +149,28 @@ public class TableEvents extends TableSelect
           columnPos = ctrl ? getColumns().getLast() : getColumns().getNext( columnPos );
           setSelectFocusPosition( columnPos, rowPos, !shift, !shift, true );
           redraw();
-          break;
+          return;
 
         case LEFT: // left <- arrow key
         case KP_LEFT:
           columnPos = ctrl ? getColumns().getFirst() : getColumns().getPrevious( columnPos );
           setSelectFocusPosition( columnPos, rowPos, !shift, !shift, true );
           redraw();
-          break;
+          return;
 
         case DOWN: // down arrow key
         case KP_DOWN:
           rowPos = ctrl ? getRows().getLast() : getRows().getNext( rowPos );
           setSelectFocusPosition( columnPos, rowPos, !shift, !shift, true );
           redraw();
-          break;
+          return;
 
         case UP: // up arrow key
         case KP_UP:
           rowPos = ctrl ? getRows().getFirst() : getRows().getPrevious( rowPos );
           setSelectFocusPosition( columnPos, rowPos, !shift, !shift, true );
           redraw();
-          break;
+          return;
 
         case PAGE_DOWN: // page down key
           getVerticalScrollBar().finishAnimation();
@@ -157,7 +207,7 @@ public class TableEvents extends TableSelect
             setSelectFocusPosition( columnPos, getRows().getLast(), !shift, !ctrl, true );
             redraw();
           }
-          break;
+          return;
 
         case PAGE_UP: // page up key
           getVerticalScrollBar().finishAnimation();
@@ -190,84 +240,37 @@ public class TableEvents extends TableSelect
             setSelectFocusPosition( columnPos, getRows().getFirst(), !shift, !ctrl, true );
             redraw();
           }
-          break;
+          return;
 
         case HOME: // home key - navigate to left-most visible column
           setSelectFocusPosition( getColumns().getFirst(), getSelectCellProperty().getRowPos(), !shift, !ctrl, true );
           redraw();
-          break;
+          return;
 
         case END: // end key - navigate to right-most visible column
           setSelectFocusPosition( getColumns().getLast(), getSelectCellProperty().getRowPos(), !shift, !ctrl, true );
           redraw();
-          break;
+          return;
 
         case DELETE: // delete key - delete selected cells content
           deleteKeyPressed();
-          break;
+          return;
 
         case INSERT: // insert key - insert row or column
           insertKeyPressed();
-          break;
-
-        case A:
-          // select whole table (Ctrl-A)
-          if ( ctrl )
-            controlAPressed();
-          break;
-
-        case X:
-          // cut cells contents (Ctrl-X)
-          if ( ctrl )
-            controlXPressed();
-          break;
-
-        case C:
-          // copy cells contents (Ctrl-C)
-          if ( ctrl )
-            controlCPressed();
-          break;
-
-        case V:
-          // paste cells contents (Ctrl-V)
-          if ( ctrl )
-            controlVPressed();
-          break;
-
-        case D:
-          // fill-down cells contents (Ctrl-D)
-          if ( ctrl )
-            controlDPressed();
-          break;
+          return;
 
         case F2: // F2 key - open cell editor with current focus cell contents
           int columnIndex = getColumns().getIndexFromPosition( getFocusCellProperty().getColumnPos() );
           int rowIndex = getRows().getIndexFromPosition( getFocusCellProperty().getRowPos() );
           openEditor( getData().getValue( columnIndex, rowIndex ) );
-          break;
+          return;
 
-        case MINUS:
-        case SUBTRACT:
-          // zoom out (Ctrl-minus)
-          if ( ctrl )
-            setViewZoom( getZoom() / Math.pow( 2.0, 0.0625 ) );
-          break;
+        case F5: // F5 key - redraw table
+          redraw();
+          return;
 
-        case EQUALS:
-        case ADD:
-          // zoom in (Ctrl-plus)
-          if ( ctrl )
-            setViewZoom( getZoom() * Math.pow( 2.0, 0.0625 ) );
-          break;
-
-        case DIGIT0:
-          // zoom 1:1 (Ctrl-0)
-          if ( ctrl )
-            setViewZoom( 1.0 );
-          break;
-
-        default: // anything else
-          //Utils.trace( "DEFAULT " + event.getCode() );
+        default:
           break;
       }
 
@@ -370,6 +373,20 @@ public class TableEvents extends TableSelect
   {
     // fill-down cells contents (Ctrl-D) - TODO
     Utils.trace( "FILL-DOWN - NOT YET IMPLEMENTED !!!" );
+  }
+
+  /*************************************** controlZPressed ***************************************/
+  protected void controlZPressed()
+  {
+    // undo command (Ctrl-Z) - TODO
+    Utils.trace( "UNDO - NOT YET IMPLEMENTED !!!" );
+  }
+
+  /*************************************** controlYPressed ***************************************/
+  protected void controlYPressed()
+  {
+    // redo command (Ctrl-Y) - TODO
+    Utils.trace( "REDO - NOT YET IMPLEMENTED !!!" );
   }
 
   /**************************************** mousePressed *****************************************/
