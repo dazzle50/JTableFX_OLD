@@ -18,12 +18,10 @@
 
 package rjc.table.demo.edit;
 
-import rjc.table.Utils;
 import rjc.table.data.Date;
 import rjc.table.data.DateTime;
 import rjc.table.data.TableData;
 import rjc.table.data.Time;
-import rjc.table.undo.UndoStack;
 
 /*************************************************************************************************/
 /******************** Example customised table data source for editable table ********************/
@@ -50,13 +48,10 @@ public class EditData extends TableData
   private Time[]          m_time           = new Time[ROWS];
   private DateTime[]      m_datetime       = new DateTime[ROWS];
 
-  private UndoStack       m_undostack;
-
   /**************************************** constructor ******************************************/
-  public EditData( UndoStack undostack )
+  public EditData()
   {
     // populate the private variables with table contents
-    m_undostack = undostack;
     setColumnCount( SECTION_MAX + 1 );
     setRowCount( ROWS );
 
@@ -131,19 +126,6 @@ public class EditData extends TableData
   /****************************************** setValue *******************************************/
   @Override
   public boolean setValue( int columnIndex, int rowIndex, Object newValue )
-  {
-    // if new value equals old value, exit with no command
-    Object oldValue = getValue( columnIndex, rowIndex );
-    if ( Utils.equal( newValue, oldValue ) )
-      return false;
-
-    // push new command on undo-stack (which in turn calls storeValue)
-    m_undostack.push( new EditCommand( this, columnIndex, rowIndex, oldValue, newValue ) );
-    return true;
-  }
-
-  /***************************************** storeValue ******************************************/
-  public boolean storeValue( int columnIndex, int rowIndex, Object newValue )
   {
     // returns true if cell value successfully set for specified cell index
     switch ( columnIndex )

@@ -18,12 +18,15 @@
 
 package rjc.table.data;
 
+import rjc.table.undo.UndoStack;
+
 /*************************************************************************************************/
 /*********************** Table data source (with default implementations) ************************/
 /*************************************************************************************************/
 
 public class TableData extends TableBase
 {
+  private UndoStack m_undostack; // undo-stack for the table data
 
   /****************************************** getValue *******************************************/
   public Object getValue( int columnIndex, int rowIndex )
@@ -49,6 +52,22 @@ public class TableData extends TableBase
   {
     // returns true if cell value successfully set for specified cell index
     return false;
+  }
+
+  /***************************************** getUndoStack ****************************************/
+  public UndoStack getUndoStack()
+  {
+    // return the data undo-stack (create if necessary)
+    if ( m_undostack == null )
+      m_undostack = new UndoStack();
+    return m_undostack;
+  }
+
+  /***************************************** setUndoStack ****************************************/
+  public void setUndoStack( UndoStack undostack )
+  {
+    // set the data undo-stack
+    m_undostack = undostack;
   }
 
 }

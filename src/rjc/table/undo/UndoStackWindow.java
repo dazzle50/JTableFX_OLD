@@ -37,7 +37,7 @@ public class UndoStackWindow extends Stage
     setHeight( 300 );
 
     // setup scene
-    UndoStackControl control = new UndoStackControl( undostack );
+    UndoStackView control = new UndoStackView( undostack );
     Scene scene = new Scene( control );
     setScene( scene );
   }

@@ -16,28 +16,29 @@
  *  along with this program.  If not, see http://www.gnu.org/licenses/    *
  **************************************************************************/
 
-package rjc.table.demo.edit;
+package rjc.table.undo;
 
-import rjc.table.undo.IUndoCommand;
+import rjc.table.Utils;
+import rjc.table.data.TableData;
 import rjc.table.view.axis.AxisBase;
 
 /*************************************************************************************************/
-/************************* Example UndoCommand changing table cell value *************************/
+/********************* Default UndoCommand for setting TableData cell value **********************/
 /*************************************************************************************************/
 
-public class EditCommand implements IUndoCommand
+public class CommandSetValue implements IUndoCommand
 {
-  private EditData m_data;
-  private int      m_columnIndex;
-  private int      m_rowIndex;
-  private Object   m_newValue;   // new value after command
-  private Object   m_oldValue;   // old value before command
+  private TableData m_data;
+  private int       m_columnIndex;
+  private int       m_rowIndex;
+  private Object    m_newValue;   // new value after command
+  private Object    m_oldValue;   // old value before command
 
   /**************************************** constructor ******************************************/
-  public EditCommand( EditData data, int columnIndex, int rowIndex, Object oldValue, Object newValue )
+  public CommandSetValue( TableData tableData, int columnIndex, int rowIndex, Object oldValue, Object newValue )
   {
     // initialise private variables
-    m_data = data;
+    m_data = tableData;
     m_columnIndex = columnIndex;
     m_rowIndex = rowIndex;
     m_newValue = newValue;
@@ -49,7 +50,8 @@ public class EditCommand implements IUndoCommand
   public void redo()
   {
     // action command
-    m_data.storeValue( m_columnIndex, m_rowIndex, m_newValue );
+    if ( !m_data.setValue( m_columnIndex, m_rowIndex, m_newValue ) )
+      Utils.trace( "WARNING : setValue was not successful! ", m_columnIndex, m_rowIndex, m_newValue, m_data );
   }
 
   /******************************************* undo **********************************************/
@@ -57,7 +59,8 @@ public class EditCommand implements IUndoCommand
   public void undo()
   {
     // revert command
-    m_data.storeValue( m_columnIndex, m_rowIndex, m_oldValue );
+    if ( !m_data.setValue( m_columnIndex, m_rowIndex, m_oldValue ) )
+      Utils.trace( "WARNING : setValue was not successful! ", m_columnIndex, m_rowIndex, m_oldValue, m_data );
   }
 
   /****************************************** update *********************************************/

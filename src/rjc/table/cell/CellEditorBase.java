@@ -113,7 +113,7 @@ public class CellEditorBase
   public void commit()
   {
     // attempt to commit editor value to data source
-    m_cell.view.getData().setValue( m_cell.columnIndex, m_cell.rowIndex, getValue() );
+    m_cell.view.setValue( m_cell.columnIndex, m_cell.rowIndex, getValue() );
   }
 
   /******************************************* getValue ******************************************/

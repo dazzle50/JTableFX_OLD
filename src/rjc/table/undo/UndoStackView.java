@@ -31,13 +31,13 @@ import rjc.table.Colors;
 import rjc.table.Utils;
 
 /*************************************************************************************************/
-/****************************** Control for undo-stack command list *******************************/
+/*************** Control for viewing and interacting with undo-stack command list ****************/
 /*************************************************************************************************/
 
-public class UndoStackControl extends Parent
+public class UndoStackView extends Parent
 {
-  private int       m_height;           // control height
-  private int       m_width;            // control width
+  private int       m_height;           // view height
+  private int       m_width;            // view width
 
   private UndoStack m_undostack;
   private Canvas    m_canvas;
@@ -51,17 +51,17 @@ public class UndoStackControl extends Parent
   @Override
   public void resize( double width, double height )
   {
-    // resize the control
+    // resize the view
     m_width = (int) width;
     m_height = (int) height;
-    layoutControl();
+    layoutView();
   }
 
   /**************************************** isResizable ******************************************/
   @Override
   public boolean isResizable()
   {
-    // control is resizable
+    // view is resizable
     return true;
   }
 
@@ -69,7 +69,7 @@ public class UndoStackControl extends Parent
   @Override
   public double minHeight( double width )
   {
-    // control minimum height is zero
+    // view minimum height is zero
     return 0.0;
   }
 
@@ -77,7 +77,7 @@ public class UndoStackControl extends Parent
   @Override
   public double minWidth( double height )
   {
-    // control minimum width is zero
+    // view minimum width is zero
     return 0.0;
   }
 
@@ -85,7 +85,7 @@ public class UndoStackControl extends Parent
   @Override
   public double prefHeight( double width )
   {
-    // control will take as much space as it can get so scroll-bars at edge of area
+    // view will take as much space as it can get so scroll-bars at edge of area
     return Integer.MAX_VALUE;
   }
 
@@ -93,56 +93,48 @@ public class UndoStackControl extends Parent
   @Override
   public double prefWidth( double height )
   {
-    // control will take as much space as it can get so scroll-bars at edge of area
+    // view will take as much space as it can get so scroll-bars at edge of area
     return Integer.MAX_VALUE;
   }
 
   /****************************************** getWidth *******************************************/
   public int getWidth()
   {
-    // return control width
+    // return view width
     return m_width;
   }
 
   /****************************************** getHeight ******************************************/
   public int getHeight()
   {
-    // return control height
+    // return view height
     return m_height;
   }
 
   /**************************************** constructor ******************************************/
-  public UndoStackControl( UndoStack undostack )
+  public UndoStackView( UndoStack undostack )
   {
     // get default string bounds
     Bounds bounds = ( new Text( "Qwerty" ) ).getLayoutBounds();
     m_rowHeight = (int) Math.ceil( bounds.getHeight() );
     m_rowDescent = (int) Math.floor( -bounds.getMinY() );
 
-    // create undo-stack control
+    // create undo-stack view
     m_undostack = undostack;
-    undostack.addListener( observable ->
-    {
-      // update control and make current index visible
-      layoutControl();
-      int y = getYStart( undostack.getIndex() - 1 );
-      if ( y < 0 )
-        m_scrollbar.setValue( m_scrollbar.getValue() + y );
-      else if ( y > m_canvas.getHeight() - m_rowHeight )
-        m_scrollbar.setValue( m_scrollbar.getValue() + y - m_canvas.getHeight() + m_rowHeight );
-    } );
+    undostack.addListener( observable -> layoutView() );
+    visibleProperty().addListener( property -> layoutView() );
 
     // setup scroll bar
     m_scrollbar = new ScrollBar();
     m_scrollbar.setOrientation( Orientation.VERTICAL );
     m_scrollbar.setMinWidth( 18 );
     m_scrollbar.setVisible( false );
-    m_scrollbar.valueProperty().addListener( ( observable, oldV, newV ) -> requestRedraw() );
+    m_scrollbar.valueProperty().addListener( property -> requestRedraw() );
 
     // setup canvas
     m_canvas = new Canvas();
     m_canvas.setFocusTraversable( true );
-    m_canvas.focusedProperty().addListener( ( observable, oldF, newF ) -> requestRedraw() );
+    m_canvas.focusedProperty().addListener( property -> requestRedraw() );
     m_canvas.setOnMousePressed( event -> setIndex( getIndexAtY( event.getY() ) + 1 ) );
     m_canvas.setOnMouseDragged( event -> setIndex( getIndexAtY( event.getY() ) + 1 ) );
     m_canvas.setOnScroll( event ->
@@ -191,7 +183,7 @@ public class UndoStackControl extends Parent
       }
     } );
 
-    // add the canvas and scroll-bar to the control parent
+    // add the canvas and scroll-bar to the view parent
     getChildren().addAll( m_canvas, m_scrollbar );
   }
 
@@ -203,26 +195,26 @@ public class UndoStackControl extends Parent
     m_undostack.setIndex( index );
   }
 
-  /**************************************** layoutControl ****************************************/
-  private void layoutControl()
+  /***************************************** layoutView ******************************************/
+  private void layoutView()
   {
     // resize canvas and scroll-bar
     if ( isVisible() )
     {
       // set scroll bar to correct visibility
       double fullHeight = m_rowHeight * ( m_undostack.getSize() + 1 );
-      boolean need = getScene().getHeight() < fullHeight;
+      boolean need = m_height < fullHeight;
       m_scrollbar.setVisible( need );
 
       // set scroll bars correct thumb size and position
-      if ( m_scrollbar.isVisible() )
+      if ( need )
       {
-        m_scrollbar.relocate( getWidth() - m_scrollbar.getWidth(), 0.0 );
-        m_scrollbar.setPrefHeight( getHeight() );
+        m_scrollbar.relocate( m_width - m_scrollbar.getWidth(), 0.0 );
+        m_scrollbar.setPrefHeight( m_height );
 
-        double max = fullHeight - getScene().getHeight();
+        double max = fullHeight - m_height;
         m_scrollbar.setMax( max );
-        m_scrollbar.setVisibleAmount( max * getScene().getHeight() / fullHeight );
+        m_scrollbar.setVisibleAmount( max * m_height / fullHeight );
         if ( m_scrollbar.getValue() > max )
           m_scrollbar.setValue( max );
       }
@@ -230,8 +222,15 @@ public class UndoStackControl extends Parent
         m_scrollbar.setValue( 0.0 );
 
       // set canvas to correct size to not overlap scroll bars
-      m_canvas.setHeight( getScene().getHeight() );
-      m_canvas.setWidth( getScene().getWidth() - ( m_scrollbar.isVisible() ? m_scrollbar.getWidth() : 0 ) );
+      m_canvas.setHeight( m_height );
+      m_canvas.setWidth( m_width - ( need ? m_scrollbar.getWidth() : 0 ) );
+
+      // ensure current index is visible
+      int y = getYStart( m_undostack.getIndex() - 1 );
+      if ( y < 0 )
+        m_scrollbar.setValue( m_scrollbar.getValue() + y );
+      else if ( y > m_canvas.getHeight() - m_rowHeight )
+        m_scrollbar.setValue( m_scrollbar.getValue() + y - m_height + m_rowHeight );
 
       // request canvas is redrawn
       requestRedraw();
@@ -241,7 +240,7 @@ public class UndoStackControl extends Parent
   /**************************************** requestRedraw ****************************************/
   private void requestRedraw()
   {
-    // request redraw of undo-stack control
+    // request redraw of undo-stack view
     if ( isVisible() && !m_redrawIsRequested )
     {
       m_redrawIsRequested = true;

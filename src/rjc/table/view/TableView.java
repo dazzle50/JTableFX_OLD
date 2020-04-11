@@ -20,10 +20,12 @@ package rjc.table.view;
 
 import javafx.scene.canvas.GraphicsContext;
 import rjc.table.Colors;
+import rjc.table.Utils;
 import rjc.table.cell.CellContext;
 import rjc.table.cell.CellDraw;
 import rjc.table.cell.CellEditorBase;
 import rjc.table.data.TableData;
+import rjc.table.undo.CommandSetValue;
 
 /*************************************************************************************************/
 /********************************** Base class for table views ***********************************/
@@ -60,6 +62,19 @@ public class TableView extends TableXML
   {
     // return cell editor, or null if cell is read-only
     return null;
+  }
+
+  /**************************************** setValue ******************************************/
+  public boolean setValue( int columnIndex, int rowIndex, Object newValue )
+  {
+    // if new value equals old value, exit with no command
+    Object oldValue = getData().getValue( columnIndex, rowIndex );
+    if ( Utils.equal( newValue, oldValue ) )
+      return false;
+
+    // push new command on undo-stack to update cell value
+    getData().getUndoStack().push( new CommandSetValue( getData(), columnIndex, rowIndex, oldValue, newValue ) );
+    return true;
   }
 
   /***************************************** redrawCell ******************************************/

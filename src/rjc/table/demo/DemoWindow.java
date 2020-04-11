@@ -37,7 +37,6 @@ import rjc.table.demo.edit.EditData;
 import rjc.table.demo.edit.EditView;
 import rjc.table.demo.large.LargeData;
 import rjc.table.demo.large.LargeView;
-import rjc.table.undo.UndoStack;
 import rjc.table.undo.UndoStackWindow;
 import rjc.table.view.TableView;
 
@@ -51,7 +50,6 @@ public class DemoWindow
 
   private MenuBar          m_menus;       // menu bar at top of window
   private TabPane          m_tabs;        // tabs pane to show the demos
-  private UndoStack        m_undostack;   // undo-stack for application
   private UndoStackWindow  m_undoWindow;  // window to interact with undo-stack
 
   private TableData        m_defaultTable;
@@ -64,8 +62,7 @@ public class DemoWindow
     // create demo table data sources
     m_defaultTable = new TableData();
     m_largeTable = new LargeData();
-    m_undostack = new UndoStack();
-    m_editTable = new EditData( m_undostack );
+    m_editTable = new EditData();
 
     // create demo windows contents
     m_menus = makeMenuBar();
@@ -185,7 +182,7 @@ public class DemoWindow
     // create undo-stack window if not already created
     if ( m_undoWindow == null )
     {
-      m_undoWindow = new UndoStackWindow( m_undostack );
+      m_undoWindow = new UndoStackWindow( m_editTable.getUndoStack() );
       m_undoWindow.setOnHiding( event -> menuitem.setSelected( false ) );
     }
 
