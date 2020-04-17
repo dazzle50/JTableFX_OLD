@@ -35,12 +35,12 @@ public class Demo extends Application
   public static void main( String[] args )
   {
     // entry point for demo application startup
-    Utils.trace( "JTableFX VERSION = '" + Utils.VERSION + "'" );
     Utils.trace( "################################# Java properties #################################" );
     for ( Object property : new TreeSet<Object>( System.getProperties().keySet() ) )
       Utils.trace( property + " = '" + System.getProperty( property.toString() ) + "'" );
 
     Utils.trace( "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ JTableFX demo started ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~" );
+    Utils.trace( "JTableFX VERSION = '" + Utils.VERSION + "'", args );
 
     // launch demo application display
     launch( args );

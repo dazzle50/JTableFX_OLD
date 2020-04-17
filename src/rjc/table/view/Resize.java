@@ -19,6 +19,7 @@
 package rjc.table.view;
 
 import javafx.geometry.Orientation;
+import rjc.table.undo.CommandResize;
 import rjc.table.view.TableSelect.SelectedSet;
 import rjc.table.view.axis.TableAxis;
 
@@ -28,19 +29,13 @@ import rjc.table.view.axis.TableAxis;
 
 public class Resize
 {
-  private Orientation m_orientation; // orientation for the resize
-  private TableView   m_view;        // table view for resizing
-  private TableAxis   m_axis;        // horizontal or vertical axis
-  private SelectedSet m_indexes;     // columns or rows being resized
-  private int         m_offset;      // resize coordinate offset
-  private int         m_before;      // number of positions being resized before current position
-
-  /**************************************** constructor ******************************************/
-  public Resize()
-  {
-    // initialise variables
-    m_indexes = new SelectedSet();
-  }
+  private Orientation   m_orientation; // orientation for the resize
+  private TableView     m_view;        // table view for resizing
+  private TableAxis     m_axis;        // horizontal or vertical axis
+  private SelectedSet   m_indexes;     // columns or rows being resized
+  private int           m_offset;      // resize coordinate offset
+  private int           m_before;      // number of positions being resized before current position
+  private CommandResize m_command;     // command for undo-stack
 
   /*************************************** getOrientation ****************************************/
   public Orientation getOrientation()
@@ -74,8 +69,8 @@ public class Resize
     }
 
     // prepare indexes to be re-sized 
+    m_indexes = new SelectedSet();
     m_indexes.all = positions.all;
-    m_indexes.set.clear();
     m_before = 0;
     int index = m_axis.getIndexFromPosition( position );
     if ( positions.set != null && positions.set.contains( position ) )
@@ -95,23 +90,24 @@ public class Resize
     else
     {
       if ( positions.all )
-      {
         // resize all positions
         m_before = position;
-        m_axis.clearSizeExceptions();
-      }
       else
-        // resize just current position
+        // resize just current (not-selected) position
         m_indexes.set.add( index );
     }
+
+    // prepare resize command
+    m_command = new CommandResize( view, orientation, m_indexes );
 
     // calculate offset
     if ( positions.all )
     {
+      m_axis.clearSizeExceptions();
       if ( orientation == Orientation.HORIZONTAL )
-        m_offset = view.getXStartFromColumnPos( 0 );
+        m_offset = view.getXStartFromColumnPos( TableAxis.FIRSTCELL );
       else
-        m_offset = view.getYStartFromRowPos( 0 );
+        m_offset = view.getYStartFromRowPos( TableAxis.FIRSTCELL );
     }
     else
       m_offset -= m_axis.getCellPixels( index );
@@ -126,17 +122,19 @@ public class Resize
   /******************************************* resize ********************************************/
   public void resize( int coordinate )
   {
-    // resize columns or rows
+    // resize columns or rows, do nothing if no resize in progress
     if ( getOrientation() == null )
       return;
     int pixels = ( coordinate - m_offset ) / m_before;
+    int size = (int) ( pixels / m_view.getZoom() );
 
     // resize
+    m_command.setNewSize( size );
     if ( m_indexes.all )
-      m_axis.setDefaultSize( (int) ( pixels / m_view.getZoom() ) );
+      m_axis.setDefaultSize( size );
     else
       for ( var index : m_indexes.set )
-        m_axis.setCellPixels( index, pixels );
+        m_axis.setCellSize( index, size );
 
     // redraw table and update scroll bars
     m_view.redraw();
@@ -146,13 +144,17 @@ public class Resize
   /********************************************* end *********************************************/
   public void end()
   {
-    // end any resizing
-    if ( getOrientation() != null )
-    {
-      m_axis = null;
-      m_view = null;
-      m_orientation = null;
-    }
+    // end resizing, do nothing if no resize in progress 
+    if ( getOrientation() == null )
+      return;
+
+    // push resize command onto undo-stack
+    m_view.getData().getUndoStack().push( m_command );
+
+    // clear internal variables
+    m_axis = null;
+    m_view = null;
+    m_orientation = null;
   }
 
 }

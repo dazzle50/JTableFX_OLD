@@ -94,15 +94,9 @@ public class UndoStack extends SimpleObjectProperty<UndoStack>
     // add new command to stack, do it, and update stack index
     m_stack.add( command );
     command.redo();
+    command.update();
     m_index = m_stack.size();
-    update( command.update() );
     fireValueChangedEvent();
-  }
-
-  /******************************************* update ********************************************/
-  public void update( long updates )
-  {
-    // overload to perform requested updates that can be merged (typically gui updates)
   }
 
   /******************************************** undo *********************************************/
@@ -113,7 +107,7 @@ public class UndoStack extends SimpleObjectProperty<UndoStack>
     {
       m_index--;
       m_stack.get( m_index ).undo();
-      update( m_stack.get( m_index ).update() );
+      m_stack.get( m_index ).update();
       fireValueChangedEvent();
     }
   }
@@ -125,7 +119,7 @@ public class UndoStack extends SimpleObjectProperty<UndoStack>
     if ( m_index < m_stack.size() )
     {
       m_stack.get( m_index ).redo();
-      update( m_stack.get( m_index ).update() );
+      m_stack.get( m_index ).update();
       m_index++;
       fireValueChangedEvent();
     }
@@ -163,22 +157,20 @@ public class UndoStack extends SimpleObjectProperty<UndoStack>
     // execute redo's or undo's as necessary to get to target index
     if ( index != m_index )
     {
-      long updates = 0;
       while ( index < m_index && m_index > 0 )
       {
         m_index--;
         m_stack.get( m_index ).undo();
-        updates |= m_stack.get( m_index ).update();
+        m_stack.get( m_index ).update();
       }
       while ( index > m_index && m_index < m_stack.size() )
       {
         m_stack.get( m_index ).redo();
-        updates |= m_stack.get( m_index ).update();
+        m_stack.get( m_index ).update();
         m_index++;
       }
 
-      // perform updates collected from the redo's and undo's
-      update( updates );
+      // let listeners know that stack have changed
       fireValueChangedEvent();
     }
   }

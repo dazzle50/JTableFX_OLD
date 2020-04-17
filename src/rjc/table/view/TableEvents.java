@@ -114,7 +114,7 @@ public class TableEvents extends TableSelect
           controlDPressed();
           return;
 
-        case Z: // undo command (Ctrl-V)
+        case Z: // undo command (Ctrl-Z)
           controlZPressed();
           return;
 
@@ -378,15 +378,15 @@ public class TableEvents extends TableSelect
   /*************************************** controlZPressed ***************************************/
   protected void controlZPressed()
   {
-    // undo command (Ctrl-Z) - TODO
-    Utils.trace( "UNDO - NOT YET IMPLEMENTED !!!" );
+    // undo command (Ctrl-Z)
+    getData().getUndoStack().undo();
   }
 
   /*************************************** controlYPressed ***************************************/
   protected void controlYPressed()
   {
-    // redo command (Ctrl-Y) - TODO
-    Utils.trace( "REDO - NOT YET IMPLEMENTED !!!" );
+    // redo command (Ctrl-Y)
+    getData().getUndoStack().redo();
   }
 
   /**************************************** mousePressed *****************************************/

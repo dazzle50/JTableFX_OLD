@@ -31,7 +31,7 @@ public interface IUndoCommand
   public void undo();
 
   // update needs after command
-  public long update();
+  public void update();
 
   // short text string describing this command, e.g. "insert text"
   public String text();

@@ -243,13 +243,6 @@ public class AxisSize extends AxisBase
     return zoom( getCellSize( cellIndex ) );
   }
 
-  /**************************************** setCellPixels ****************************************/
-  public void setCellPixels( int cellIndex, int newPixels )
-  {
-    // set cell size in pixels taking zoom into account
-    setCellSize( cellIndex, (int) ( newPixels / m_zoom ) );
-  }
-
   /***************************************** setCellSize *****************************************/
   public void setCellSize( int cellIndex, int newSize )
   {
@@ -296,6 +289,13 @@ public class AxisSize extends AxisBase
     m_sizeExceptions.clear();
     m_cellPositionStartCache.clear();
     m_bodyPixelsCache.set( INVALID );
+  }
+
+  /************************************** getSizeExceptions **************************************/
+  public Map<Integer, Integer> getSizeExceptions()
+  {
+    // return size exceptions
+    return Collections.unmodifiableMap( m_sizeExceptions );
   }
 
   /************************************ getStartFromPosition *************************************/
@@ -377,6 +377,18 @@ public class AxisSize extends AxisBase
   {
     // return if position is hidden (or zero size)
     return getCellSize( getIndexFromPosition( position ) ) <= 0;
+  }
+
+  /****************************************** hideIndex ******************************************/
+  public void hideIndex( int index )
+  {
+    // if index not already hidden, set size exception and update body size
+    int oldSize = m_sizeExceptions.getOrDefault( index, m_defaultSize );
+    if ( oldSize > 0 )
+    {
+      m_sizeExceptions.put( index, -oldSize );
+      truncateCache( TableAxis.FIRSTCELL, -zoom( oldSize ) );
+    }
   }
 
   /**************************************** hidePosition *****************************************/

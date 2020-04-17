@@ -33,6 +33,7 @@ public class CommandSetValue implements IUndoCommand
   private int       m_rowIndex;
   private Object    m_newValue;   // new value after command
   private Object    m_oldValue;   // old value before command
+  private String    m_text;       // text describing command
 
   /**************************************** constructor ******************************************/
   public CommandSetValue( TableData tableData, int columnIndex, int rowIndex, Object oldValue, Object newValue )
@@ -65,11 +66,10 @@ public class CommandSetValue implements IUndoCommand
 
   /****************************************** update *********************************************/
   @Override
-  public long update()
+  public void update()
   {
     // redraw cell across all registered views
     m_data.redrawCell( m_columnIndex, m_rowIndex );
-    return 0;
   }
 
   /******************************************* text **********************************************/
@@ -77,8 +77,11 @@ public class CommandSetValue implements IUndoCommand
   public String text()
   {
     // command description
-    return m_data.getValue( m_columnIndex, AxisBase.HEADER ) + " " + m_data.getValue( AxisBase.HEADER, m_rowIndex )
-        + " = " + m_newValue;
+    if ( m_text == null )
+      m_text = m_data.getValue( m_columnIndex, AxisBase.HEADER ) + " " + m_data.getValue( AxisBase.HEADER, m_rowIndex )
+          + " = " + m_newValue;
+
+    return m_text;
   }
 
 }

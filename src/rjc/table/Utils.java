@@ -29,7 +29,7 @@ public class Utils
 {
   public static final String      VERSION            = "v0.0.5-alpha WIP";
 
-  public static DateTimeFormatter timestampFormatter = DateTimeFormatter.ofPattern( "uuuu-MM-dd HH:mm:ss.SSS" );
+  public static DateTimeFormatter timestampFormatter = DateTimeFormatter.ofPattern( "uuuu-MM-dd HH:mm:ss.SSS " );
 
   /****************************************** timestamp ******************************************/
   public static String timestamp()
@@ -42,15 +42,15 @@ public class Utils
   public static void trace( Object... objects )
   {
     // sends to standard out date-time, the input objects, suffixed by file+line-number & method
-    System.out.println( timestamp() + " " + objectsString( objects ) + caller( 1 ) );
+    System.out.println( timestamp() + objectsString( objects ) + caller( 1 ) );
   }
 
   /********************************************* path ********************************************/
   public static void path( Object... objects )
   {
     // sends to standard out date-time, the input objects, suffixed by file+line-number & method x5
-    System.out.println( timestamp() + " " + objectsString( objects ) + caller( 1 ) + " " + caller( 2 ) + " "
-        + caller( 3 ) + " " + caller( 4 ) + " " + caller( 5 ) );
+    System.out.println(
+        timestamp() + objectsString( objects ) + caller( 1 ) + caller( 2 ) + caller( 3 ) + caller( 4 ) + caller( 5 ) );
   }
 
   /******************************************* stack *********************************************/
@@ -58,7 +58,7 @@ public class Utils
   public static void stack( Object... objects )
   {
     // sends to standard out date-time and the input objects
-    System.out.println( timestamp() + " " + objectsString( objects ) );
+    System.out.println( timestamp() + objectsString( objects ) );
 
     // sends to standard out this thread's stack trace
     StackTraceElement[] stack = new Throwable().getStackTrace();
@@ -71,8 +71,8 @@ public class Utils
   {
     // returns stack entry at specified position
     StackTraceElement[] stack = new Throwable().getStackTrace();
-    String method = stack[++pos].getMethodName() + "()";
-    String file = "(" + stack[pos].getFileName() + ":" + stack[pos].getLineNumber() + ") ";
+    String file = " (" + stack[++pos].getFileName() + ":" + stack[pos].getLineNumber() + ") ";
+    String method = stack[pos].getMethodName() + "()";
     return file + method;
   }
 
@@ -85,6 +85,8 @@ public class Utils
     {
       if ( obj == null )
         str.append( "null " );
+      else if ( obj.getClass().isArray() )
+        str.append( "[" + objectsString( (Object[]) obj ) + "] " );
       else if ( obj instanceof String )
         str.append( "\"" + obj + "\" " );
       else if ( obj instanceof Character )
@@ -93,6 +95,9 @@ public class Utils
         str.append( obj + " " );
     }
 
+    // remove excess space character at end if present
+    if ( str.length() > 0 )
+      str.deleteCharAt( str.length() - 1 );
     return str;
   }
 
