@@ -125,6 +125,22 @@ public class UndoStack extends SimpleObjectProperty<UndoStack>
     }
   }
 
+  /*************************************** triggerListeners **************************************/
+  public void triggerListeners()
+  {
+    // public method to notify all the listeners
+    fireValueChangedEvent();
+  }
+
+  /**************************************** getUndoCommand ***************************************/
+  public IUndoCommand getUndoCommand()
+  {
+    // return current undo command (or null if none), useful for when wanting to merging commands
+    if ( m_index == 0 )
+      return null;
+    return m_stack.get( m_index - 1 );
+  }
+
   /***************************************** getUndoText *****************************************/
   public String getUndoText()
   {

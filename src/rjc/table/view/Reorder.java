@@ -18,12 +18,15 @@
 
 package rjc.table.view;
 
+import java.util.Set;
+
 import javafx.geometry.Orientation;
 import javafx.scene.canvas.Canvas;
 import javafx.scene.shape.Line;
 import javafx.scene.shape.StrokeLineCap;
 import rjc.table.Colors;
 import rjc.table.Utils;
+import rjc.table.undo.CommandReorder;
 import rjc.table.view.TableSelect.SelectedSet;
 import rjc.table.view.axis.TableAxis;
 
@@ -170,6 +173,18 @@ public class Reorder
     }
   }
 
+  /***************************************** countBefore *****************************************/
+  static public int countBefore( Set<Integer> set, int position )
+  {
+    // count set entries with value lower than position
+    int count = 0;
+    for ( int value : set )
+      if ( value < position )
+        count++;
+
+    return count;
+  }
+
   /********************************************* end *********************************************/
   public void end()
   {
@@ -182,21 +197,23 @@ public class Reorder
 
       // move selected columns or rows to new position
       m_view.clearAllSelection();
+      int start = m_pos - countBefore( m_selected.set, m_pos );
+      int end = start + m_selected.set.size() - 1;
+
+      CommandReorder command = new CommandReorder( m_view, m_orientation, m_selected.set, m_pos );
+      m_view.getData().getUndoStack().push( command );
+
       if ( m_orientation == Orientation.HORIZONTAL )
       {
-        int left = m_pos + m_view.getColumns().movePositions( m_selected.set, m_pos );
-        int right = left + m_selected.set.size() - 1;
-        m_view.setCurrentSelection( left, TableAxis.FIRSTCELL, right, TableAxis.AFTER );
-        m_view.getFocusCellProperty().setColumnPos( left );
-        m_view.getSelectCellProperty().setColumnPos( right );
+        m_view.setCurrentSelection( start, TableAxis.FIRSTCELL, end, TableAxis.AFTER );
+        m_view.getFocusCellProperty().setColumnPos( start );
+        m_view.getSelectCellProperty().setColumnPos( end );
       }
       else
       {
-        int top = m_pos + m_view.getRows().movePositions( m_selected.set, m_pos );
-        int bottom = top + m_selected.set.size() - 1;
-        m_view.setCurrentSelection( TableAxis.FIRSTCELL, top, TableAxis.AFTER, bottom );
-        m_view.getFocusCellProperty().setRowPos( top );
-        m_view.getSelectCellProperty().setRowPos( bottom );
+        m_view.setCurrentSelection( TableAxis.FIRSTCELL, start, TableAxis.AFTER, end );
+        m_view.getFocusCellProperty().setRowPos( start );
+        m_view.getSelectCellProperty().setRowPos( end );
       }
 
       m_view.redraw();

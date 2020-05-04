@@ -21,6 +21,7 @@ package rjc.table.view.axis;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
@@ -434,23 +435,22 @@ public class AxisSize extends AxisBase
   }
 
   /**************************************** movePosition *****************************************/
-  @Override
-  final public void movePosition( int oldPosition, int newPosition )
+  public void movePosition( int oldPosition, int newPosition )
   {
-    // re-order indexes on axis and truncate cell location cache
-    super.movePosition( oldPosition, newPosition );
-    int pos = Math.min( oldPosition, newPosition );
-    truncateCache( pos, 0 );
+    // re-order index on axis and truncate cell location cache
+    HashSet<Integer> set = new HashSet<>( 1 );
+    set.add( oldPosition );
+    movePositions( set, newPosition );
   }
 
   /**************************************** movePositions ****************************************/
   @Override
-  public int movePositions( Set<Integer> positions, int newPosition )
+  public void movePositions( Set<Integer> positions, int newPosition )
   {
     // re-order indexes on axis and truncate cell location cache
     int pos = Math.min( Collections.min( positions ), newPosition );
     truncateCache( pos, 0 );
-    return super.movePositions( positions, newPosition );
+    super.movePositions( positions, newPosition );
   }
 
 }

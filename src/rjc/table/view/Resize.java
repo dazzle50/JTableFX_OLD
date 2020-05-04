@@ -137,8 +137,8 @@ public class Resize
         m_axis.setCellSize( index, size );
 
     // redraw table and update scroll bars
-    m_view.redraw();
     m_view.layoutDisplay();
+    m_view.redraw();
   }
 
   /********************************************* end *********************************************/

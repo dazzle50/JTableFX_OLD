@@ -102,34 +102,8 @@ public class AxisBase
     return INVALID;
   }
 
-  /**************************************** movePosition *****************************************/
-  public void movePosition( int oldPosition, int newPosition )
-  {
-    // check positions are within axis count
-    int count = getCount();
-    if ( oldPosition < FIRSTCELL || oldPosition >= count )
-      throw new IndexOutOfBoundsException( "old position=" + oldPosition + " but count=" + count );
-    if ( newPosition < FIRSTCELL || newPosition >= count )
-      throw new IndexOutOfBoundsException( "new position=" + newPosition + " but count=" + count );
-
-    // if old and new position are same, nothing needs to be done
-    if ( oldPosition == newPosition )
-      return;
-
-    // make sure index from position mapping is big enough
-    int max = Math.max( oldPosition, newPosition );
-    while ( m_indexFromPosition.size() <= max )
-      m_indexFromPosition.add( m_indexFromPosition.size() );
-
-    // move index from old position to new position
-    int index = m_indexFromPosition.remove( oldPosition );
-    if ( newPosition > oldPosition )
-      newPosition--;
-    m_indexFromPosition.add( newPosition, index );
-  }
-
   /**************************************** movePositions ****************************************/
-  public int movePositions( Set<Integer> positions, int newPosition )
+  public void movePositions( Set<Integer> positions, int newPosition )
   {
     // create reverse ordered set by using negative value
     TreeSet<Integer> list = new TreeSet<>();
@@ -151,11 +125,8 @@ public class AxisBase
         offset--;
     }
 
-    // add list into mapping at correct position
+    // re-add list into mapping at new position
     m_indexFromPosition.addAll( newPosition + offset, toBeMoved );
-
-    // return position offset due to moving indexes
-    return offset;
   }
 
 }

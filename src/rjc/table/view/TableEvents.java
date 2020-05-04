@@ -26,6 +26,7 @@ import javafx.scene.input.ScrollEvent;
 import rjc.table.Utils;
 import rjc.table.cell.CellDraw;
 import rjc.table.cell.CellEditorBase;
+import rjc.table.undo.CommandZoom;
 import rjc.table.view.TableScrollBar.Animation;
 import rjc.table.view.cursor.Cursors;
 
@@ -124,16 +125,16 @@ public class TableEvents extends TableSelect
 
         case MINUS: // zoom out (Ctrl-minus)
         case SUBTRACT:
-          setViewZoom( getZoom() / Math.pow( 2.0, 0.0625 ) );
+          commandZoom( getZoom() / Math.pow( 2.0, 0.0625 ) );
           return;
 
         case EQUALS: // zoom in (Ctrl-plus)
         case ADD:
-          setViewZoom( getZoom() * Math.pow( 2.0, 0.0625 ) );
+          commandZoom( getZoom() * Math.pow( 2.0, 0.0625 ) );
           return;
 
         case DIGIT0: // reset zoom 1:1 (Ctrl-0)
-          setViewZoom( 1.0 );
+          commandZoom( 1.0 );
           return;
 
         default:
@@ -276,6 +277,28 @@ public class TableEvents extends TableSelect
 
   }
 
+  /***************************************** commandZoom *****************************************/
+  public void commandZoom( double zoom )
+  {
+    // check if can merge with previous undo command 
+    var command = getData().getUndoStack().getUndoCommand();
+    if ( command instanceof CommandZoom && ( (CommandZoom) command ).isThisView( getView() ) )
+    {
+      // merge with previous zoom command
+      CommandZoom zc = (CommandZoom) command;
+      zc.setNewZoom( zoom );
+      zc.redo();
+      zc.update();
+      getData().getUndoStack().triggerListeners();
+    }
+    else
+    {
+      // create new command for zoom change
+      CommandZoom zc = new CommandZoom( getView(), getZoom(), zoom );
+      getData().getUndoStack().push( zc );
+    }
+  }
+
   /***************************************** setViewZoom *****************************************/
   public void setViewZoom( double zoom )
   {
@@ -295,7 +318,6 @@ public class TableEvents extends TableSelect
     m_cellYend = INVALID;
     checkMouseCellPosition();
     checkMouseCursor();
-    redraw();
 
     // scroll if appropriate to keep focus and/or select cells visible
     if ( focusVisible )

@@ -119,7 +119,8 @@ public class CommandResize implements IUndoCommand
   @Override
   public void update()
   {
-    // redraw table in this view only
+    // update layout in case scroll-bar need changed and redraw table in this view only
+    m_view.layoutDisplay();
     m_view.redraw();
   }
 
