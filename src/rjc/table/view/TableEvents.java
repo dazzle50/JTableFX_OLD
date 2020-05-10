@@ -77,7 +77,7 @@ public class TableEvents extends TableSelect
     if ( !Character.isISOControl( key ) )
       openEditor( event.getCharacter() );
 
-    redraw();
+    getView().redraw();
   }
 
   /***************************************** keyPressed ******************************************/
@@ -149,28 +149,28 @@ public class TableEvents extends TableSelect
         case KP_RIGHT:
           columnPos = ctrl ? getColumns().getLast() : getColumns().getNext( columnPos );
           setSelectFocusPosition( columnPos, rowPos, !shift, !shift, true );
-          redraw();
+          getView().redraw();
           return;
 
         case LEFT: // left <- arrow key
         case KP_LEFT:
           columnPos = ctrl ? getColumns().getFirst() : getColumns().getPrevious( columnPos );
           setSelectFocusPosition( columnPos, rowPos, !shift, !shift, true );
-          redraw();
+          getView().redraw();
           return;
 
         case DOWN: // down arrow key
         case KP_DOWN:
           rowPos = ctrl ? getRows().getLast() : getRows().getNext( rowPos );
           setSelectFocusPosition( columnPos, rowPos, !shift, !shift, true );
-          redraw();
+          getView().redraw();
           return;
 
         case UP: // up arrow key
         case KP_UP:
           rowPos = ctrl ? getRows().getFirst() : getRows().getPrevious( rowPos );
           setSelectFocusPosition( columnPos, rowPos, !shift, !shift, true );
-          redraw();
+          getView().redraw();
           return;
 
         case PAGE_DOWN: // page down key
@@ -206,7 +206,7 @@ public class TableEvents extends TableSelect
           {
             // bottom of table already visible so move to last row
             setSelectFocusPosition( columnPos, getRows().getLast(), !shift, !ctrl, true );
-            redraw();
+            getView().redraw();
           }
           return;
 
@@ -239,18 +239,18 @@ public class TableEvents extends TableSelect
           {
             // top of table visible so move to first row
             setSelectFocusPosition( columnPos, getRows().getFirst(), !shift, !ctrl, true );
-            redraw();
+            getView().redraw();
           }
           return;
 
         case HOME: // home key - navigate to left-most visible column
           setSelectFocusPosition( getColumns().getFirst(), getSelectCellProperty().getRowPos(), !shift, !ctrl, true );
-          redraw();
+          getView().redraw();
           return;
 
         case END: // end key - navigate to right-most visible column
           setSelectFocusPosition( getColumns().getLast(), getSelectCellProperty().getRowPos(), !shift, !ctrl, true );
-          redraw();
+          getView().redraw();
           return;
 
         case DELETE: // delete key - delete selected cells content
@@ -268,7 +268,7 @@ public class TableEvents extends TableSelect
           return;
 
         case F5: // F5 key - redraw table
-          redraw();
+          getView().redraw();
           return;
 
         default:
@@ -366,7 +366,7 @@ public class TableEvents extends TableSelect
   {
     // select whole table (Ctrl-A)
     selectTable();
-    redraw();
+    getView().redraw();
   }
 
   /*************************************** controlXPressed ***************************************/
@@ -434,7 +434,7 @@ public class TableEvents extends TableSelect
       if ( ctrl )
         startNewSelection();
       setSelectFocusPosition( columnPos, rowPos, !shift, !ctrl, true );
-      redraw();
+      getView().redraw();
       return;
     }
 
@@ -450,7 +450,7 @@ public class TableEvents extends TableSelect
         startNewSelection();
       setSelectFocusPosition( columnPos, rowPos, !shift, !ctrl, true );
       setSelectFocusPosition( columnPos, AFTER, false, !ctrl, false );
-      redraw();
+      getView().redraw();
       return;
     }
 
@@ -466,7 +466,7 @@ public class TableEvents extends TableSelect
         startNewSelection();
       setSelectFocusPosition( columnPos, rowPos, !shift, !ctrl, true );
       setSelectFocusPosition( AFTER, rowPos, false, !ctrl, false );
-      redraw();
+      getView().redraw();
       return;
     }
 
@@ -489,7 +489,7 @@ public class TableEvents extends TableSelect
         && getMouseCellProperty().getRowPos() == HEADER )
     {
       selectTable();
-      redraw();
+      getView().redraw();
       return;
     }
   }
@@ -631,7 +631,7 @@ public class TableEvents extends TableSelect
         if ( columnPos != getSelectCellProperty().getColumnPos() || rowPos != getSelectCellProperty().getRowPos() )
         {
           setSelectFocusPosition( columnPos, rowPos, false, false, false );
-          redraw();
+          getView().redraw();
         }
         return;
       }
@@ -647,7 +647,7 @@ public class TableEvents extends TableSelect
           setCurrentSelection( getFocusCellProperty().getColumnPos(), FIRSTCELL, columnPos, AFTER );
           getSelectCellProperty().setColumnPos( columnPos );
           getHorizontalScrollBar().scrollToPos( columnPos );
-          redraw();
+          getView().redraw();
         }
         return;
       }
@@ -662,7 +662,7 @@ public class TableEvents extends TableSelect
           setCurrentSelection( FIRSTCELL, getFocusCellProperty().getRowPos(), AFTER, rowPos );
           getSelectCellProperty().setRowPos( rowPos );
           getVerticalScrollBar().scrollToPos( rowPos );
-          redraw();
+          getView().redraw();
         }
         return;
       }
@@ -778,7 +778,7 @@ public class TableEvents extends TableSelect
       m_resize.resize( m_y );
 
     // redraw table to reflect new scroll values
-    redraw();
+    getView().redraw();
   }
 
   /*********************************** checkMouseCellPosition ************************************/

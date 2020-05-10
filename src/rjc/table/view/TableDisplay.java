@@ -41,6 +41,7 @@ public class TableDisplay extends TableParent
   private TableScrollBar              m_vScrollBar;                                     // vertical scroll bar
   private TableScrollBar              m_hScrollBar;                                     // horizontal scroll bar
   private Canvas                      m_canvas;                                         // canvas for table column & row headers and body cells
+  private Canvas                      m_overlay;                                        // canvas for table overlay
 
   // observable double for table-view zoom
   final private ReadOnlyDoubleWrapper m_zoomProperty = new ReadOnlyDoubleWrapper( 1.0 );
@@ -62,6 +63,7 @@ public class TableDisplay extends TableParent
 
     // create table canvas, axis and scroll bars
     m_canvas = new Canvas();
+    m_overlay = new Canvas();
     m_columns = new TableAxis( data.getColumnCountProperty() );
     m_rows = new TableAxis( data.getRowCountProperty() );
     m_hScrollBar = new TableScrollBar( m_columns, Orientation.HORIZONTAL );
@@ -73,11 +75,19 @@ public class TableDisplay extends TableParent
     m_canvas.heightProperty()
         .addListener( ( observable, oldH, newH ) -> heightChange( oldH.intValue(), newH.intValue() ) );
 
-    // redraw table when focus changes
-    m_canvas.focusedProperty().addListener( ( observable, oldF, newF ) -> redraw() );
+    // redraw table when focus changes (and visible)
+    m_canvas.focusedProperty().addListener( ( observable, oldF, newF ) ->
+    {
+      if ( view.isVisible() )
+        view.redraw();
+    } );
 
-    // redraw table when focus changes or becomes visible
-    visibleProperty().addListener( ( observable, oldV, newV ) -> redraw() );
+    // redraw table becomes visible
+    visibleProperty().addListener( ( observable, oldV, newV ) ->
+    {
+      if ( newV )
+        view.redraw();
+    } );
 
     // react to mouse events
     setOnMouseExited( event -> view.mouseExited( event ) );
@@ -101,9 +111,11 @@ public class TableDisplay extends TableParent
     add( m_canvas );
     add( m_vScrollBar );
     add( m_hScrollBar );
+    add( m_overlay );
 
     // setup graphics context & reset view
     m_canvas.getGraphicsContext2D().setFontSmoothingType( FontSmoothingType.LCD );
+    m_overlay.getGraphicsContext2D().setFontSmoothingType( FontSmoothingType.LCD );
     view.reset();
   }
 
@@ -151,18 +163,11 @@ public class TableDisplay extends TableParent
     }
   }
 
-  /******************************************* redraw ********************************************/
-  public void redraw()
-  {
-    // request complete redraw of table canvas (-1 and +1 to ensure canvas graphics context does a reset)
-    widthChange( -1, (int) getWidth() + 1 );
-  }
-
   /***************************************** widthChange *****************************************/
   public void widthChange( int oldW, int newW )
   {
     // only need to draw if new width is larger than old width
-    if ( newW > oldW && isVisible() && oldW < getTableWidth() )
+    if ( newW > oldW && isVisible() && oldW < getTableWidth() && m_canvas.getHeight() > 0.0 )
     {
       // clear background (+0.5 needed so anti-aliasing doesn't impact previous column)
       m_canvas.getGraphicsContext2D().clearRect( oldW + 0.5, 0.0, newW, getHeight() );
@@ -172,15 +177,14 @@ public class TableDisplay extends TableParent
       if ( minColumnPos <= HEADER )
         minColumnPos = getColumnPositionAtX( getRowHeaderWidth() );
       int maxColumnPos = getColumnPositionAtX( newW );
-      getView().redrawColumns( minColumnPos, maxColumnPos );
+      getView().redrawColumnsNow( minColumnPos, maxColumnPos );
 
       // check if row header needs to be redrawn
-      if ( maxColumnPos == HEADER
-          || ( oldW < getRowHeaderWidth() && getXStartFromColumnPos( minColumnPos ) >= getRowHeaderWidth() ) )
-        getView().redrawColumn( HEADER );
+      if ( oldW < getRowHeaderWidth() )
+        getView().redrawColumnNow( HEADER );
 
       // draw table overlay
-      getView().redrawOverlay();
+      getView().redrawOverlayNow();
     }
   }
 
@@ -188,7 +192,7 @@ public class TableDisplay extends TableParent
   public void heightChange( int oldH, int newH )
   {
     // only need to draw if new height is larger than old height
-    if ( newH > oldH && isVisible() && oldH < getTableHeight() )
+    if ( newH > oldH && isVisible() && oldH < getTableHeight() && m_canvas.getWidth() > 0.0 )
     {
       // clear background
       m_canvas.getGraphicsContext2D().clearRect( 0.0, oldH + 0.5, getWidth(), newH );
@@ -198,15 +202,14 @@ public class TableDisplay extends TableParent
       if ( minRowPos <= HEADER )
         minRowPos = getRowPositionAtY( getColumnHeaderHeight() );
       int maxRowPos = getRowPositionAtY( newH );
-      getView().redrawRows( minRowPos, maxRowPos );
+      getView().redrawRowsNow( minRowPos, maxRowPos );
 
       // check if column header needs to be redrawn
-      if ( maxRowPos == HEADER
-          || ( oldH < getColumnHeaderHeight() && getYStartFromRowPos( minRowPos ) >= getColumnHeaderHeight() ) )
-        getView().redrawRow( HEADER );
+      if ( oldH < getColumnHeaderHeight() )
+        getView().redrawRowNow( HEADER );
 
       // draw table overlay
-      getView().redrawOverlay();
+      getView().redrawOverlayNow();
     }
   }
 
@@ -263,9 +266,11 @@ public class TableDisplay extends TableParent
       m_hScrollBar.setMax( 0.0 );
     }
 
-    // update canvas
+    // update canvas & overlay
     m_canvas.setWidth( visibleWidth );
     m_canvas.setHeight( visibleHeight );
+    m_overlay.setWidth( visibleWidth );
+    m_overlay.setHeight( visibleHeight );
   }
 
   /******************************************* getView *******************************************/
@@ -301,6 +306,13 @@ public class TableDisplay extends TableParent
   {
     // return canvas where table headers and body are drawn
     return m_canvas;
+  }
+
+  /***************************************** getOverlay ******************************************/
+  public Canvas getOverlay()
+  {
+    // return canvas where table overlay drawn
+    return m_overlay;
   }
 
   /************************************ getHorizontalScrollBar ***********************************/

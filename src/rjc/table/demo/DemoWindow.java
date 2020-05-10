@@ -153,6 +153,13 @@ public class DemoWindow
       view.redraw();
     }, 1000 );
 
+    addBenchmark( benchmarks, "RedrawNow", () ->
+    {
+      var tab = m_tabs.getSelectionModel().getSelectedItem();
+      TableView view = (TableView) tab.getContent();
+      view.redrawNow();
+    }, 1000 );
+
     // views
     CheckMenuItem undowindow = new CheckMenuItem( "Undo Stack ..." );
     undowindow.setOnAction( event -> showUndoWindow( undowindow ) );
@@ -233,10 +240,12 @@ public class DemoWindow
 
       // report total & average duration
       long total = nanos[count] - nanos[0];
+      Utils.trace( "######### BENCHMARK END - " + name + " " + count + " times" );
       report( "  Total duration =", total );
       report( "Average duration =", total / count );
       report( "Minimum duration =", min );
       report( "Maximum duration =", max );
+      Utils.trace( "BENCHMARK       Per second = " + String.format( "%,.1f", 1e9 * count / total ) );
     } );
 
     return benchmark;

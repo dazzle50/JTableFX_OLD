@@ -349,8 +349,13 @@ public class TableSelect extends TableNavigate
   public String toString()
   {
     // convert to string
-    return getClass().getSimpleName() + "@" + Integer.toHexString( System.identityHashCode( this ) ) + "[selected="
-        + m_selected.size() + "]";
+    String text = getClass().getSimpleName() + "@" + Integer.toHexString( System.identityHashCode( this ) );
+    text += "[cols=" + getData().getColumnCount();
+    text += " rows=" + getData().getRowCount();
+    text += " w=" + getWidth() + " h=" + getHeight();
+    text += " selected=" + m_selected.size();
+
+    return text + "]";
   }
 
 }

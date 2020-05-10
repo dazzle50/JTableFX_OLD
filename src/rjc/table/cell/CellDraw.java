@@ -21,6 +21,7 @@ package rjc.table.cell;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.text.Font;
+import rjc.table.view.axis.TableAxis;
 
 /*************************************************************************************************/
 /*************************************** Draws table cell ****************************************/
@@ -35,7 +36,18 @@ public class CellDraw extends CellStyle
     // clip drawing to cell boundaries
     gc.save();
     gc.beginPath();
-    gc.rect( x, y, w, h );
+
+    if ( columnIndex == TableAxis.HEADER || rowIndex == TableAxis.HEADER )
+      gc.rect( x, y, w, h );
+    else
+    {
+      double cx = x > view.getRowHeaderWidth() ? x : view.getRowHeaderWidth();
+      double cy = y > view.getColumnHeaderHeight() ? y : view.getColumnHeaderHeight();
+      double cw = w + x - cx;
+      double ch = h + y - cy;
+      gc.rect( cx, cy, cw, ch );
+    }
+
     gc.clip();
 
     // draw table body or header cell
