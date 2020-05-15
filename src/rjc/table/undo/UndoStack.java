@@ -94,7 +94,6 @@ public class UndoStack extends SimpleObjectProperty<UndoStack>
     // add new command to stack, do it, and update stack index
     m_stack.add( command );
     command.redo();
-    command.update();
     m_index = m_stack.size();
     fireValueChangedEvent();
   }
@@ -107,7 +106,6 @@ public class UndoStack extends SimpleObjectProperty<UndoStack>
     {
       m_index--;
       m_stack.get( m_index ).undo();
-      m_stack.get( m_index ).update();
       fireValueChangedEvent();
     }
   }
@@ -119,7 +117,6 @@ public class UndoStack extends SimpleObjectProperty<UndoStack>
     if ( m_index < m_stack.size() )
     {
       m_stack.get( m_index ).redo();
-      m_stack.get( m_index ).update();
       m_index++;
       fireValueChangedEvent();
     }
@@ -177,12 +174,10 @@ public class UndoStack extends SimpleObjectProperty<UndoStack>
       {
         m_index--;
         m_stack.get( m_index ).undo();
-        m_stack.get( m_index ).update();
       }
       while ( index > m_index && m_index < m_stack.size() )
       {
         m_stack.get( m_index ).redo();
-        m_stack.get( m_index ).update();
         m_index++;
       }
 

@@ -53,6 +53,9 @@ public class CommandSetValue implements IUndoCommand
     // action command
     if ( !m_data.setValue( m_columnIndex, m_rowIndex, m_newValue ) )
       Utils.trace( "WARNING : setValue was not successful! ", m_columnIndex, m_rowIndex, m_newValue, m_data );
+
+    // redraw cell across all registered views
+    m_data.redrawCell( m_columnIndex, m_rowIndex );
   }
 
   /******************************************* undo **********************************************/
@@ -62,12 +65,7 @@ public class CommandSetValue implements IUndoCommand
     // revert command
     if ( !m_data.setValue( m_columnIndex, m_rowIndex, m_oldValue ) )
       Utils.trace( "WARNING : setValue was not successful! ", m_columnIndex, m_rowIndex, m_oldValue, m_data );
-  }
 
-  /****************************************** update *********************************************/
-  @Override
-  public void update()
-  {
     // redraw cell across all registered views
     m_data.redrawCell( m_columnIndex, m_rowIndex );
   }

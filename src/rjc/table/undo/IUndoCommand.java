@@ -30,9 +30,6 @@ public interface IUndoCommand
   // reverts the command
   public void undo();
 
-  // update needs after command
-  public void update();
-
   // short text string describing this command, e.g. "insert text"
   public String text();
 }

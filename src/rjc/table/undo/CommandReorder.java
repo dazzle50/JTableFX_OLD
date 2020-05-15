@@ -55,6 +55,9 @@ public class CommandReorder implements IUndoCommand
     // action command
     TableAxis axis = m_orientation == Orientation.HORIZONTAL ? m_view.getColumns() : m_view.getRows();
     axis.movePositions( m_positions, m_newPos );
+
+    // redraw table in this view only
+    m_view.redraw();
   }
 
   /******************************************* undo **********************************************/
@@ -83,12 +86,7 @@ public class CommandReorder implements IUndoCommand
         axis.movePosition( m_newPos, oldPos + oldOffset );
         oldOffset--;
       }
-  }
 
-  /****************************************** update *********************************************/
-  @Override
-  public void update()
-  {
     // redraw table in this view only
     m_view.redraw();
   }

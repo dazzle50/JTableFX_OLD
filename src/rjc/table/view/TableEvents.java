@@ -74,7 +74,7 @@ public class TableEvents extends TableSelect
         moveFocus( MoveDirection.DOWN );
 
     // open cell editor if key typed is suitable
-    if ( !Character.isISOControl( key ) )
+    if ( !Character.isISOControl( key ) && getFocusCellProperty().isBody() )
       openEditor( event.getCharacter() );
 
     getView().redraw();
@@ -288,7 +288,6 @@ public class TableEvents extends TableSelect
       CommandZoom zc = (CommandZoom) command;
       zc.setNewZoom( zoom );
       zc.redo();
-      zc.update();
       getData().getUndoStack().triggerListeners();
     }
     else

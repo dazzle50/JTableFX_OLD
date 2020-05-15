@@ -64,6 +64,10 @@ public class DemoWindow
     m_largeTable = new LargeData();
     m_editTable = new EditData();
 
+    // use unified undo-stack for all tables
+    m_defaultTable.setUndoStack( m_editTable.getUndoStack() );
+    m_largeTable.setUndoStack( m_editTable.getUndoStack() );
+
     // create demo windows contents
     m_menus = makeMenuBar();
     m_tabs = makeTabs();

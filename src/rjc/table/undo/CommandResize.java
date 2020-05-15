@@ -84,6 +84,10 @@ public class CommandResize implements IUndoCommand
     }
     else
       m_indexes.set.forEach( ( index ) -> axis.setCellSize( index, m_newSize ) );
+
+    // update layout in case scroll-bar need changed and redraw table in this view only
+    m_view.layoutDisplay();
+    m_view.redraw();
   }
 
   /******************************************* undo **********************************************/
@@ -113,12 +117,7 @@ public class CommandResize implements IUndoCommand
           axis.setCellSize( index, size );
       }
     } );
-  }
 
-  /****************************************** update *********************************************/
-  @Override
-  public void update()
-  {
     // update layout in case scroll-bar need changed and redraw table in this view only
     m_view.layoutDisplay();
     m_view.redraw();

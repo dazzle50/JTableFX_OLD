@@ -64,6 +64,7 @@ public class CommandZoom implements IUndoCommand
   {
     // action command
     m_view.setViewZoom( m_newZoom );
+    m_view.redraw();
   }
 
   /******************************************* undo **********************************************/
@@ -72,13 +73,6 @@ public class CommandZoom implements IUndoCommand
   {
     // revert command
     m_view.setViewZoom( m_oldZoom );
-  }
-
-  /****************************************** update *********************************************/
-  @Override
-  public void update()
-  {
-    // redraw table in this view only
     m_view.redraw();
   }
 

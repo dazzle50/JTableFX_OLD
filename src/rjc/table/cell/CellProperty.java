@@ -92,6 +92,13 @@ public class CellProperty extends SimpleObjectProperty<CellProperty>
     return m_rowPos;
   }
 
+  /******************************************* isBody ********************************************/
+  public boolean isBody()
+  {
+    // is current position on table body
+    return m_columnPos >= TableAxis.FIRSTCELL && m_rowPos >= TableAxis.FIRSTCELL;
+  }
+
   /****************************************** toString *******************************************/
   @Override
   public String toString()
