@@ -20,14 +20,16 @@ package rjc.table.demo.edit;
 
 import rjc.table.cell.CellContext;
 import rjc.table.cell.CellDraw;
-import rjc.table.cell.CellEditorBase;
-import rjc.table.cell.EditorDate;
-import rjc.table.cell.EditorDateTime;
-import rjc.table.cell.EditorDouble;
-import rjc.table.cell.EditorInteger;
-import rjc.table.cell.EditorText;
-import rjc.table.cell.EditorTime;
+import rjc.table.cell.editor.CellEditorBase;
+import rjc.table.cell.editor.EditorChoose;
+import rjc.table.cell.editor.EditorDate;
+import rjc.table.cell.editor.EditorDateTime;
+import rjc.table.cell.editor.EditorDouble;
+import rjc.table.cell.editor.EditorInteger;
+import rjc.table.cell.editor.EditorText;
+import rjc.table.cell.editor.EditorTime;
 import rjc.table.demo.DemoWindow;
+import rjc.table.demo.edit.EditData.Fruit;
 import rjc.table.view.TableView;
 
 /*************************************************************************************************/
@@ -75,6 +77,8 @@ public class EditView extends TableView
       editor = new EditorTime();
     if ( cell.columnIndex == EditData.SECTION_DATETIME )
       editor = new EditorDateTime();
+    if ( cell.columnIndex == EditData.SECTION_CHOOSE )
+      editor = new EditorChoose( Fruit.values() );
 
     // listen to editor status
     if ( editor != null )

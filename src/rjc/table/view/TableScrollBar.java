@@ -25,7 +25,6 @@ import javafx.geometry.Orientation;
 import javafx.scene.control.ScrollBar;
 import javafx.util.Duration;
 import rjc.table.Utils;
-import rjc.table.cell.CellEditorBase;
 import rjc.table.view.axis.TableAxis;
 import rjc.table.view.cursor.Cursors;
 
@@ -75,11 +74,7 @@ public class TableScrollBar extends ScrollBar
     }
 
     // record last time scroll bar value changed to support smoother animated scrolling
-    valueProperty().addListener( ( observable, oldV, newV ) ->
-    {
-      m_lastScrollNanos = System.nanoTime();
-      CellEditorBase.endEditing(); // REMOVE
-    } );
+    valueProperty().addListener( ( observable, oldV, newV ) -> m_lastScrollNanos = System.nanoTime() );
 
     // change cursor to default when mouse enters
     setOnMouseEntered( event -> setCursor( Cursors.DEFAULT ) );
@@ -115,6 +110,20 @@ public class TableScrollBar extends ScrollBar
       start = m_axis.getStartFromPosition( previousPos, 0 ) - headerSize;
       animate( start, SCROLL_TO_DURATION );
     }
+  }
+
+  /******************************************** isMin ********************************************/
+  public boolean isMin()
+  {
+    // return true if scroll bar value is minimum
+    return getValue() == getMin();
+  }
+
+  /******************************************** isMax ********************************************/
+  public boolean isMax()
+  {
+    // return true if scroll bar value is maximum
+    return getValue() == getMax();
   }
 
   /***************************************** isPosVisible ****************************************/

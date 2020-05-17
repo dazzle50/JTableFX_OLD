@@ -16,32 +16,33 @@
  *  along with this program.  If not, see http://www.gnu.org/licenses/    *
  **************************************************************************/
 
-package rjc.table.cell;
+package rjc.table.cell.editor;
 
-import rjc.table.data.Time;
+import rjc.table.cell.DateField;
+import rjc.table.data.Date;
 
 /*************************************************************************************************/
-/********************************** Table cell editor for times **********************************/
+/********************************** Table cell editor for dates **********************************/
 /*************************************************************************************************/
 
-public class EditorTime extends CellEditorBase
+public class EditorDate extends CellEditorBase
 {
-  private TimeField m_timeEditor = new TimeField();
+  private DateField m_dateEditor = new DateField();
 
   /**************************************** constructor ******************************************/
-  public EditorTime()
+  public EditorDate()
   {
-    // create table cell editor for time
+    // create table cell editor for date
     super();
-    setControl( m_timeEditor );
+    setControl( m_dateEditor );
   }
 
   /******************************************* getValue ******************************************/
   @Override
   public Object getValue()
   {
-    // get editor time value
-    return m_timeEditor.getTime();
+    // get editor date value
+    return m_dateEditor.getDate();
   }
 
   /******************************************* setValue ******************************************/
@@ -50,15 +51,15 @@ public class EditorTime extends CellEditorBase
   {
     // set value depending on type
     if ( value == null )
-      m_timeEditor.setTime( Time.now() );
-    else if ( value instanceof Time )
-      m_timeEditor.setTime( (Time) value );
+      m_dateEditor.setDate( Date.now() );
+    else if ( value instanceof Date )
+      m_dateEditor.setDate( (Date) value );
     else if ( value instanceof String )
     {
-      // seed editor with a valid time before setting with input string which may not be a valid time
-      m_timeEditor.setTime( Time.now() );
-      m_timeEditor.setText( (String) value );
-      m_timeEditor.positionCaret( ( (String) value ).length() );
+      // seed editor with a valid date before setting with input string which may not be a valid date
+      m_dateEditor.setDate( Date.now() );
+      m_dateEditor.setText( (String) value );
+      m_dateEditor.positionCaret( ( (String) value ).length() );
     }
     else
       throw new IllegalArgumentException( "Don't know how to handle " + value.getClass() + " " + value );

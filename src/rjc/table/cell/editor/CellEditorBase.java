@@ -16,7 +16,7 @@
  *  along with this program.  If not, see http://www.gnu.org/licenses/    *
  **************************************************************************/
 
-package rjc.table.cell;
+package rjc.table.cell.editor;
 
 import javafx.beans.property.ReadOnlyObjectProperty;
 import javafx.beans.property.ReadOnlyObjectWrapper;
@@ -25,6 +25,13 @@ import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
 import rjc.table.Status;
 import rjc.table.Status.Level;
+import rjc.table.cell.CellContext;
+import rjc.table.cell.CellStyle;
+import rjc.table.cell.DateField;
+import rjc.table.cell.DateTimeField;
+import rjc.table.cell.NumberSpinField;
+import rjc.table.cell.TimeField;
+import rjc.table.cell.XTextField;
 import rjc.table.view.TableView;
 
 /*************************************************************************************************/

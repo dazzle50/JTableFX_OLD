@@ -27,7 +27,7 @@ import rjc.table.Colors;
 import rjc.table.Utils;
 import rjc.table.cell.CellContext;
 import rjc.table.cell.CellDraw;
-import rjc.table.cell.CellEditorBase;
+import rjc.table.cell.editor.CellEditorBase;
 import rjc.table.data.TableData;
 import rjc.table.undo.CommandSetValue;
 

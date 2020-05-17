@@ -16,31 +16,33 @@
  *  along with this program.  If not, see http://www.gnu.org/licenses/    *
  **************************************************************************/
 
-package rjc.table.cell;
+package rjc.table.cell.editor;
+
+import rjc.table.cell.DateTimeField;
+import rjc.table.data.DateTime;
 
 /*************************************************************************************************/
-/****************************** Table cell spin editor for double ********************************/
+/******************************* Table cell editor for date-times ********************************/
 /*************************************************************************************************/
 
-public class EditorDouble extends CellEditorBase
+public class EditorDateTime extends CellEditorBase
 {
-  private NumberSpinField m_spin = new NumberSpinField();
+  private DateTimeField m_datetimeEditor = new DateTimeField();
 
   /**************************************** constructor ******************************************/
-  public EditorDouble()
+  public EditorDateTime()
   {
-    // create spin table cell editor for double
+    // create table cell editor for date-time
     super();
-    m_spin.setFormat( "0.0", 1 );
-    setControl( m_spin );
+    setControl( m_datetimeEditor );
   }
 
   /******************************************* getValue ******************************************/
   @Override
   public Object getValue()
   {
-    // get editor double value
-    return m_spin.getDouble();
+    // get editor date-time value
+    return m_datetimeEditor.getDateTime();
   }
 
   /******************************************* setValue ******************************************/
@@ -48,10 +50,19 @@ public class EditorDouble extends CellEditorBase
   public void setValue( Object value )
   {
     // set value depending on type
-    if ( value instanceof Double )
-      m_spin.setDouble( (double) value );
+    if ( value == null )
+      m_datetimeEditor.setDateTime( DateTime.now() );
+    else if ( value instanceof DateTime )
+      m_datetimeEditor.setDateTime( (DateTime) value );
+    else if ( value instanceof String )
+    {
+      // seed editor with a valid date-time before setting with input string which may not be a valid date-time
+      m_datetimeEditor.setDateTime( DateTime.now() );
+      m_datetimeEditor.setText( (String) value );
+      m_datetimeEditor.positionCaret( ( (String) value ).length() );
+    }
     else
-      m_spin.setValue( value.toString() );
+      throw new IllegalArgumentException( "Don't know how to handle " + value.getClass() + " " + value );
   }
 
 }

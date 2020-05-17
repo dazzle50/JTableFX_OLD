@@ -16,52 +16,49 @@
  *  along with this program.  If not, see http://www.gnu.org/licenses/    *
  **************************************************************************/
 
-package rjc.table.cell;
+package rjc.table.cell.editor;
 
-import rjc.table.data.DateTime;
+import rjc.table.cell.XTextField;
 
 /*************************************************************************************************/
-/******************************* Table cell editor for date-times ********************************/
+/******************************* Table cell editor for simple text *******************************/
 /*************************************************************************************************/
 
-public class EditorDateTime extends CellEditorBase
+public class EditorText extends CellEditorBase
 {
-  private DateTimeField m_datetimeEditor = new DateTimeField();
+  private XTextField editor = new XTextField();
 
   /**************************************** constructor ******************************************/
-  public EditorDateTime()
+  public EditorText()
   {
-    // create table cell editor for date-time
+    // create text table cell editor
     super();
-    setControl( m_datetimeEditor );
+    setControl( editor );
   }
 
   /******************************************* getValue ******************************************/
   @Override
   public Object getValue()
   {
-    // get editor date-time value
-    return m_datetimeEditor.getDateTime();
+    // get editor text
+    return editor.getText();
   }
 
   /******************************************* setValue ******************************************/
   @Override
   public void setValue( Object value )
   {
-    // set value depending on type
-    if ( value == null )
-      m_datetimeEditor.setDateTime( DateTime.now() );
-    else if ( value instanceof DateTime )
-      m_datetimeEditor.setDateTime( (DateTime) value );
-    else if ( value instanceof String )
-    {
-      // seed editor with a valid date-time before setting with input string which may not be a valid date-time
-      m_datetimeEditor.setDateTime( DateTime.now() );
-      m_datetimeEditor.setText( (String) value );
-      m_datetimeEditor.positionCaret( ( (String) value ).length() );
-    }
-    else
-      throw new IllegalArgumentException( "Don't know how to handle " + value.getClass() + " " + value );
+    // set editor text
+    String str = value == null ? "" : value.toString();
+    editor.setText( str );
+    editor.positionCaret( str.length() );
+  }
+
+  /****************************************** setAllowed *****************************************/
+  public void setAllowed( String regex )
+  {
+    // regular expression that limits what can be entered into editor
+    editor.setAllowed( regex );
   }
 
 }

@@ -36,7 +36,8 @@ public class EditData extends TableData
   public static final int SECTION_DATE     = 4;
   public static final int SECTION_TIME     = 5;
   public static final int SECTION_DATETIME = 6;
-  public static final int SECTION_MAX      = SECTION_DATETIME;
+  public static final int SECTION_CHOOSE   = 7;
+  public static final int SECTION_MAX      = SECTION_CHOOSE;
 
   private final int       ROWS             = 20;
 
@@ -47,6 +48,12 @@ public class EditData extends TableData
   private Date[]          m_date           = new Date[ROWS];
   private Time[]          m_time           = new Time[ROWS];
   private DateTime[]      m_datetime       = new DateTime[ROWS];
+  private Fruit[]         m_fruit          = new Fruit[ROWS];
+
+  public enum Fruit
+  {
+    Apple, Banana, Pear, Plum, Orange, Cherry
+  }
 
   /**************************************** constructor ******************************************/
   public EditData()
@@ -64,6 +71,7 @@ public class EditData extends TableData
       m_date[row] = Date.now().plusDays( row * 5 - 20 );
       m_time[row] = Time.now().addMilliseconds( row * 12345678 );
       m_datetime[row] = new DateTime( m_date[row], m_time[row] );
+      m_fruit[row] = Fruit.values()[row % Fruit.values().length];
     }
   }
 
@@ -97,6 +105,8 @@ public class EditData extends TableData
           return "Time";
         case SECTION_DATETIME:
           return "DateTime";
+        case SECTION_CHOOSE:
+          return "Select";
         default:
           throw new IllegalArgumentException( "Column index = " + columnIndex );
       }
@@ -118,6 +128,8 @@ public class EditData extends TableData
         return m_time[rowIndex];
       case SECTION_DATETIME:
         return m_datetime[rowIndex];
+      case SECTION_CHOOSE:
+        return m_fruit[rowIndex];
       default:
         throw new IllegalArgumentException( "Column index = " + columnIndex );
     }
@@ -147,6 +159,9 @@ public class EditData extends TableData
         break;
       case SECTION_DATETIME:
         m_datetime[rowIndex] = (DateTime) newValue;
+        break;
+      case SECTION_CHOOSE:
+        m_fruit[rowIndex] = (Fruit) newValue;
         break;
       default:
         throw new IllegalArgumentException( "Column index = " + columnIndex );

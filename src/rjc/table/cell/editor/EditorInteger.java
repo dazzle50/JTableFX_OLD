@@ -16,47 +16,43 @@
  *  along with this program.  If not, see http://www.gnu.org/licenses/    *
  **************************************************************************/
 
-package rjc.table.cell;
+package rjc.table.cell.editor;
+
+import rjc.table.cell.NumberSpinField;
 
 /*************************************************************************************************/
-/******************************* Table cell editor for simple text *******************************/
+/****************************** Table cell spin editor for integer *******************************/
 /*************************************************************************************************/
 
-public class EditorText extends CellEditorBase
+public class EditorInteger extends CellEditorBase
 {
-  private XTextField editor = new XTextField();
+  private NumberSpinField m_spin = new NumberSpinField();
 
   /**************************************** constructor ******************************************/
-  public EditorText()
+  public EditorInteger()
   {
-    // create text table cell editor
+    // create spin table cell editor for integer
     super();
-    setControl( editor );
+    setControl( m_spin );
   }
 
   /******************************************* getValue ******************************************/
   @Override
   public Object getValue()
   {
-    // get editor text
-    return editor.getText();
+    // get editor integer value
+    return m_spin.getInteger();
   }
 
   /******************************************* setValue ******************************************/
   @Override
   public void setValue( Object value )
   {
-    // set editor text
-    String str = value == null ? "" : value.toString();
-    editor.setText( str );
-    editor.positionCaret( str.length() );
-  }
-
-  /****************************************** setAllowed *****************************************/
-  public void setAllowed( String regex )
-  {
-    // regular expression that limits what can be entered into editor
-    editor.setAllowed( regex );
+    // set value depending on type
+    if ( value instanceof Integer )
+      m_spin.setInteger( (int) value );
+    else
+      m_spin.setValue( value.toString() );
   }
 
 }

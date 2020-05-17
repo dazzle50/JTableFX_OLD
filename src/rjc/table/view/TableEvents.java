@@ -25,7 +25,7 @@ import javafx.scene.input.MouseEvent;
 import javafx.scene.input.ScrollEvent;
 import rjc.table.Utils;
 import rjc.table.cell.CellDraw;
-import rjc.table.cell.CellEditorBase;
+import rjc.table.cell.editor.CellEditorBase;
 import rjc.table.undo.CommandZoom;
 import rjc.table.view.TableScrollBar.Animation;
 import rjc.table.view.cursor.Cursors;
@@ -711,6 +711,7 @@ public class TableEvents extends TableSelect
   protected void tableScrolled()
   {
     // handle any actions needed due to the table scrolled
+    CellEditorBase.endEditing();
     m_cellXend = INVALID;
     m_cellYend = INVALID;
     checkMouseCellPosition();
@@ -720,35 +721,21 @@ public class TableEvents extends TableSelect
     {
       int columnPos = getMouseCellProperty().getColumnPos();
       if ( columnPos < FIRSTCELL )
-      {
-        if ( getHorizontalScrollBar().getValue() == getHorizontalScrollBar().getMin() )
-          columnPos = getColumns().getFirst();
-        else
-          columnPos = getColumns().getNext( getColumnPositionAtX( getRowHeaderWidth() ) );
-      }
+        columnPos = getHorizontalScrollBar().isMin() ? getColumns().getFirst()
+            : getColumns().getNext( getColumnPositionAtX( getRowHeaderWidth() ) );
+
       if ( columnPos >= AFTER )
-      {
-        if ( getHorizontalScrollBar().getValue() == getHorizontalScrollBar().getMax() )
-          columnPos = getColumns().getLast();
-        else
-          columnPos = getColumns().getPrevious( getColumnPositionAtX( (int) getCanvas().getWidth() - 1 ) );
-      }
+        columnPos = getHorizontalScrollBar().isMax() ? getColumns().getLast()
+            : getColumns().getPrevious( getColumnPositionAtX( (int) getCanvas().getWidth() - 1 ) );
 
       int rowPos = getMouseCellProperty().getRowPos();
       if ( rowPos < FIRSTCELL )
-      {
-        if ( getVerticalScrollBar().getValue() == getVerticalScrollBar().getMin() )
-          rowPos = getColumns().getFirst();
-        else
-          rowPos = getRows().getNext( getRowPositionAtY( getColumnHeaderHeight() ) );
-      }
+        rowPos = getVerticalScrollBar().isMin() ? getRows().getFirst()
+            : getRows().getNext( getRowPositionAtY( getColumnHeaderHeight() ) );
+
       if ( rowPos >= AFTER )
-      {
-        if ( getVerticalScrollBar().getValue() == getVerticalScrollBar().getMax() )
-          rowPos = getColumns().getLast();
-        else
-          rowPos = getRows().getPrevious( getRowPositionAtY( (int) getCanvas().getHeight() - 1 ) );
-      }
+        rowPos = getVerticalScrollBar().isMax() ? getRows().getLast()
+            : getRows().getPrevious( getRowPositionAtY( (int) getCanvas().getHeight() - 1 ) );
 
       if ( m_selecting == Selecting.CELLS )
         setSelectFocusPosition( columnPos, rowPos, false, false, false );

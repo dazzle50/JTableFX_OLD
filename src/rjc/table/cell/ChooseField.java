@@ -19,38 +19,16 @@
 package rjc.table.cell;
 
 /*************************************************************************************************/
-/****************************** Table cell spin editor for integer *******************************/
+/**************************** Control for choosing a value from array ****************************/
 /*************************************************************************************************/
 
-public class EditorInteger extends CellEditorBase
+public class ChooseField extends XTextField
 {
-  private NumberSpinField m_spin = new NumberSpinField();
 
   /**************************************** constructor ******************************************/
-  public EditorInteger()
+  public ChooseField( Object[] values )
   {
-    // create spin table cell editor for integer
-    super();
-    setControl( m_spin );
-  }
-
-  /******************************************* getValue ******************************************/
-  @Override
-  public Object getValue()
-  {
-    // get editor integer value
-    return m_spin.getInteger();
-  }
-
-  /******************************************* setValue ******************************************/
-  @Override
-  public void setValue( Object value )
-  {
-    // set value depending on type
-    if ( value instanceof Integer )
-      m_spin.setInteger( (int) value );
-    else
-      m_spin.setValue( value.toString() );
+    // TODO Auto-generated constructor stub
   }
 
 }
