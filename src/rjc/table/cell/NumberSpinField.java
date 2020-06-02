@@ -23,7 +23,6 @@ import java.util.regex.Pattern;
 
 import javafx.scene.input.KeyEvent;
 import javafx.scene.input.MouseEvent;
-import javafx.scene.input.ScrollEvent;
 import rjc.table.Status;
 
 /*************************************************************************************************/
@@ -295,14 +294,12 @@ public class NumberSpinField extends XTextField
     }
   }
 
-  /***************************************** mouseScroll *****************************************/
-  public void mouseScroll( ScrollEvent event )
+  /***************************************** changeValue *****************************************/
+  @Override
+  public void changeValue( double delta )
   {
-    // increment or decrement value depending on mouse wheel scroll event
-    if ( event.getDeltaY() > 0 )
-      changeNumber( m_step );
-    else
-      changeNumber( -m_step );
+    // increase or decrease value by step on mouse wheel scroll event
+    changeNumber( delta * m_step );
   }
 
   /**************************************** setWrapField *****************************************/

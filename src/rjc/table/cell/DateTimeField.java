@@ -99,26 +99,14 @@ public class DateTimeField extends XTextField
   public void mouseScroll( ScrollEvent event )
   {
     // increment or decrement date-time depending on mouse wheel scroll event
-    if ( event.getDeltaY() > 0 )
-    {
-      event.consume();
-      if ( !event.isShiftDown() && !event.isControlDown() )
-        setDateTime( getDateTime().plusDays( 1 ) );
-      if ( event.isShiftDown() && !event.isControlDown() )
-        setDateTime( getDateTime().plusMonths( 1 ) );
-      if ( !event.isShiftDown() && event.isControlDown() )
-        setDateTime( getDateTime().plusYears( 1 ) );
-    }
-    else
-    {
-      event.consume();
-      if ( !event.isShiftDown() && !event.isControlDown() )
-        setDateTime( getDateTime().plusDays( -1 ) );
-      if ( event.isShiftDown() && !event.isControlDown() )
-        setDateTime( getDateTime().plusMonths( -1 ) );
-      if ( !event.isShiftDown() && event.isControlDown() )
-        setDateTime( getDateTime().plusYears( -1 ) );
-    }
+    int delta = event.getDeltaY() > 0 ? 1 : -1;
+    event.consume();
+    if ( !event.isShiftDown() && !event.isControlDown() )
+      setDateTime( getDateTime().plusDays( delta ) );
+    if ( event.isShiftDown() && !event.isControlDown() )
+      setDateTime( getDateTime().plusMonths( delta ) );
+    if ( !event.isShiftDown() && event.isControlDown() )
+      setDateTime( getDateTime().plusYears( delta ) );
   }
 
 }

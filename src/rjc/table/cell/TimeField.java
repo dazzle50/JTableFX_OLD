@@ -99,26 +99,16 @@ public class TimeField extends XTextField
   public void mouseScroll( ScrollEvent event )
   {
     // increment or decrement time depending on mouse wheel scroll event
-    if ( event.getDeltaY() > 0 )
-    {
-      event.consume();
-      if ( !event.isShiftDown() && !event.isControlDown() )
-        setTime( getTime().addMilliseconds( Time.ONE_HOUR ) );
-      if ( event.isShiftDown() && !event.isControlDown() )
-        setTime( getTime().addMilliseconds( Time.ONE_MINUTE ) );
-      if ( !event.isShiftDown() && event.isControlDown() )
-        setTime( getTime().addMilliseconds( Time.ONE_SECOND ) );
-    }
-    else
-    {
-      event.consume();
-      if ( !event.isShiftDown() && !event.isControlDown() )
-        setTime( getTime().addMilliseconds( -Time.ONE_HOUR ) );
-      if ( event.isShiftDown() && !event.isControlDown() )
-        setTime( getTime().addMilliseconds( -Time.ONE_MINUTE ) );
-      if ( !event.isShiftDown() && event.isControlDown() )
-        setTime( getTime().addMilliseconds( -Time.ONE_SECOND ) );
-    }
+    int ms = 0;
+    event.consume();
+    if ( !event.isShiftDown() && !event.isControlDown() )
+      ms = Time.ONE_HOUR;
+    if ( event.isShiftDown() && !event.isControlDown() )
+      ms = Time.ONE_MINUTE;
+    if ( !event.isShiftDown() && event.isControlDown() )
+      ms = Time.ONE_SECOND;
+
+    setTime( getTime().addMilliseconds( event.getDeltaY() > 0 ? ms : -ms ) );
   }
 
 }

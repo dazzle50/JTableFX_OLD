@@ -27,10 +27,6 @@ import rjc.table.Status;
 import rjc.table.Status.Level;
 import rjc.table.cell.CellContext;
 import rjc.table.cell.CellStyle;
-import rjc.table.cell.DateField;
-import rjc.table.cell.DateTimeField;
-import rjc.table.cell.NumberSpinField;
-import rjc.table.cell.TimeField;
 import rjc.table.cell.XTextField;
 import rjc.table.view.TableView;
 
@@ -87,14 +83,8 @@ public class CellEditorBase
     }
 
     // if control supports wheel scroll listener
-    if ( m_control instanceof NumberSpinField )
-      view.setOnScroll( event -> ( (NumberSpinField) m_control ).mouseScroll( event ) );
-    if ( m_control instanceof DateField )
-      view.setOnScroll( event -> ( (DateField) m_control ).mouseScroll( event ) );
-    if ( m_control instanceof TimeField )
-      view.setOnScroll( event -> ( (TimeField) m_control ).mouseScroll( event ) );
-    if ( m_control instanceof DateTimeField )
-      view.setOnScroll( event -> ( (DateTimeField) m_control ).mouseScroll( event ) );
+    if ( m_control instanceof XTextField )
+      view.setOnScroll( event -> ( (XTextField) m_control ).mouseScroll( event ) );
 
     // display editor, give focus, and set editor value
     m_cellEditorInProgress = this;

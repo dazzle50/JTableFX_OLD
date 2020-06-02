@@ -27,6 +27,7 @@ import javafx.scene.Cursor;
 import javafx.scene.canvas.Canvas;
 import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.control.TextField;
+import javafx.scene.input.ScrollEvent;
 import javafx.scene.text.Text;
 import rjc.table.Colors;
 import rjc.table.Status;
@@ -46,8 +47,8 @@ public class XTextField extends TextField
 
   private ReadOnlyObjectWrapper<Status> m_status;              // error status of text field
 
-  private static final int              BUTTONS_WIDTH_MAX = 16;
-  private static final int              BUTTONS_PADDING   = 2;
+  public static final int               BUTTONS_WIDTH_MAX = 16;
+  public static final int               BUTTONS_PADDING   = 2;
 
   public enum ButtonType
   {
@@ -219,6 +220,22 @@ public class XTextField extends TextField
   {
     // return status read-only property
     return m_status.getReadOnlyProperty();
+  }
+
+  /***************************************** mouseScroll *****************************************/
+  public void mouseScroll( ScrollEvent event )
+  {
+    // increment or decrement value depending on mouse wheel scroll event
+    if ( event.getDeltaY() > 0 )
+      changeValue( 1 );
+    else
+      changeValue( -1 );
+  }
+
+  /***************************************** changeValue *****************************************/
+  public void changeValue( double delta )
+  {
+    // default behaviour is do nothing - overload as needed
   }
 
 }

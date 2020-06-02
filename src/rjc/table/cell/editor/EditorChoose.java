@@ -41,14 +41,15 @@ public class EditorChoose extends CellEditorBase
   @Override
   public Object getValue()
   {
-    // get editor choose value
-    return null;
+    // get editor current value
+    return m_choose.getSelected();
   }
 
   /******************************************* setValue ******************************************/
   @Override
   public void setValue( Object value )
   {
-    // set editor choose value
+    // set editor current value
+    m_choose.setSelected( value );
   }
 }
