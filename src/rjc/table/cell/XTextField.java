@@ -227,13 +227,13 @@ public class XTextField extends TextField
   {
     // increment or decrement value depending on mouse wheel scroll event
     if ( event.getDeltaY() > 0 )
-      changeValue( 1 );
+      stepValue( 1 );
     else
-      changeValue( -1 );
+      stepValue( -1 );
   }
 
-  /***************************************** changeValue *****************************************/
-  public void changeValue( double delta )
+  /****************************************** stepValue ******************************************/
+  public void stepValue( double delta )
   {
     // default behaviour is do nothing - overload as needed
   }

@@ -80,8 +80,13 @@ public class DropDown extends Popup
     // react to scroll-bar changes
     m_scrollbar.valueProperty().addListener( ( value ) -> redraw( m_parent.getSelectedIndex() ) );
 
-    // toggle pop-up when parent is pressed
+    // toggle pop-up when parent is pressed or to hide when parent loses focus
     parent.setOnMousePressed( event -> toggle() );
+    parent.focusedProperty().addListener( ( focus ) ->
+    {
+      if ( isShowing() && !m_parent.isFocused() )
+        toggle();
+    } );
 
     // create listener for hiding drop-down on window movement
     if ( HIDE_LISTENER == null )

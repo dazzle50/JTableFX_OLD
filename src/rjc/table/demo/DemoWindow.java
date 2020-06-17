@@ -19,8 +19,12 @@
 package rjc.table.demo;
 
 import javafx.application.Platform;
+import javafx.geometry.HPos;
+import javafx.geometry.Insets;
+import javafx.scene.Node;
 import javafx.scene.Scene;
 import javafx.scene.control.CheckMenuItem;
+import javafx.scene.control.Label;
 import javafx.scene.control.Menu;
 import javafx.scene.control.MenuBar;
 import javafx.scene.control.MenuItem;
@@ -32,6 +36,14 @@ import javafx.scene.layout.Priority;
 import javafx.stage.Stage;
 import rjc.table.Status;
 import rjc.table.Utils;
+import rjc.table.cell.ChooseField;
+import rjc.table.cell.DateField;
+import rjc.table.cell.DateTimeField;
+import rjc.table.cell.MonthSpinField;
+import rjc.table.cell.NumberSpinField;
+import rjc.table.cell.SpinField;
+import rjc.table.cell.TimeField;
+import rjc.table.cell.XTextField;
 import rjc.table.data.TableData;
 import rjc.table.demo.edit.EditData;
 import rjc.table.demo.edit.EditView;
@@ -125,13 +137,59 @@ public class DemoWindow
     editTab.setContent( editView );
     editView.visibleProperty().bind( editTab.selectedProperty() );
 
+    // create field controls demo tab
+    Tab fieldTab = new Tab();
+    fieldTab.setText( "Field" );
+    fieldTab.setClosable( false );
+    fieldTab.setContent( makeFields() );
+
     // create demo tab pane, when selected tab changes request focus for the tab contents
     TabPane tabs = new TabPane();
     tabs.getSelectionModel().selectedItemProperty().addListener(
         ( observable, oldTab, newTab ) -> Platform.runLater( () -> ( newTab.getContent() ).requestFocus() ) );
-    tabs.getTabs().addAll( defaultTab, largeTab, editTab );
+    //tabs.getTabs().addAll( defaultTab, largeTab, editTab, fieldTab );
+    tabs.getTabs().addAll( fieldTab, defaultTab, largeTab, editTab );
 
     return tabs;
+  }
+
+  /***************************************** makeFields ******************************************/
+  private Node makeFields()
+  {
+    // create grid layout for field controls demo
+    GridPane grid = new GridPane();
+    grid.setPadding( new Insets( 16 ) );
+    grid.setHgap( 8 );
+    grid.setVgap( 8 );
+
+    int row = 0;
+    addToGrid( grid, "XTextField", new XTextField(), 0, row++ );
+    addToGrid( grid, "DateField", new DateField(), 0, row++ );
+    addToGrid( grid, "TimeField", new TimeField(), 0, row++ );
+    addToGrid( grid, "DateTimeField", new DateTimeField(), 0, row++ );
+    addToGrid( grid, "ChooseField", new ChooseField( EditData.Fruit.values() ), 0, row++ );
+
+    addToGrid( grid, "NumberSpinField", new NumberSpinField(), 1, 0 );
+    addToGrid( grid, "Below month field warps with year number spin field", null, 1, 2 );
+    addToGrid( grid, "MonthSpinField", new MonthSpinField(), 1, 3 );
+    addToGrid( grid, "SpinField", new SpinField(), 1, 4 );
+
+    return grid;
+  }
+
+  /****************************************** addToGrid ******************************************/
+  private void addToGrid( GridPane grid, String txt, Node node, int col, int row )
+  {
+    // create grid layout for field controls demo
+    Label label = new Label( txt );
+    if ( node == null )
+      grid.add( label, 3 * col, row, 2, 1 );
+    else
+    {
+      GridPane.setHalignment( label, HPos.RIGHT );
+      grid.add( label, 3 * col, row );
+      grid.add( node, 3 * col + 1, row );
+    }
   }
 
   /**************************************** makeMenuBar ******************************************/

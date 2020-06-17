@@ -16,40 +16,14 @@
  *  along with this program.  If not, see http://www.gnu.org/licenses/    *
  **************************************************************************/
 
-package rjc.table.cell.editor;
-
-import rjc.table.cell.NumberSpinField;
+package rjc.table.signal;
 
 /*************************************************************************************************/
-/****************************** Table cell spin editor for integer *******************************/
+/******************************** Interface for signal listeners *********************************/
 /*************************************************************************************************/
 
-public class EditorInteger extends CellEditorBase
+@FunctionalInterface
+public interface IListener
 {
-  private NumberSpinField m_spin = new NumberSpinField();
-
-  /**************************************** constructor ******************************************/
-  public EditorInteger()
-  {
-    // create spin table cell editor for integer
-    super();
-    setControl( m_spin );
-  }
-
-  /******************************************* getValue ******************************************/
-  @Override
-  public Object getValue()
-  {
-    // get editor integer value
-    return m_spin.getInteger();
-  }
-
-  /******************************************* setValue ******************************************/
-  @Override
-  public void setValue( Object value )
-  {
-    // set spin field value
-    m_spin.setValue( value );
-  }
-
+  public void slot( Object... objects );
 }

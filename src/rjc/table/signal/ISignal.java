@@ -16,40 +16,49 @@
  *  along with this program.  If not, see http://www.gnu.org/licenses/    *
  **************************************************************************/
 
-package rjc.table.cell.editor;
+package rjc.table.signal;
 
-import rjc.table.cell.NumberSpinField;
+import java.util.ArrayList;
 
 /*************************************************************************************************/
-/****************************** Table cell spin editor for integer *******************************/
+/******************* Interface for signal senders with default implementation ********************/
 /*************************************************************************************************/
 
-public class EditorInteger extends CellEditorBase
+public interface ISignal
 {
-  private NumberSpinField m_spin = new NumberSpinField();
-
-  /**************************************** constructor ******************************************/
-  public EditorInteger()
+  /******************************************* signal ********************************************/
+  default void signal( Object... objects )
   {
-    // create spin table cell editor for integer
-    super();
-    setControl( m_spin );
+    // default implementation for sending a signal to listeners 
+    SignalHelper.signal( this, objects );
   }
 
-  /******************************************* getValue ******************************************/
-  @Override
-  public Object getValue()
+  /***************************************** addListener *****************************************/
+  default void addListener( IListener lambda )
   {
-    // get editor integer value
-    return m_spin.getInteger();
+    // default implementation for adding a listener to a signal sender 
+    SignalHelper.addListener( this, lambda );
   }
 
-  /******************************************* setValue ******************************************/
-  @Override
-  public void setValue( Object value )
+  /*************************************** removeListener ****************************************/
+  default void removeListener( IListener lambda )
   {
-    // set spin field value
-    m_spin.setValue( value );
+    // default implementation for removing a listener from a signal sender
+    SignalHelper.removeListener( this, lambda );
+  }
+
+  /************************************* removeAllListeners **************************************/
+  default void removeAllListeners()
+  {
+    // default implementation for removing all listeners from a signal sender
+    SignalHelper.removeAllListeners( this );
+  }
+
+  /**************************************** getListeners *****************************************/
+  default ArrayList<IListener> getListeners()
+  {
+    // default implementation for getting list of all listeners for a signal sender
+    return SignalHelper.getListeners( this );
   }
 
 }

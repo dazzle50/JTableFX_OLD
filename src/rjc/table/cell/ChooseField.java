@@ -30,23 +30,23 @@ import javafx.scene.input.KeyEvent;
 public class ChooseField extends XTextField
 {
   private DropDown          m_dropdown; // choice drop-down
-  private Object[]          m_values;   // array of objects choice to be from
+  private Object[]          m_choices;  // array of objects choice to be from
   private ArrayList<String> m_text;     // list of value string equivalents
   private int               m_index;    // index of current selected item
 
   /**************************************** constructor ******************************************/
-  public ChooseField( Object[] values )
+  public ChooseField( Object[] choices )
   {
     // initiate the field
-    m_values = values;
+    m_choices = choices;
     m_dropdown = new DropDown( this );
 
-    // generate string equivalent of value objects
-    m_text = new ArrayList<>( values.length );
-    for ( int index = 0; index < m_values.length; index++ )
+    // generate string equivalent of choice objects
+    m_text = new ArrayList<>( choices.length );
+    for ( int index = 0; index < m_choices.length; index++ )
     {
-      Object value = values[index];
-      m_text.add( value == null ? "null" : value.toString() );
+      Object choice = choices[index];
+      m_text.add( choice == null ? "null" : choice.toString() );
     }
 
     // configure the button  
@@ -58,9 +58,9 @@ public class ChooseField extends XTextField
     setOnKeyTyped( event -> keyTyped( event ) );
   }
 
-  /***************************************** changeValue *****************************************/
+  /****************************************** stepValue ******************************************/
   @Override
-  public void changeValue( double delta )
+  public void stepValue( double delta )
   {
     // change selected index
     setSelectedIndex( m_index - (int) delta );
@@ -70,7 +70,7 @@ public class ChooseField extends XTextField
   public int getCount()
   {
     // return number of items user can choose from
-    return m_values.length;
+    return m_choices.length;
   }
 
   /************************************** getSelectedIndex ***************************************/
@@ -84,8 +84,8 @@ public class ChooseField extends XTextField
   public void setSelectedIndex( int index )
   {
     // set selected index and update displayed text to match
-    index = index % m_values.length;
-    m_index = index < 0 ? index + m_values.length : index;
+    index = index % m_choices.length;
+    m_index = index < 0 ? index + m_choices.length : index;
 
     setText( getText( m_index ) );
     m_dropdown.scrollToIndex( m_index );
@@ -102,15 +102,15 @@ public class ChooseField extends XTextField
   public Object getSelected()
   {
     // return currently selected object
-    return m_values[m_index];
+    return m_choices[m_index];
   }
 
   /***************************************** setSelected *****************************************/
   public void setSelected( Object value )
   {
     // set currently selected object
-    for ( int index = 0; index < m_values.length; index++ )
-      if ( m_values[index] == value )
+    for ( int index = 0; index < m_choices.length; index++ )
+      if ( m_choices[index] == value )
       {
         setSelectedIndex( index );
         return;
@@ -132,14 +132,14 @@ public class ChooseField extends XTextField
       case RIGHT:
       case KP_RIGHT:
       case PAGE_DOWN:
-        changeValue( -1 );
+        stepValue( -1 );
         break;
       case UP:
       case KP_UP:
       case LEFT:
       case KP_LEFT:
       case PAGE_UP:
-        changeValue( 1 );
+        stepValue( 1 );
         break;
       case HOME:
         setSelectedIndex( 0 );
@@ -160,9 +160,9 @@ public class ChooseField extends XTextField
   {
     // find next item that starts with typed key (case-insensitive)
     String key = event.getCharacter().toLowerCase();
-    for ( int delta = 1; delta < m_values.length; delta++ )
+    for ( int delta = 1; delta < m_choices.length; delta++ )
     {
-      int index = ( m_index + delta ) % m_values.length;
+      int index = ( m_index + delta ) % m_choices.length;
       if ( m_text.get( index ).toLowerCase().startsWith( key ) )
       {
         setSelectedIndex( index );

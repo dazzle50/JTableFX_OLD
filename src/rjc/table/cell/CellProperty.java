@@ -18,14 +18,14 @@
 
 package rjc.table.cell;
 
-import javafx.beans.property.SimpleObjectProperty;
+import rjc.table.signal.ISignal;
 import rjc.table.view.axis.TableAxis;
 
 /*************************************************************************************************/
 /*************************** Observable table cell position reference ****************************/
 /*************************************************************************************************/
 
-public class CellProperty extends SimpleObjectProperty<CellProperty>
+public class CellProperty implements ISignal
 {
   private int m_columnPos = TableAxis.INVALID;;
   private int m_rowPos    = TableAxis.INVALID;;
@@ -52,7 +52,7 @@ public class CellProperty extends SimpleObjectProperty<CellProperty>
     {
       m_columnPos = columnPos;
       m_rowPos = rowPos;
-      fireValueChangedEvent();
+      signal();
     }
   }
 
@@ -63,7 +63,7 @@ public class CellProperty extends SimpleObjectProperty<CellProperty>
     if ( position != m_columnPos )
     {
       m_columnPos = position;
-      fireValueChangedEvent();
+      signal();
     }
   }
 
@@ -74,7 +74,7 @@ public class CellProperty extends SimpleObjectProperty<CellProperty>
     if ( position != m_rowPos )
     {
       m_rowPos = position;
-      fireValueChangedEvent();
+      signal();
     }
   }
 

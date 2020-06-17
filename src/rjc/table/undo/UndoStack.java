@@ -20,13 +20,13 @@ package rjc.table.undo;
 
 import java.util.ArrayList;
 
-import javafx.beans.property.SimpleObjectProperty;
+import rjc.table.signal.ISignal;
 
 /*************************************************************************************************/
 /********************************** Stack of UndoCommand objects *********************************/
 /*************************************************************************************************/
 
-public class UndoStack extends SimpleObjectProperty<UndoStack>
+public class UndoStack implements ISignal
 {
   private ArrayList<IUndoCommand> m_stack;      // list of undo commands
   private int                     m_index;      // executed commands index
@@ -54,7 +54,7 @@ public class UndoStack extends SimpleObjectProperty<UndoStack>
   {
     // declare current index position as being clean
     m_cleanIndex = m_index;
-    fireValueChangedEvent();
+    signal();
   }
 
   /****************************************** isClean ********************************************/
@@ -95,7 +95,7 @@ public class UndoStack extends SimpleObjectProperty<UndoStack>
     m_stack.add( command );
     command.redo();
     m_index = m_stack.size();
-    fireValueChangedEvent();
+    signal();
   }
 
   /******************************************** undo *********************************************/
@@ -106,7 +106,7 @@ public class UndoStack extends SimpleObjectProperty<UndoStack>
     {
       m_index--;
       m_stack.get( m_index ).undo();
-      fireValueChangedEvent();
+      signal();
     }
   }
 
@@ -118,7 +118,7 @@ public class UndoStack extends SimpleObjectProperty<UndoStack>
     {
       m_stack.get( m_index ).redo();
       m_index++;
-      fireValueChangedEvent();
+      signal();
     }
   }
 
@@ -126,7 +126,7 @@ public class UndoStack extends SimpleObjectProperty<UndoStack>
   public void triggerListeners()
   {
     // public method to notify all the listeners
-    fireValueChangedEvent();
+    signal();
   }
 
   /**************************************** getUndoCommand ***************************************/
@@ -182,7 +182,7 @@ public class UndoStack extends SimpleObjectProperty<UndoStack>
       }
 
       // let listeners know that stack have changed
-      fireValueChangedEvent();
+      signal();
     }
   }
 

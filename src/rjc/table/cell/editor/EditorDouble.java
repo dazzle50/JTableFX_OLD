@@ -49,11 +49,8 @@ public class EditorDouble extends CellEditorBase
   @Override
   public void setValue( Object value )
   {
-    // set value depending on type
-    if ( value instanceof Double )
-      m_spin.setDouble( (double) value );
-    else
-      m_spin.setValue( value.toString() );
+    // set spin field value
+    m_spin.setValue( value );
   }
 
 }
