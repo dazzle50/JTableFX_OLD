@@ -20,8 +20,6 @@ package rjc.table.cell;
 
 import java.util.regex.Pattern;
 
-import javafx.beans.property.ReadOnlyObjectProperty;
-import javafx.beans.property.ReadOnlyObjectWrapper;
 import javafx.geometry.Insets;
 import javafx.scene.Cursor;
 import javafx.scene.canvas.Canvas;
@@ -31,7 +29,6 @@ import javafx.scene.input.ScrollEvent;
 import javafx.scene.text.Text;
 import rjc.table.Colors;
 import rjc.table.Status;
-import rjc.table.Utils;
 
 /*************************************************************************************************/
 /*********************************** Enhanced JavaFX TextField ***********************************/
@@ -39,16 +36,16 @@ import rjc.table.Utils;
 
 public class XTextField extends TextField
 {
-  private Pattern                       m_allowed;             // pattern defining text allowed to be entered
-  private double                        m_minWidth;            // minimum width for editor in pixels
-  private double                        m_maxWidth;            // maximum width for editor in pixels
-  private ButtonType                    m_buttonType;          // button type, null means no button
-  private Canvas                        m_button;              // canvas to show button
+  private Pattern         m_allowed;             // pattern defining text allowed to be entered
+  private double          m_minWidth;            // minimum width for editor in pixels
+  private double          m_maxWidth;            // maximum width for editor in pixels
+  private ButtonType      m_buttonType;          // button type, null means no button
+  private Canvas          m_button;              // canvas to show button
 
-  private ReadOnlyObjectWrapper<Status> m_status;              // error status of text field
+  private Status          m_status;              // error status of text field
 
-  public static final int               BUTTONS_WIDTH_MAX = 16;
-  public static final int               BUTTONS_PADDING   = 2;
+  public static final int BUTTONS_WIDTH_MAX = 16;
+  public static final int BUTTONS_PADDING   = 2;
 
   public enum ButtonType
   {
@@ -58,10 +55,7 @@ public class XTextField extends TextField
   /**************************************** constructor ******************************************/
   public XTextField()
   {
-    // create enhanced text field control
-    m_status = new ReadOnlyObjectWrapper<>();
-
-    // listen to text changes to check if field width needs changing
+    // create enhanced text field control - listen to text changes to check if field width needs changing
     textProperty().addListener( ( observable, oldText, newText ) ->
     {
       // if min & max width set, increase editor width if needed to show whole text
@@ -210,16 +204,15 @@ public class XTextField extends TextField
   /***************************************** setStatus *******************************************/
   public void setStatus( Status status )
   {
-    // update field status if change
-    if ( !Utils.equal( status, m_status.get() ) )
-      m_status.set( status );
+    // set text field status
+    m_status = status;
   }
 
-  /************************************** getStatusProperty **************************************/
-  public ReadOnlyObjectProperty<Status> getStatusProperty()
+  /***************************************** getStatus *******************************************/
+  public Status getStatus()
   {
-    // return status read-only property
-    return m_status.getReadOnlyProperty();
+    // return text field status
+    return m_status;
   }
 
   /***************************************** mouseScroll *****************************************/

@@ -58,15 +58,16 @@ import rjc.table.view.TableView;
 
 public class DemoWindow
 {
-  private static TextField m_statusBar;   // status bar at bottom of window
+  private TextField       m_statusBar;    // status bar at bottom of window
+  private Status          m_status;       // status associated with status bar
 
-  private MenuBar          m_menus;       // menu bar at top of window
-  private TabPane          m_tabs;        // tabs pane to show the demos
-  private UndoStackWindow  m_undoWindow;  // window to interact with undo-stack
+  private MenuBar         m_menus;        // menu bar at top of window
+  private TabPane         m_tabs;         // tabs pane to show the demos
+  private UndoStackWindow m_undoWindow;   // window to interact with undo-stack
 
-  private TableData        m_defaultTable;
-  private LargeData        m_largeTable;
-  private EditData         m_editTable;
+  private TableData       m_defaultTable; // data for 'Default' tab
+  private LargeData       m_largeTable;   // data for 'Large' tab
+  private EditData        m_editTable;    // data for 'Edit' tab
 
   /**************************************** constructor ******************************************/
   public DemoWindow( Stage stage )
@@ -76,16 +77,24 @@ public class DemoWindow
     m_largeTable = new LargeData();
     m_editTable = new EditData();
 
-    // use unified undo-stack for all tables
-    m_defaultTable.setUndoStack( m_editTable.getUndoStack() );
-    m_largeTable.setUndoStack( m_editTable.getUndoStack() );
+    // use one common undo-stack for whole demo app
+    m_largeTable.setUndoStack( m_defaultTable.getUndoStack() );
+    m_editTable.setUndoStack( m_defaultTable.getUndoStack() );
 
     // create demo windows contents
+    m_status = new Status();
     m_menus = makeMenuBar();
     m_tabs = makeTabs();
     m_statusBar = new TextField( "Started" );
     m_statusBar.setFocusTraversable( false );
     m_statusBar.setEditable( false );
+
+    // display status changes on status-bar
+    m_status.addListener( ( x ) ->
+    {
+      m_statusBar.setText( m_status.getMessage() );
+      m_statusBar.setStyle( m_status.getStyle() );
+    } );
 
     // create demo window layout
     GridPane grid = new GridPane();
@@ -131,6 +140,7 @@ public class DemoWindow
 
     // create editable table in tab
     TableView editView = new EditView( m_editTable );
+    editView.setStatus( m_status );
     Tab editTab = new Tab();
     editTab.setText( "Edit" );
     editTab.setClosable( false );
@@ -147,8 +157,7 @@ public class DemoWindow
     TabPane tabs = new TabPane();
     tabs.getSelectionModel().selectedItemProperty().addListener(
         ( observable, oldTab, newTab ) -> Platform.runLater( () -> ( newTab.getContent() ).requestFocus() ) );
-    //tabs.getTabs().addAll( defaultTab, largeTab, editTab, fieldTab );
-    tabs.getTabs().addAll( fieldTab, defaultTab, largeTab, editTab );
+    tabs.getTabs().addAll( defaultTab, largeTab, editTab, fieldTab );
 
     return tabs;
   }
@@ -239,8 +248,7 @@ public class DemoWindow
   {
     // open new window with different views to same data
     Stage stage = new Stage();
-    TabPane tabs = makeTabs();
-    stage.setScene( new Scene( tabs ) );
+    stage.setScene( new Scene( makeTabs() ) );
     stage.setTitle( "New window" );
     stage.show();
   }
@@ -339,14 +347,6 @@ public class DemoWindow
     }
 
     Utils.trace( "BENCHMARK " + text + String.format( "%8.3f", nanos / div ) + units );
-  }
-
-  /****************************************** setStatus ******************************************/
-  public static void setStatus( Status status )
-  {
-    // set status bar to show status
-    m_statusBar.setText( status == null ? null : status.getMessage() );
-    m_statusBar.setStyle( status == null ? null : status.getStyle() );
   }
 
 }

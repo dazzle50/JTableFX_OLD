@@ -18,14 +18,10 @@
 
 package rjc.table.cell.editor;
 
-import javafx.beans.property.ReadOnlyObjectProperty;
-import javafx.beans.property.ReadOnlyObjectWrapper;
 import javafx.scene.control.Control;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
-import rjc.table.Status;
 import rjc.table.Status.Level;
-import rjc.table.cell.CellContext;
 import rjc.table.cell.CellStyle;
 import rjc.table.cell.XTextField;
 import rjc.table.view.TableView;
@@ -36,18 +32,15 @@ import rjc.table.view.TableView;
 
 public class CellEditorBase
 {
-  private static CellEditorBase         m_cellEditorInProgress;
+  private static CellEditorBase m_cellEditorInProgress; // only one editor can be open at any time
 
-  private Control                       m_control;             // primary control that has focus
-  private CellContext                   m_cell;                // table cell context
-
-  private ReadOnlyObjectWrapper<Status> m_status;              // error status of cell editor
+  private Control               m_control;              // primary control that has focus
+  private CellStyle             m_cell;                 // cell style and position etc
 
   /***************************************** constructor *****************************************/
   public CellEditorBase()
   {
-    // initialise variables
-    m_status = new ReadOnlyObjectWrapper<>();
+    // nothing needs doing here
   }
 
   /********************************************* open ********************************************/
@@ -77,14 +70,15 @@ public class CellEditorBase
       field.setPadding( cell.getZoomTextInsets() );
       field.setFont( cell.getZoomFont() );
       field.setWidths( min, max );
-
-      // listen to text field status
-      field.getStatusProperty().addListener( ( observable, oldS, newS ) -> m_status.set( newS ) );
     }
 
     // if control supports wheel scroll listener
     if ( m_control instanceof XTextField )
       view.setOnScroll( event -> ( (XTextField) m_control ).mouseScroll( event ) );
+
+    // if control support status
+    if ( m_control instanceof XTextField )
+      ( (XTextField) m_control ).setStatus( cell.view.getStatus() );
 
     // display editor, give focus, and set editor value
     m_cellEditorInProgress = this;
@@ -98,7 +92,8 @@ public class CellEditorBase
   {
     // clear any error message, remove control from table, and give focus back to table
     m_cellEditorInProgress = null;
-    m_status.set( null );
+    if ( m_cell.view.getStatus() != null )
+      m_cell.view.getStatus().clear();
     m_cell.view.remove( m_control );
     m_cell.view.setOnScroll( event -> m_cell.view.mouseScroll( event ) );
     m_cell.view.requestFocus();
@@ -138,15 +133,8 @@ public class CellEditorBase
   public Boolean isError()
   {
     // return if editor in error state
-    var level = m_status.get() == null ? null : m_status.get().getSeverity();
+    var level = m_cell.view.getStatus() == null ? null : m_cell.view.getStatus().getSeverity();
     return level == Level.ERROR || level == Level.FATAL;
-  }
-
-  /************************************** getStatusProperty **************************************/
-  public ReadOnlyObjectProperty<Status> getStatusProperty()
-  {
-    // return read only status property
-    return m_status.getReadOnlyProperty();
   }
 
   /***************************************** isValueValid ****************************************/

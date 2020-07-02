@@ -24,6 +24,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import javafx.application.Platform;
 import javafx.scene.canvas.GraphicsContext;
 import rjc.table.Colors;
+import rjc.table.Status;
 import rjc.table.Utils;
 import rjc.table.cell.CellContext;
 import rjc.table.cell.CellDraw;
@@ -42,6 +43,8 @@ public class TableView extends TableXML
   private HashSet<Integer> m_columns;           // requested column indexes
   private HashSet<Integer> m_rows;              // requested row indexes
   private HashSet<Long>    m_cells;             // long = (long) column << 32 | row & 0xFFFFFFFFL
+
+  private Status           m_status;            // status for this view
 
   /**************************************** constructor ******************************************/
   public TableView( TableData data )
@@ -351,6 +354,20 @@ public class TableView extends TableXML
       // remove clip
       gc.restore();
     }
+  }
+
+  /****************************************** getStatus ******************************************/
+  public Status getStatus()
+  {
+    // return status associated with this view (might be null)
+    return m_status;
+  }
+
+  /****************************************** setStatus ******************************************/
+  public void setStatus( Status status )
+  {
+    // set status for this view
+    m_status = status;
   }
 
 }

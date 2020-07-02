@@ -57,7 +57,7 @@ public class SpinField extends XTextField
     try
     {
       if ( value instanceof String )
-        Double.parseDouble( (String) value );
+        number = Double.parseDouble( (String) value );
       else
         number = ( (Number) value ).doubleValue();
     }

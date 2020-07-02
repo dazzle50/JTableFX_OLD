@@ -18,11 +18,13 @@
 
 package rjc.table;
 
+import rjc.table.signal.ISignal;
+
 /*************************************************************************************************/
 /******************* Generic status with severity and associated text message ********************/
 /*************************************************************************************************/
 
-public class Status
+public class Status implements ISignal
 {
   private Level  m_severity; // severity of status
   private String m_msg;      // text message for status
@@ -52,10 +54,43 @@ public class Status
     m_msg = msg;
   }
 
+  /******************************************* update ********************************************/
+  public void update( Level severity, String msg )
+  {
+    // update severity and message
+    if ( severity != m_severity || msg != m_msg )
+    {
+      m_severity = severity;
+      m_msg = msg;
+      signal();
+    }
+  }
+
+  /******************************************** clear ********************************************/
+  public void clear()
+  {
+    // clear status to normal severity and no message
+    update( Level.NORMAL, null );
+  }
+
+  /***************************************** setSeverity *****************************************/
+  public void setSeverity( Level severity )
+  {
+    // update severity
+    update( severity, m_msg );
+  }
+
+  /***************************************** setMessage ******************************************/
+  public void setMessage( String msg )
+  {
+    // update message
+    update( m_severity, msg );
+  }
+
   /***************************************** getSeverity *****************************************/
   public Level getSeverity()
   {
-    // return status severity leve;
+    // return status severity level
     return m_severity;
   }
 
@@ -82,30 +117,6 @@ public class Status
       default:
         throw new UnsupportedOperationException( m_severity.toString() );
     }
-  }
-
-  /******************************************* equals ********************************************/
-  @Override
-  public boolean equals( Object other )
-  {
-    // return true if other object represents same status
-    if ( other != null && other instanceof Status )
-    {
-      Status status = (Status) other;
-      return m_severity == status.m_severity && Utils.equal( m_msg, status.m_msg );
-    }
-
-    return false;
-  }
-
-  /****************************************** hashCode ******************************************/
-  @Override
-  public int hashCode()
-  {
-    // status hash code combines severity and message
-    int hash = m_severity == null ? 0 : m_severity.hashCode();
-    hash += m_msg == null ? 0 : 17 * m_msg.hashCode();
-    return hash;
   }
 
   /****************************************** toString *******************************************/

@@ -28,7 +28,6 @@ import rjc.table.cell.editor.EditorDouble;
 import rjc.table.cell.editor.EditorInteger;
 import rjc.table.cell.editor.EditorText;
 import rjc.table.cell.editor.EditorTime;
-import rjc.table.demo.DemoWindow;
 import rjc.table.demo.edit.EditData.Fruit;
 import rjc.table.view.TableView;
 
@@ -79,10 +78,6 @@ public class EditView extends TableView
       editor = new EditorDateTime();
     if ( cell.columnIndex == EditData.SECTION_CHOOSE )
       editor = new EditorChoose( Fruit.values() );
-
-    // listen to editor status
-    if ( editor != null )
-      editor.getStatusProperty().addListener( ( property, oldS, newS ) -> DemoWindow.setStatus( newS ) );
 
     return editor;
   }

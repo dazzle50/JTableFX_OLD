@@ -21,7 +21,7 @@ package rjc.table.cell;
 import java.text.DecimalFormat;
 import java.util.regex.Pattern;
 
-import rjc.table.Status;
+import rjc.table.Status.Level;
 
 /*************************************************************************************************/
 /**************************** Generic spin control for number values *****************************/
@@ -35,8 +35,7 @@ public class NumberSpinField extends SpinField
   private String        m_prefix;            // prefix shown before value
   private String        m_suffix;            // suffix shown after value
 
-  private Status        m_rangeError;        // text associated with number being out of range
-  private Status        m_rangeNormal;       // text associated with number being in range
+  private String        m_errorMsg;          // status error text
 
   /**************************************** constructor ******************************************/
   public NumberSpinField()
@@ -51,28 +50,23 @@ public class NumberSpinField extends SpinField
       // if spinner value not in range, set control into error state
       double num = getDouble();
       if ( num < getMin() || num > getMax() )
-      {
-        setStatus( m_rangeError );
-        setStyle( m_rangeError.getStyle() );
-      }
+        getStatus().update( Level.ERROR, m_errorMsg );
       else
-      {
-        setStatus( m_rangeNormal );
-        setStyle( m_rangeNormal.getStyle() );
-      }
+        getStatus().update( Level.NORMAL, null );
+      setStyle( getStatus().getStyle() );
     } );
-
   }
 
   /****************************************** setField *******************************************/
   @Override
   public void setField( Object value )
   {
-    // set editor text adding prefix and suffix
-    if ( m_numberFormat == null )
+    // if no number formating available or string, set field text as specified 
+    if ( m_numberFormat == null || value instanceof String )
       super.setField( value );
     else
     {
+      // set field text adding prefix and suffix
       String text = m_numberFormat.format( getValue() );
       setText( m_prefix + text + m_suffix );
       positionCaret( m_prefix.length() + text.length() );
@@ -131,9 +125,8 @@ public class NumberSpinField extends SpinField
     super.setRange( minValue, maxValue );
     if ( m_numberFormat != null )
     {
-      m_rangeNormal = new Status();
-      m_rangeError = new Status( Status.Level.ERROR,
-          "Value not between " + m_numberFormat.format( minValue ) + " and " + m_numberFormat.format( maxValue ) );
+      m_errorMsg = "Value not between " + m_numberFormat.format( minValue ) + " and "
+          + m_numberFormat.format( maxValue );
       determineAllowed();
     }
   }
