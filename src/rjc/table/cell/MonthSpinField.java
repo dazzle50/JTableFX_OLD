@@ -38,31 +38,48 @@ public class MonthSpinField extends SpinField
     setEditable( false );
     setRange( 1.0, 12.0 );
     setStepPage( 1.0, 3.0 );
+    setValue( Month.JANUARY );
 
     // react to key typed
     setOnKeyTyped( event -> keyTyped( event ) );
   }
 
-  /****************************************** setField *******************************************/
+  /****************************************** setValue *******************************************/
   @Override
-  protected void setField( Object value )
+  public void setValue( Object value )
   {
-    // set field text to month display name
-    try
-    {
-      super.setField( getDisplayName( (int) getValue() ) );
-    }
-    catch ( Exception e )
-    {
-      super.setField( e.toString() );
-    }
+    // set value to month display name
+    if ( value instanceof Month )
+      super.setValue( getDisplayName( ( (Month) value ).getValue() ) );
+    else if ( value instanceof Number )
+      super.setValue( getDisplayName( ( (Number) value ).intValue() ) );
+    else
+      super.setValue( value );
+  }
+
+  /***************************************** getDouble *******************************************/
+  @Override
+  public double getDouble()
+  {
+    // attempt to get month index from field text, otherwise return min
+    String text = getValue();
+    for ( int index = 1; index <= 12; index++ )
+      if ( text.equals( getDisplayName( index ) ) )
+        return index;
+
+    return getMin();
   }
 
   /****************************************** getMonth *******************************************/
   public Month getMonth()
   {
-    // get month index number as integer
-    return Month.of( (int) getValue() );
+    // get month from spin control
+    String text = getValue();
+    for ( int index = 1; index <= 12; index++ )
+      if ( text.equals( getDisplayName( index ) ) )
+        return Month.of( index );
+
+    return null;
   }
 
   /************************************** getDisplayName ****************************************/
@@ -77,12 +94,13 @@ public class MonthSpinField extends SpinField
   {
     // find next month that starts with typed key (case-insensitive)
     String key = event.getCharacter().toLowerCase();
+    int index = getMonth().getValue();
     for ( int delta = 0; delta < 11; delta++ )
     {
-      int index = ( (int) getValue() + delta ) % 12 + 1;
+      index = index % 12 + 1;
       if ( getDisplayName( index ).toLowerCase().startsWith( key ) )
       {
-        setValue( index );
+        setValue( getDisplayName( index ) );
         return;
       }
     }

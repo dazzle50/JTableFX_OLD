@@ -73,6 +73,13 @@ public class Status implements ISignal
     update( Level.NORMAL, null );
   }
 
+  /******************************************* isError *******************************************/
+  public Boolean isError()
+  {
+    // return if status in error state
+    return m_severity == Level.ERROR || m_severity == Level.FATAL;
+  }
+
   /***************************************** setSeverity *****************************************/
   public void setSeverity( Level severity )
   {
@@ -127,4 +134,5 @@ public class Status implements ISignal
     return getClass().getSimpleName() + "@" + Integer.toHexString( System.identityHashCode( this ) ) + "[" + m_severity
         + " '" + m_msg + "']";
   }
+
 }

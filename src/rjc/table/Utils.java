@@ -137,4 +137,10 @@ public class Utils
     return val > max ? max : val < min ? min : val;
   }
 
+  public static double clamp( double val, double min, double max )
+  {
+    // return double clamped between supplied min and max
+    return val > max ? max : val < min ? min : val;
+  }
+
 }

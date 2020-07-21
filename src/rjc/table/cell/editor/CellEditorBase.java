@@ -21,7 +21,6 @@ package rjc.table.cell.editor;
 import javafx.scene.control.Control;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
-import rjc.table.Status.Level;
 import rjc.table.cell.CellStyle;
 import rjc.table.cell.XTextField;
 import rjc.table.view.TableView;
@@ -72,10 +71,6 @@ public class CellEditorBase
       field.setWidths( min, max );
     }
 
-    // if control supports wheel scroll listener
-    if ( m_control instanceof XTextField )
-      view.setOnScroll( event -> ( (XTextField) m_control ).mouseScroll( event ) );
-
     // if control support status
     if ( m_control instanceof XTextField )
       ( (XTextField) m_control ).setStatus( cell.view.getStatus() );
@@ -95,7 +90,6 @@ public class CellEditorBase
     if ( m_cell.view.getStatus() != null )
       m_cell.view.getStatus().clear();
     m_cell.view.remove( m_control );
-    m_cell.view.setOnScroll( event -> m_cell.view.mouseScroll( event ) );
     m_cell.view.requestFocus();
     if ( commit )
       commit();
@@ -133,8 +127,7 @@ public class CellEditorBase
   public Boolean isError()
   {
     // return if editor in error state
-    var level = m_cell.view.getStatus() == null ? null : m_cell.view.getStatus().getSeverity();
-    return level == Level.ERROR || level == Level.FATAL;
+    return m_cell.view.getStatus() == null ? false : m_cell.view.getStatus().isError();
   }
 
   /***************************************** isValueValid ****************************************/

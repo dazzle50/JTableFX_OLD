@@ -32,75 +32,51 @@ public class NumberSpinField extends SpinField
   private int           m_maxFractionDigits; // number of digits after decimal point
   private DecimalFormat m_numberFormat;      // number decimal format
 
-  private String        m_prefix;            // prefix shown before value
-  private String        m_suffix;            // suffix shown after value
-
   private String        m_errorMsg;          // status error text
 
   /**************************************** constructor ******************************************/
   public NumberSpinField()
   {
     // set default spin editor characteristics
-    setPrefixSuffix( null, null );
     setFormat( "0", 0 );
 
     // add listener to set control error state and remove any excess leading zeros
     textProperty().addListener( ( observable, oldText, newText ) ->
     {
-      // if spinner value not in range, set control into error state
-      double num = getDouble();
-      if ( num < getMin() || num > getMax() )
-        getStatus().update( Level.ERROR, m_errorMsg );
-      else
-        getStatus().update( Level.NORMAL, null );
-      setStyle( getStatus().getStyle() );
+      if ( getStatus() != null )
+      {
+        // if spinner value not in range, set status to error
+        double num = getDouble();
+        if ( num < getMin() || num > getMax() )
+          getStatus().update( Level.ERROR, m_errorMsg );
+        else
+          getStatus().update( Level.NORMAL, null );
+        setStyle( getStatus().getStyle() );
+      }
+
+      // remove any excess zeros from front of number
+      String text = getValue();
+      if ( text.length() > 1 && text.charAt( 0 ) == '0' && Character.isDigit( text.charAt( 1 ) ) )
+        super.setValue( text.substring( 1 ) );
     } );
   }
 
-  /****************************************** setField *******************************************/
+  /****************************************** setValue *******************************************/
   @Override
-  public void setField( Object value )
+  public void setValue( Object value )
   {
     // if no number formating available or string, set field text as specified 
     if ( m_numberFormat == null || value instanceof String )
-      super.setField( value );
+      super.setValue( value );
     else
-    {
-      // set field text adding prefix and suffix
-      String text = m_numberFormat.format( getValue() );
-      setText( m_prefix + text + m_suffix );
-      positionCaret( m_prefix.length() + text.length() );
-    }
-  }
-
-  /****************************************** getDouble ******************************************/
-  public double getDouble()
-  {
-    // return field text (less prefix + suffix) converted to double number
-    try
-    {
-      String value = getText().substring( m_prefix.length(), getText().length() - m_suffix.length() );
-      return Double.parseDouble( value );
-    }
-    catch ( Exception exception )
-    {
-      return 0.0;
-    }
+      super.setValue( m_numberFormat.format( value ) );
   }
 
   /***************************************** getInteger ******************************************/
   public int getInteger()
   {
-    // return field text (less prefix + suffix) converted to integer number
-    try
-    {
-      String value = getText().substring( m_prefix.length(), getText().length() - m_suffix.length() );
-      return Integer.parseInt( value );
-    }
-    catch ( Exception exception )
-    {
-      return 0;
-    }
+    // return field value as double
+    return (int) getDouble();
   }
 
   /****************************************** setFormat ******************************************/
@@ -132,26 +108,12 @@ public class NumberSpinField extends SpinField
   }
 
   /*************************************** setPrefixSuffix ***************************************/
+  @Override
   public void setPrefixSuffix( String prefix, String suffix )
   {
     // set prefix and suffix, translating null to ""
-    m_prefix = ( prefix == null ? "" : prefix );
-    m_suffix = ( suffix == null ? "" : suffix );
+    super.setPrefixSuffix( prefix, suffix );
     determineAllowed();
-  }
-
-  /****************************************** getPrefix ******************************************/
-  public String getPrefix()
-  {
-    // return prefix
-    return m_prefix;
-  }
-
-  /****************************************** getSuffix ******************************************/
-  public String getSuffix()
-  {
-    // return suffix
-    return m_suffix;
   }
 
   /************************************** determineAllowed ***************************************/
@@ -159,7 +121,7 @@ public class NumberSpinField extends SpinField
   {
     // determine regular expression defining text allowed to be entered
     StringBuilder allow = new StringBuilder( 32 );
-    allow.append( Pattern.quote( m_prefix ) );
+    allow.append( Pattern.quote( getPrefix() ) );
 
     if ( getMin() < 0.0 )
       allow.append( "-?" );
@@ -167,7 +129,7 @@ public class NumberSpinField extends SpinField
     if ( m_maxFractionDigits > 0 )
       allow.append( "\\.?\\d{0," + m_maxFractionDigits + "}" );
 
-    allow.append( Pattern.quote( m_suffix ) );
+    allow.append( Pattern.quote( getSuffix() ) );
     setAllowed( allow.toString() );
   }
 

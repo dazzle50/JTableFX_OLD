@@ -41,7 +41,6 @@ import rjc.table.cell.DateField;
 import rjc.table.cell.DateTimeField;
 import rjc.table.cell.MonthSpinField;
 import rjc.table.cell.NumberSpinField;
-import rjc.table.cell.SpinField;
 import rjc.table.cell.TimeField;
 import rjc.table.cell.XTextField;
 import rjc.table.data.TableData;
@@ -171,6 +170,16 @@ public class DemoWindow
     grid.setHgap( 8 );
     grid.setVgap( 8 );
 
+    // prepare fields
+    var yearField = new NumberSpinField();
+    yearField.setRange( 1000, 5000 );
+    yearField.setPrefixSuffix( "Year ", " CE" );
+    yearField.setValue( 2000 );
+
+    var monthField = new MonthSpinField();
+    monthField.setWrapField( yearField );
+
+    // layout fields with labels
     int row = 0;
     addToGrid( grid, "XTextField", new XTextField(), 0, row++ );
     addToGrid( grid, "DateField", new DateField(), 0, row++ );
@@ -180,8 +189,8 @@ public class DemoWindow
 
     addToGrid( grid, "NumberSpinField", new NumberSpinField(), 1, 0 );
     addToGrid( grid, "Below month field warps with year number spin field", null, 1, 2 );
-    addToGrid( grid, "MonthSpinField", new MonthSpinField(), 1, 3 );
-    addToGrid( grid, "SpinField", new SpinField(), 1, 4 );
+    addToGrid( grid, "MonthSpinField", monthField, 1, 3 );
+    addToGrid( grid, "Year Field", yearField, 1, 4 );
 
     return grid;
   }
@@ -199,6 +208,9 @@ public class DemoWindow
       grid.add( label, 3 * col, row );
       grid.add( node, 3 * col + 1, row );
     }
+
+    if ( node instanceof XTextField )
+      ( (XTextField) node ).setStatus( m_status );
   }
 
   /**************************************** makeMenuBar ******************************************/

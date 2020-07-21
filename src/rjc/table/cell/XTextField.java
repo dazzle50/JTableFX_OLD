@@ -20,6 +20,7 @@ package rjc.table.cell;
 
 import java.util.regex.Pattern;
 
+import javafx.event.EventHandler;
 import javafx.geometry.Insets;
 import javafx.scene.Cursor;
 import javafx.scene.canvas.Canvas;
@@ -29,6 +30,7 @@ import javafx.scene.input.ScrollEvent;
 import javafx.scene.text.Text;
 import rjc.table.Colors;
 import rjc.table.Status;
+import rjc.table.view.TableView;
 
 /*************************************************************************************************/
 /*********************************** Enhanced JavaFX TextField ***********************************/
@@ -36,16 +38,19 @@ import rjc.table.Status;
 
 public class XTextField extends TextField
 {
-  private Pattern         m_allowed;             // pattern defining text allowed to be entered
-  private double          m_minWidth;            // minimum width for editor in pixels
-  private double          m_maxWidth;            // maximum width for editor in pixels
-  private ButtonType      m_buttonType;          // button type, null means no button
-  private Canvas          m_button;              // canvas to show button
+  private Pattern                           m_allowed;             // pattern defining text allowed to be entered
+  private double                            m_minWidth;            // minimum width for editor in pixels
+  private double                            m_maxWidth;            // maximum width for editor in pixels
+  private ButtonType                        m_buttonType;          // button type, null means no button
+  private Canvas                            m_button;              // canvas to show button
 
-  private Status          m_status;              // error status of text field
+  private Status                            m_status;              // error status of text field
 
-  public static final int BUTTONS_WIDTH_MAX = 16;
-  public static final int BUTTONS_PADDING   = 2;
+  private EventHandler<? super ScrollEvent> m_parentScrollHandler; // field parent scroll event handler
+  private String                            m_preFocusText;
+
+  public static final int                   BUTTONS_WIDTH_MAX = 16;
+  public static final int                   BUTTONS_PADDING   = 2;
 
   public enum ButtonType
   {
@@ -55,7 +60,7 @@ public class XTextField extends TextField
   /**************************************** constructor ******************************************/
   public XTextField()
   {
-    // create enhanced text field control - listen to text changes to check if field width needs changing
+    // listen to text changes to check if field width needs changing
     textProperty().addListener( ( observable, oldText, newText ) ->
     {
       // if min & max width set, increase editor width if needed to show whole text
@@ -77,6 +82,25 @@ public class XTextField extends TextField
       }
     } );
 
+    // listen to focus changes to check if should take over scroll event handling & revert to valid value if error state
+    focusedProperty().addListener( ( observable, oldFocus, newFocus ) ->
+    {
+      if ( getParent() != null ) // if has parent
+      {
+        if ( newFocus ) // if getting focus take over scroll event handling
+        {
+          m_preFocusText = getText();
+          m_parentScrollHandler = getParent().getOnScroll();
+          getParent().setOnScroll( event -> mouseScroll( event ) );
+        }
+        else // if losing focus revert to previous scroll event handler
+        {
+          getParent().setOnScroll( m_parentScrollHandler );
+          if ( m_status != null && m_status.isError() && !( getParent() instanceof TableView ) )
+            setText( m_preFocusText );
+        }
+      }
+    } );
   }
 
   /***************************************** replaceText *****************************************/
