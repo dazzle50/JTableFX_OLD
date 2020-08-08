@@ -33,6 +33,7 @@ import javafx.scene.control.TabPane;
 import javafx.scene.control.TextField;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.Priority;
+import javafx.stage.Screen;
 import javafx.stage.Stage;
 import rjc.table.Status;
 import rjc.table.Utils;
@@ -112,9 +113,12 @@ public class DemoWindow
     stage.setOnHidden( event -> Platform.exit() );
 
     // TEMP placing and sizing for my convenience #############
-    stage.setX( -1100 );
-    stage.setY( 700 );
-    stage.setWidth( 1000 );
+    if ( !Screen.getScreensForRectangle( -1100, 700, 100, 100 ).isEmpty() )
+    {
+      stage.setX( -1100 );
+      stage.setY( 700 );
+      stage.setWidth( 1000 );
+    }
     stage.show();
   }
 
@@ -156,7 +160,8 @@ public class DemoWindow
     TabPane tabs = new TabPane();
     tabs.getSelectionModel().selectedItemProperty().addListener(
         ( observable, oldTab, newTab ) -> Platform.runLater( () -> ( newTab.getContent() ).requestFocus() ) );
-    tabs.getTabs().addAll( defaultTab, largeTab, editTab, fieldTab );
+    //tabs.getTabs().addAll( defaultTab, largeTab, editTab, fieldTab );
+    tabs.getTabs().addAll( fieldTab, defaultTab, largeTab, editTab );
 
     return tabs;
   }
@@ -191,6 +196,8 @@ public class DemoWindow
     addToGrid( grid, "Below month field warps with year number spin field", null, 1, 2 );
     addToGrid( grid, "MonthSpinField", monthField, 1, 3 );
     addToGrid( grid, "Year Field", yearField, 1, 4 );
+
+    // 
 
     return grid;
   }

@@ -78,6 +78,10 @@ public class DateTimeField extends XTextField
           setDateTime( getDateTime().plusYears( -1 ) );
       }
     } );
+
+    // set initial date-time truncated to hour
+    long now = DateTime.now().getMilliseconds() / 3600000L;
+    setDateTime( new DateTime( now * 3600000L ) );
   }
 
   /**************************************** getDateTime ******************************************/

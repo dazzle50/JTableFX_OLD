@@ -18,6 +18,7 @@
 
 package rjc.table.data;
 
+import java.time.DayOfWeek;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 
@@ -49,7 +50,7 @@ public class Date
   /**************************************** constructor ******************************************/
   public Date( int year, int month, int day )
   {
-    // constructor from specified year, month, day
+    // constructor from specified year, month (1 to 12), day
     m_epochday = (int) LocalDate.of( year, month, day ).toEpochDay();
   }
 
@@ -218,8 +219,17 @@ public class Date
   /*************************************** getDayOfMonth *****************************************/
   public int getDayOfMonth()
   {
+    // return day of month number
     LocalDate ld = LocalDate.ofEpochDay( m_epochday );
     return ld.getDayOfMonth();
+  }
+
+  /**************************************** getDayOfWeek *****************************************/
+  public DayOfWeek getDayOfWeek()
+  {
+    // return day of week
+    LocalDate ld = LocalDate.ofEpochDay( m_epochday );
+    return ld.getDayOfWeek();
   }
 
   /***************************************** increment *******************************************/

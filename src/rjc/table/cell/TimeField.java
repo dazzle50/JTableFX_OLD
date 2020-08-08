@@ -78,6 +78,9 @@ public class TimeField extends XTextField
           setTime( getTime().addMilliseconds( -Time.ONE_SECOND ) );
       }
     } );
+
+    // set initial time truncated to hour
+    setTime( Time.fromHours( Time.now().getHours() ) );
   }
 
   /****************************************** getTime ********************************************/

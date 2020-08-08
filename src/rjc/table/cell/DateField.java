@@ -32,6 +32,7 @@ import rjc.table.data.Date;
 public class DateField extends XTextField
 {
   private SimpleIntegerProperty m_epochday; // editor date epoch-day (or most recent valid)
+  private DateTimeDropDown          m_dropdown; // drop-down to select date
 
   /**************************************** constructor ******************************************/
   public DateField()
@@ -39,6 +40,7 @@ public class DateField extends XTextField
     // construct field
     m_epochday = new SimpleIntegerProperty();
     setButtonType( ButtonType.DOWN );
+    m_dropdown = new DateTimeDropDown( this );
 
     // react to text changes
     textProperty().addListener( ( property, oldText, newText ) ->
@@ -78,6 +80,9 @@ public class DateField extends XTextField
           setDate( getDate().plusYears( -1 ) );
       }
     } );
+
+    // set initial date
+    setDate( Date.now() );
   }
 
   /****************************************** getDate ********************************************/
@@ -93,6 +98,7 @@ public class DateField extends XTextField
     // set epoch-day property, which in turn will update the text
     m_epochday.set( date.getEpochday() );
     positionCaret( getText().length() );
+    m_dropdown.setDate( date );
   }
 
   /**************************************** mouseScroll ******************************************/

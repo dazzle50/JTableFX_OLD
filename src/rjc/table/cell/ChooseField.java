@@ -29,7 +29,7 @@ import javafx.scene.input.KeyEvent;
 
 public class ChooseField extends XTextField
 {
-  private DropDown          m_dropdown; // choice drop-down
+  private ChooseDropDown    m_dropdown; // choice drop-down
   private Object[]          m_choices;  // array of objects choice to be from
   private ArrayList<String> m_text;     // list of value string equivalents
   private int               m_index;    // index of current selected item
@@ -39,7 +39,7 @@ public class ChooseField extends XTextField
   {
     // initiate the field
     m_choices = choices;
-    m_dropdown = new DropDown( this );
+    m_dropdown = new ChooseDropDown( this );
 
     // generate string equivalent of choice objects
     m_text = new ArrayList<>( choices.length );
@@ -48,6 +48,9 @@ public class ChooseField extends XTextField
       Object choice = choices[index];
       m_text.add( choice == null ? "null" : choice.toString() );
     }
+
+    // default to first choice
+    setText( getText( 0 ) );
 
     // configure the button  
     setEditable( false );

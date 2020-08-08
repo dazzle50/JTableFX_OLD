@@ -23,12 +23,13 @@ import java.time.format.TextStyle;
 import java.util.Locale;
 
 import javafx.scene.input.KeyEvent;
+import rjc.table.signal.ISignal;
 
 /*************************************************************************************************/
 /******************************** Spin control for picking month *********************************/
 /*************************************************************************************************/
 
-public class MonthSpinField extends SpinField
+public class MonthSpinField extends SpinField implements ISignal
 {
 
   /**************************************** constructor ******************************************/
@@ -42,6 +43,9 @@ public class MonthSpinField extends SpinField
 
     // react to key typed
     setOnKeyTyped( event -> keyTyped( event ) );
+
+    // emit signal when month changes 
+    textProperty().addListener( ( obs, oldT, newT ) -> signal( getMonth() ) );
   }
 
   /****************************************** setValue *******************************************/

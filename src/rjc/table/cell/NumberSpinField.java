@@ -22,12 +22,13 @@ import java.text.DecimalFormat;
 import java.util.regex.Pattern;
 
 import rjc.table.Status.Level;
+import rjc.table.signal.ISignal;
 
 /*************************************************************************************************/
 /**************************** Generic spin control for number values *****************************/
 /*************************************************************************************************/
 
-public class NumberSpinField extends SpinField
+public class NumberSpinField extends SpinField implements ISignal
 {
   private int           m_maxFractionDigits; // number of digits after decimal point
   private DecimalFormat m_numberFormat;      // number decimal format
@@ -39,6 +40,7 @@ public class NumberSpinField extends SpinField
   {
     // set default spin editor characteristics
     setFormat( "0", 0 );
+    setValue( getMin() );
 
     // add listener to set control error state and remove any excess leading zeros
     textProperty().addListener( ( observable, oldText, newText ) ->
@@ -58,6 +60,9 @@ public class NumberSpinField extends SpinField
       String text = getValue();
       if ( text.length() > 1 && text.charAt( 0 ) == '0' && Character.isDigit( text.charAt( 1 ) ) )
         super.setValue( text.substring( 1 ) );
+
+      // emit signal when month changes 
+      signal( getDouble() );
     } );
   }
 
