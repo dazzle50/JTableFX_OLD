@@ -45,7 +45,7 @@ public class CalendarWidget extends Canvas implements ISignal
 
   private static String    days[];            // day names for first row
 
-  private static final int COLUMN_WIDTH  = 26;
+  private static final int COLUMN_WIDTH  = 28;
   private static final int ROW_HEIGHT    = 18;
   private static final int DAYS_IN_WEEK  = 7;
   private static final int CALENDAR_ROWS = 7;
@@ -151,9 +151,7 @@ public class CalendarWidget extends Canvas implements ISignal
     int col = (int) ( event.getX() / COLUMN_WIDTH );
     int row = (int) ( event.getY() / ROW_HEIGHT );
 
-    LocalDate first = m_date.withDayOfMonth( 1 );
-    LocalDate date = first.plusDays( 1 - first.getDayOfWeek().getValue() );
-    setDate( date.plusDays( col + row * DAYS_IN_WEEK - 7 ) );
+    setDate( getFirstDate().plusDays( col + row * DAYS_IN_WEEK - 7 ) );
   }
 
   /******************************************* setDate *******************************************/
@@ -182,6 +180,15 @@ public class CalendarWidget extends Canvas implements ISignal
     return new Date( m_date );
   }
 
+  /**************************************** getFirstDate *****************************************/
+  public LocalDate getFirstDate()
+  {
+    // get widget first date in top-right corner
+    LocalDate first = m_date.withDayOfMonth( 1 );
+    int offset = 1 - first.getDayOfWeek().getValue();
+    return first.plusDays( offset == 0 ? -7 : offset );
+  }
+
   /******************************************** paint ********************************************/
   private void paint()
   {
@@ -202,9 +209,7 @@ public class CalendarWidget extends Canvas implements ISignal
     }
 
     // following rows show day-of-month number
-    LocalDate first = m_date.withDayOfMonth( 1 );
-    LocalDate date = first.plusDays( 1 - first.getDayOfWeek().getValue() );
-
+    LocalDate date = getFirstDate();
     for ( int row = 1; row < CALENDAR_ROWS; row++ )
       for ( int col = 0; col < DAYS_IN_WEEK; col++ )
       {

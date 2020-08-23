@@ -58,7 +58,8 @@ public class NumberSpinField extends SpinField implements ISignal
 
       // remove any excess zeros from front of number
       String text = getValue();
-      if ( text.length() > 1 && text.charAt( 0 ) == '0' && Character.isDigit( text.charAt( 1 ) ) )
+      if ( text.length() > 1 && text.charAt( 0 ) == '0' && Character.isDigit( text.charAt( 1 ) )
+          && m_numberFormat.getMinimumIntegerDigits() == 1 )
         super.setValue( text.substring( 1 ) );
 
       // emit signal when month changes 

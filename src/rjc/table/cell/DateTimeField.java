@@ -18,40 +18,26 @@
 
 package rjc.table.cell;
 
-import javafx.beans.property.SimpleLongProperty;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
 import javafx.scene.input.ScrollEvent;
-import rjc.table.Utils;
 import rjc.table.data.DateTime;
+import rjc.table.signal.ISignal;
 
 /*************************************************************************************************/
 /************************************ Date-time field control ************************************/
 /*************************************************************************************************/
 
-public class DateTimeField extends XTextField
+public class DateTimeField extends XTextField implements ISignal
 {
-  private SimpleLongProperty m_millisecs; // editor date-time milliseconds (or most recent valid)
+  private DateTime m_datetime; // field current date-time (or most recent valid)
 
   /**************************************** constructor ******************************************/
   public DateTimeField()
   {
     // construct field
-    m_millisecs = new SimpleLongProperty();
     setButtonType( ButtonType.DOWN );
-
-    // react to text changes
-    textProperty().addListener( ( property, oldText, newText ) ->
-    {
-      Utils.trace( oldText, newText );
-    } );
-
-    // react to date-time millisecond changes
-    m_millisecs.addListener( ( property, oldMS, newMS ) ->
-    {
-      Utils.trace( oldMS, newMS, getDateTime().toString() );
-      setText( getDateTime().toString() );
-    } );
+    new DateTimeDropDown( this );
 
     // modify date-time if up or down arrows pressed
     addEventFilter( KeyEvent.KEY_PRESSED, event ->
@@ -59,27 +45,17 @@ public class DateTimeField extends XTextField
       if ( event.getCode() == KeyCode.UP )
       {
         event.consume();
-        if ( !event.isShiftDown() && !event.isControlDown() )
-          setDateTime( getDateTime().plusDays( 1 ) );
-        if ( event.isShiftDown() && !event.isControlDown() )
-          setDateTime( getDateTime().plusMonths( 1 ) );
-        if ( !event.isShiftDown() && event.isControlDown() )
-          setDateTime( getDateTime().plusYears( 1 ) );
+        delta( 1, event.isShiftDown(), event.isControlDown() );
       }
 
       if ( event.getCode() == KeyCode.DOWN )
       {
         event.consume();
-        if ( !event.isShiftDown() && !event.isControlDown() )
-          setDateTime( getDateTime().plusDays( -1 ) );
-        if ( event.isShiftDown() && !event.isControlDown() )
-          setDateTime( getDateTime().plusMonths( -1 ) );
-        if ( !event.isShiftDown() && event.isControlDown() )
-          setDateTime( getDateTime().plusYears( -1 ) );
+        delta( -1, event.isShiftDown(), event.isControlDown() );
       }
     } );
 
-    // set initial date-time truncated to hour
+    // set default date-time to now truncated to hour
     long now = DateTime.now().getMilliseconds() / 3600000L;
     setDateTime( new DateTime( now * 3600000L ) );
   }
@@ -87,16 +63,40 @@ public class DateTimeField extends XTextField
   /**************************************** getDateTime ******************************************/
   public DateTime getDateTime()
   {
-    // return editor date-time (or most recent valid)
-    return new DateTime( m_millisecs.get() );
+    // return field date-time (or most recent valid)
+    return m_datetime;
   }
 
   /**************************************** setDateTime ******************************************/
   public void setDateTime( DateTime datetime )
   {
-    // set date-time milliseconds property, which in turn will update the text
-    m_millisecs.set( datetime.getMilliseconds() );
-    positionCaret( getText().length() );
+    // set current field date, display in text, signal change
+    if ( !datetime.equals( m_datetime ) )
+    {
+      m_datetime = datetime;
+      setText( format( datetime ) );
+      positionCaret( getText().length() );
+      signal( datetime );
+    }
+  }
+
+  /******************************************* format ********************************************/
+  public String format( DateTime datetime )
+  {
+    // return date-time in display format
+    return datetime.toString();
+  }
+
+  /******************************************** delta ********************************************/
+  private void delta( int delta, boolean shift, boolean ctrl )
+  {
+    // modify field date
+    if ( !shift && !ctrl )
+      setDateTime( getDateTime().plusDays( delta ) );
+    if ( shift && !ctrl )
+      setDateTime( getDateTime().plusMonths( delta ) );
+    if ( !shift && ctrl )
+      setDateTime( getDateTime().plusYears( delta ) );
   }
 
   /**************************************** mouseScroll ******************************************/
@@ -105,12 +105,7 @@ public class DateTimeField extends XTextField
     // increment or decrement date-time depending on mouse wheel scroll event
     int delta = event.getDeltaY() > 0 ? 1 : -1;
     event.consume();
-    if ( !event.isShiftDown() && !event.isControlDown() )
-      setDateTime( getDateTime().plusDays( delta ) );
-    if ( event.isShiftDown() && !event.isControlDown() )
-      setDateTime( getDateTime().plusMonths( delta ) );
-    if ( !event.isShiftDown() && event.isControlDown() )
-      setDateTime( getDateTime().plusYears( delta ) );
+    delta( delta, event.isShiftDown(), event.isControlDown() );
   }
 
 }

@@ -33,11 +33,11 @@ import rjc.table.Colors;
 
 public class DropDown extends Popup
 {
-  private XTextField                    m_parent;
-  private Canvas                        m_canvas;
-  private DropShadow                    m_shadow;
+  private XTextField             m_parent;
+  private Canvas                 m_canvas;
+  private DropShadow             m_shadow;
 
-  private static ChangeListener<Object> HIDE_LISTENER;
+  private ChangeListener<Object> HIDE_LISTENER;
 
   /**************************************** constructor ******************************************/
   public DropDown( XTextField parent )
@@ -63,8 +63,7 @@ public class DropDown extends Popup
     } );
 
     // create listener for hiding drop-down on window movement
-    if ( HIDE_LISTENER == null )
-      HIDE_LISTENER = ( o, oldV, newV ) -> toggle();
+    HIDE_LISTENER = ( o, oldV, newV ) -> toggle();
   }
 
   /******************************************* toggle ********************************************/

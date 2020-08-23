@@ -18,42 +18,26 @@
 
 package rjc.table.cell;
 
-import javafx.beans.property.SimpleIntegerProperty;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
 import javafx.scene.input.ScrollEvent;
-import rjc.table.Utils;
 import rjc.table.data.Date;
+import rjc.table.signal.ISignal;
 
 /*************************************************************************************************/
 /************************************** Date field control ***************************************/
 /*************************************************************************************************/
 
-public class DateField extends XTextField
+public class DateField extends XTextField implements ISignal
 {
-  private SimpleIntegerProperty m_epochday; // editor date epoch-day (or most recent valid)
-  private DateTimeDropDown          m_dropdown; // drop-down to select date
+  private Date m_date; // field current date (or most recent valid)
 
   /**************************************** constructor ******************************************/
   public DateField()
   {
     // construct field
-    m_epochday = new SimpleIntegerProperty();
     setButtonType( ButtonType.DOWN );
-    m_dropdown = new DateTimeDropDown( this );
-
-    // react to text changes
-    textProperty().addListener( ( property, oldText, newText ) ->
-    {
-      Utils.trace( oldText, newText );
-    } );
-
-    // react to epoch-day changes
-    m_epochday.addListener( ( property, oldEpochDay, newEpochDay ) ->
-    {
-      Utils.trace( oldEpochDay, newEpochDay, getDate().toString() );
-      setText( getDate().toString() );
-    } );
+    new DateTimeDropDown( this );
 
     // modify date if up or down arrows pressed
     addEventFilter( KeyEvent.KEY_PRESSED, event ->
@@ -61,44 +45,57 @@ public class DateField extends XTextField
       if ( event.getCode() == KeyCode.UP )
       {
         event.consume();
-        if ( !event.isShiftDown() && !event.isControlDown() )
-          setDate( getDate().plusDays( 1 ) );
-        if ( event.isShiftDown() && !event.isControlDown() )
-          setDate( getDate().plusMonths( 1 ) );
-        if ( !event.isShiftDown() && event.isControlDown() )
-          setDate( getDate().plusYears( 1 ) );
+        delta( 1, event.isShiftDown(), event.isControlDown() );
       }
 
       if ( event.getCode() == KeyCode.DOWN )
       {
         event.consume();
-        if ( !event.isShiftDown() && !event.isControlDown() )
-          setDate( getDate().plusDays( -1 ) );
-        if ( event.isShiftDown() && !event.isControlDown() )
-          setDate( getDate().plusMonths( -1 ) );
-        if ( !event.isShiftDown() && event.isControlDown() )
-          setDate( getDate().plusYears( -1 ) );
+        delta( -1, event.isShiftDown(), event.isControlDown() );
       }
     } );
 
-    // set initial date
+    // set default date to today
     setDate( Date.now() );
   }
 
   /****************************************** getDate ********************************************/
   public Date getDate()
   {
-    // return editor date (or most recent valid)
-    return new Date( m_epochday.get() );
+    // return current field date (or most recent valid)
+    return m_date;
   }
 
   /****************************************** setDate ********************************************/
   public void setDate( Date date )
   {
-    // set epoch-day property, which in turn will update the text
-    m_epochday.set( date.getEpochday() );
-    positionCaret( getText().length() );
-    m_dropdown.setDate( date );
+    // set current field date, display in text, signal change
+    if ( date != m_date )
+    {
+      m_date = date;
+      setText( format( date ) );
+      positionCaret( getText().length() );
+      signal( date );
+    }
+  }
+
+  /******************************************* format ********************************************/
+  public String format( Date date )
+  {
+    // return date in display format
+    return date.toString();
+  }
+
+  /******************************************** delta ********************************************/
+  private void delta( int delta, boolean shift, boolean ctrl )
+  {
+    // modify field date
+    if ( !shift && !ctrl )
+      setDate( getDate().plusDays( delta ) );
+    if ( shift && !ctrl )
+      setDate( getDate().plusMonths( delta ) );
+    if ( !shift && ctrl )
+      setDate( getDate().plusYears( delta ) );
   }
 
   /**************************************** mouseScroll ******************************************/
@@ -108,12 +105,7 @@ public class DateField extends XTextField
     // increment or decrement date depending on mouse wheel scroll event
     int delta = event.getDeltaY() > 0 ? 1 : -1;
     event.consume();
-    if ( !event.isShiftDown() && !event.isControlDown() )
-      setDate( getDate().plusDays( delta ) );
-    if ( event.isShiftDown() && !event.isControlDown() )
-      setDate( getDate().plusMonths( delta ) );
-    if ( !event.isShiftDown() && event.isControlDown() )
-      setDate( getDate().plusYears( delta ) );
+    delta( delta, event.isShiftDown(), event.isControlDown() );
   }
 
 }
