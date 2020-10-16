@@ -38,7 +38,7 @@ import rjc.table.signal.ISignal;
 /************************* Interactive widget showing one month calendar *************************/
 /*************************************************************************************************/
 
-public class CalendarWidget extends Canvas implements ISignal
+public class CalendarWidget extends Canvas implements ISignal, IWrapField
 {
   private LocalDate        m_date;            // currently selected date
   private GraphicsContext  m_gc;              // graphics context
@@ -94,27 +94,27 @@ public class CalendarWidget extends Canvas implements ISignal
   private void keyPressed( KeyEvent event )
   {
     // update date depending on key pressed
-    int adjust = 0;
+    event.consume();
     switch ( event.getCode() )
     {
       case RIGHT: // right -> arrow key
       case KP_RIGHT:
-        adjust = 1;
+        stepValue( 1 );
         break;
 
       case LEFT: // left <- arrow key
       case KP_LEFT:
-        adjust = -1;
+        stepValue( -1 );
         break;
 
       case DOWN: // down arrow key
       case KP_DOWN:
-        adjust = 7;
+        stepValue( DAYS_IN_WEEK );
         break;
 
       case UP: // up arrow key
       case KP_UP:
-        adjust = -7;
+        stepValue( -DAYS_IN_WEEK );
         break;
 
       case PAGE_DOWN: // page down key
@@ -126,20 +126,24 @@ public class CalendarWidget extends Canvas implements ISignal
         break;
 
       case HOME: // home key - first day of month
-        adjust = 1 - m_date.getDayOfMonth();
+        stepValue( 1 - m_date.getDayOfMonth() );
         break;
 
       case END: // end key - last day of month
-        adjust = m_date.lengthOfMonth() - m_date.getDayOfMonth();
+        stepValue( m_date.lengthOfMonth() - m_date.getDayOfMonth() );
         break;
 
       default:
         return;
     }
+  }
 
-    // adjust date by required number of days
-    setDate( m_date.plusDays( adjust ) );
-    event.consume();
+  /****************************************** stepValue ******************************************/
+  @Override
+  public void stepValue( double delta )
+  {
+    // adjust calendar date by delta days
+    setDate( m_date.plusDays( (long) delta ) );
   }
 
   /**************************************** mouseReleased ****************************************/
@@ -149,9 +153,9 @@ public class CalendarWidget extends Canvas implements ISignal
     event.consume();
     requestFocus();
     int col = (int) ( event.getX() / COLUMN_WIDTH );
-    int row = (int) ( event.getY() / ROW_HEIGHT );
+    int row = (int) ( event.getY() / ROW_HEIGHT ) - 1;
 
-    setDate( getFirstDate().plusDays( col + row * DAYS_IN_WEEK - 7 ) );
+    setDate( getFirstDate().plusDays( col + row * DAYS_IN_WEEK ) );
   }
 
   /******************************************* setDate *******************************************/
@@ -169,7 +173,7 @@ public class CalendarWidget extends Canvas implements ISignal
   /******************************************* setDate *******************************************/
   public void setDate( Date date )
   {
-    // set widget date
+    // set widget date (and emit signal if different)
     setDate( date.localDate() );
   }
 

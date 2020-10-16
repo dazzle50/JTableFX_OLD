@@ -26,18 +26,18 @@ import rjc.table.Utils;
 /****************************** Base spin field for selecting value ******************************/
 /*************************************************************************************************/
 
-public class SpinField extends XTextField
+public class SpinField extends XTextField implements IWrapField
 {
-  private double    m_minValue;  // minimum value allowed
-  private double    m_maxValue;  // maximum value allowed
+  private double     m_minValue;  // minimum value allowed
+  private double     m_maxValue;  // maximum value allowed
 
-  private double    m_step;      // value increment or decrement on arrow-up or arrow-down
-  private double    m_page;      // value increment or decrement on page-up or page-down
+  private double     m_step;      // value increment or decrement on arrow-up or arrow-down
+  private double     m_page;      // value increment or decrement on page-up or page-down
 
-  private String    m_prefix;    // prefix shown before value
-  private String    m_suffix;    // suffix shown after value
+  private String     m_prefix;    // prefix shown before value
+  private String     m_suffix;    // suffix shown after value
 
-  private SpinField m_wrapField; // spin field for wrap support
+  private IWrapField m_wrapField; // field for wrap support
 
   /**************************************** constructor ******************************************/
   public SpinField()
@@ -210,7 +210,7 @@ public class SpinField extends XTextField
       }
       while ( num > m_maxValue )
       {
-        m_wrapField.changeValue( 1 );
+        m_wrapField.stepValue( 1 );
         num -= range;
       }
       setValue( num );
@@ -226,9 +226,9 @@ public class SpinField extends XTextField
   }
 
   /**************************************** setWrapField *****************************************/
-  public void setWrapField( SpinField wrap )
+  public void setWrapField( IWrapField wrap )
   {
-    // set overflow spin field to step when this spin goes beyond min or max
+    // set overflow field to step when this spin goes beyond min or max
     m_wrapField = wrap;
   }
 

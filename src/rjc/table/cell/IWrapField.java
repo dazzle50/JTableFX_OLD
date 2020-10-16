@@ -16,16 +16,31 @@
  *  along with this program.  If not, see http://www.gnu.org/licenses/    *
  **************************************************************************/
 
-package rjc.table.signal;
+package rjc.table.cell;
+
+import javafx.scene.input.ScrollEvent;
 
 /*************************************************************************************************/
-/******************************** Interface for signal listeners *********************************/
+/********************************* Interface for wrapping fields *********************************/
 /*************************************************************************************************/
 
-@FunctionalInterface
-public interface IListener
+public interface IWrapField
 {
-  /******************************************** slot *********************************************/
-  public void slot( Object... objects );
+  /***************************************** mouseScroll *****************************************/
+  public default void mouseScroll( ScrollEvent event )
+  {
+    // default implementation for increment or decrement value depending on mouse wheel scroll event
+    event.consume();
+    if ( event.getDeltaY() > 0 )
+      stepValue( 1 );
+    else
+      stepValue( -1 );
+  }
+
+  /****************************************** stepValue ******************************************/
+  public default void stepValue( double delta )
+  {
+    // default behaviour is do nothing - overload as needed
+  }
 
 }

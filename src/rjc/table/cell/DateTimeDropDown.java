@@ -34,14 +34,14 @@ import rjc.table.data.Time;
 
 public class DateTimeDropDown extends DropDown
 {
-  private DateField        m_date;     // date field (or null if not)
-  private TimeField        m_time;     // time field (or null if not)
-  private DateTimeField    m_datetime; // date-time filed (or null if not)
+  private DateField        m_dateField;     // date field (or null if not)
+  private TimeField        m_timeField;     // time field (or null if not)
+  private DateTimeField    m_datetimeField; // date-time filed (or null if not)
 
-  private MonthSpinField   m_month;
-  private NumberSpinField  m_year;
+  private MonthSpinField   m_monthField;
+  private NumberSpinField  m_yearField;
   private CalendarWidget   m_calendar;
-  private Button           m_today;
+  private Button           m_todayButton;
 
   private static final int BORDER = 4;
 
@@ -51,58 +51,56 @@ public class DateTimeDropDown extends DropDown
     // create pop-up window and check parent is supported
     super( parent );
     if ( parent instanceof DateField )
-      m_date = (DateField) parent;
+      m_dateField = (DateField) parent;
     else if ( parent instanceof DateTimeField )
-      m_datetime = (DateTimeField) parent;
+      m_datetimeField = (DateTimeField) parent;
     else if ( parent instanceof TimeField )
-      m_time = (TimeField) parent;
+      m_timeField = (TimeField) parent;
     else
       throw new IllegalArgumentException( "Parent must be DateField, TimeField or DateTimeField " + parent.getClass() );
 
     // create the widgets
-    m_month = new MonthSpinField();
-    m_year = new NumberSpinField();
+    m_monthField = new MonthSpinField();
+    m_yearField = new NumberSpinField();
     m_calendar = new CalendarWidget();
-    m_today = new Button( "Today" );
+    m_todayButton = new Button( "Today" );
 
     // layout the widgets
     GridPane grid = new GridPane();
     grid.setHgap( BORDER );
     grid.setVgap( BORDER );
     grid.setPadding( new Insets( BORDER ) );
-    grid.addRow( 0, m_month, m_year );
+    grid.addRow( 0, m_monthField, m_yearField );
     grid.add( m_calendar, 0, 1, 2, 1 );
-    grid.add( m_today, 0, 2, 2, 1 );
-    if ( m_datetime != null )
-      grid.add( new TimeWidget( m_calendar.getWidth() ), 0, 3, 2, 1 );
+    grid.add( m_todayButton, 0, 2, 2, 1 );
+    if ( m_datetimeField != null )
+      grid.add( new TimeWidget( m_calendar ), 0, 3, 2, 1 );
     getContent().add( grid );
 
     // configure the widgets
     int w = (int) ( m_calendar.getWidth() * 0.6 );
-    m_month.setMaxWidth( w );
-    m_month.setWrapField( m_year );
-    m_year.setMaxWidth( m_calendar.getWidth() - BORDER - w );
-    m_year.setRange( 0, 5000 );
-    m_year.setValue( 2000 );
-    m_today.setPrefWidth( m_calendar.getWidth() );
+    m_monthField.setMaxWidth( w );
+    m_monthField.setWrapField( m_yearField );
+    m_yearField.setMaxWidth( m_calendar.getWidth() - BORDER - w );
+    m_yearField.setRange( 0, 5000 );
+    m_todayButton.setPrefWidth( m_calendar.getWidth() );
     m_calendar.requestFocus();
-    m_calendar.setDate( Date.MIN_VALUE );
 
     // when grid size changes ensure background size matches
     grid.widthProperty().addListener( x -> setBackgroundSize( grid.getWidth(), grid.getHeight() ) );
     grid.heightProperty().addListener( x -> setBackgroundSize( grid.getWidth(), grid.getHeight() ) );
 
     // listen to field changes
-    if ( m_date != null )
-      m_date.addListener( date -> setDate( (Date) date[0] ) );
-    if ( m_datetime != null )
-      m_datetime.addListener( datetime -> setDateTime( (DateTime) datetime[0] ) );
+    if ( m_dateField != null )
+      m_dateField.addListener( date -> setDate( (Date) date[0] ) );
+    if ( m_datetimeField != null )
+      m_datetimeField.addListener( datetime -> setDateTime( (DateTime) datetime[0] ) );
 
     // listen to widget changes
-    m_year.addListener( year -> setYear( ( (Double) year[0] ).intValue() ) );
-    m_month.addListener( month -> setMonth( (Month) month[0] ) );
+    m_yearField.addListener( year -> setYear( ( (Double) year[0] ).intValue() ) );
+    m_monthField.addListener( month -> setMonth( (Month) month[0] ) );
     m_calendar.addListener( date -> setDate( (Date) date[0] ) );
-    m_today.setOnAction( event -> setDate( Date.now() ) );
+    m_todayButton.setOnAction( event -> setDate( Date.now() ) );
 
     // listen to mouse scroll wheel
     grid.setOnScroll( event -> parent.mouseScroll( event ) );
@@ -112,12 +110,12 @@ public class DateTimeDropDown extends DropDown
   private void setDate( Date date )
   {
     // set widgets to date
-    m_month.setValue( date.getMonth() );
-    m_year.setValue( date.getYear() );
+    m_monthField.setValue( date.getMonth() );
+    m_yearField.setValue( date.getYear() );
     m_calendar.setDate( date );
 
-    if ( m_date != null )
-      m_date.setDate( date );
+    if ( m_dateField != null )
+      m_dateField.setDate( date );
     //if ( m_datetime != null )
     //  m_date.setDateTime( date );
   }

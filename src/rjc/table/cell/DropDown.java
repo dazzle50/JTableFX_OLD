@@ -74,6 +74,7 @@ public class DropDown extends Popup
     {
       m_parent.getScene().getWindow().xProperty().removeListener( HIDE_LISTENER );
       m_parent.getScene().getWindow().yProperty().removeListener( HIDE_LISTENER );
+      m_parent.setEditable( true );
       hide();
     }
     else
@@ -87,6 +88,7 @@ public class DropDown extends Popup
       // if parent window moves need to hide this drop-down
       m_parent.getScene().getWindow().xProperty().addListener( HIDE_LISTENER );
       m_parent.getScene().getWindow().yProperty().addListener( HIDE_LISTENER );
+      m_parent.setEditable( false );
     }
   }
 

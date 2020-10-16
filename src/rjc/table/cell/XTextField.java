@@ -18,6 +18,7 @@
 
 package rjc.table.cell;
 
+import java.util.Stack;
 import java.util.regex.Pattern;
 
 import javafx.event.EventHandler;
@@ -36,21 +37,26 @@ import rjc.table.view.TableView;
 /*********************************** Enhanced JavaFX TextField ***********************************/
 /*************************************************************************************************/
 
-public class XTextField extends TextField
+public class XTextField extends TextField implements IWrapField
 {
-  private Pattern                           m_allowed;             // pattern defining text allowed to be entered
-  private double                            m_minWidth;            // minimum width for editor in pixels
-  private double                            m_maxWidth;            // maximum width for editor in pixels
-  private ButtonType                        m_buttonType;          // button type, null means no button
-  private Canvas                            m_button;              // canvas to show button
+  private class ScrollHandlers extends Stack<EventHandler<? super ScrollEvent>>
+  {
+    private static final long serialVersionUID = 1L;
+  }
 
-  private Status                            m_status;              // error status of text field
+  private Pattern         m_allowed;             // pattern defining text allowed to be entered
+  private double          m_minWidth;            // minimum width for editor in pixels
+  private double          m_maxWidth;            // maximum width for editor in pixels
+  private ButtonType      m_buttonType;          // button type, null means no button
+  private Canvas          m_button;              // canvas to show button
 
-  private EventHandler<? super ScrollEvent> m_parentScrollHandler; // field parent scroll event handler
-  private String                            m_preFocusText;
+  private Status          m_status;              // error status of text field
 
-  public static final int                   BUTTONS_WIDTH_MAX = 16;
-  public static final int                   BUTTONS_PADDING   = 2;
+  private ScrollHandlers  m_scrollHandlers;
+  private String          m_preFocusText;
+
+  public static final int BUTTONS_WIDTH_MAX = 16;
+  public static final int BUTTONS_PADDING   = 2;
 
   public enum ButtonType
   {
@@ -82,25 +88,30 @@ public class XTextField extends TextField
       }
     } );
 
-    // listen to focus changes to check if should take over scroll event handling & revert to valid value if error state
+    m_scrollHandlers = new ScrollHandlers();
     focusedProperty().addListener( ( observable, oldFocus, newFocus ) ->
     {
-      if ( getParent() != null ) // if has parent
+      // listen to focus changes to check if should take over scroll event handling
+      var parent = getParent();
+      while ( parent != null )
       {
-        if ( newFocus ) // if getting focus take over scroll event handling
+        if ( newFocus ) // take over
         {
-          m_preFocusText = getText();
-          m_parentScrollHandler = getParent().getOnScroll();
-          getParent().setOnScroll( event -> mouseScroll( event ) );
+          m_scrollHandlers.push( parent.getOnScroll() );
+          parent.setOnScroll( event -> mouseScroll( event ) );
         }
-        else // if losing focus revert to previous scroll event handler
-        {
-          getParent().setOnScroll( m_parentScrollHandler );
-          if ( m_status != null && m_status.isError() && !( getParent() instanceof TableView ) )
-            setText( m_preFocusText );
-        }
+        else // revert
+          parent.setOnScroll( m_scrollHandlers.pop() );
+        parent = parent.getParent();
       }
+
+      // revert to valid value if error state
+      if ( newFocus )
+        m_preFocusText = getText();
+      else if ( m_status != null && m_status.isError() && !( getParent() instanceof TableView ) )
+        setText( m_preFocusText );
     } );
+
   }
 
   /***************************************** replaceText *****************************************/
@@ -237,22 +248,6 @@ public class XTextField extends TextField
   {
     // return text field status
     return m_status;
-  }
-
-  /***************************************** mouseScroll *****************************************/
-  public void mouseScroll( ScrollEvent event )
-  {
-    // increment or decrement value depending on mouse wheel scroll event
-    if ( event.getDeltaY() > 0 )
-      stepValue( 1 );
-    else
-      stepValue( -1 );
-  }
-
-  /****************************************** stepValue ******************************************/
-  public void stepValue( double delta )
-  {
-    // default behaviour is do nothing - overload as needed
   }
 
 }

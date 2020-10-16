@@ -34,14 +34,15 @@ public class TimeWidget extends HBox
   private static final int BORDER      = 4;
 
   /**************************************** constructor ******************************************/
-  public TimeWidget( double width )
+  public TimeWidget( CalendarWidget calendar )
   {
     // create layout with the four number spin fields
-    width = width - 3 * BORDER;
+    double width = calendar.getWidth() - 3 * BORDER;
     m_hours.setMaxWidth( width * 0.24 );
     m_hours.setFormat( "00", 0 );
     m_hours.setRange( 0, 23 );
     m_hours.setStepPage( 1, 6 );
+    m_hours.setWrapField( calendar );
 
     m_mins.setMaxWidth( width * 0.24 );
     m_mins.setFormat( "00", 0 );
