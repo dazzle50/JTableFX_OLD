@@ -16,7 +16,7 @@
  *  along with this program.  If not, see http://www.gnu.org/licenses/    *
  **************************************************************************/
 
-package rjc.table.cell;
+package rjc.table.control;
 
 import javafx.beans.value.ChangeListener;
 import javafx.geometry.Point2D;
@@ -54,8 +54,18 @@ public class DropDown extends Popup
     m_shadow.setRadius( 4.0 );
     getScene().getRoot().setEffect( m_shadow );
 
-    // toggle pop-up when parent is pressed or to hide when parent loses focus
-    parent.setOnMousePressed( event -> toggle() );
+    // toggle pop-up when button is pressed and when parent is pressed or loses focus
+    parent.getButton().setOnMousePressed( event ->
+    {
+      event.consume();
+      parent.requestFocus();
+      toggle();
+    } );
+    parent.setOnMousePressed( event ->
+    {
+      if ( isShowing() )
+        toggle();
+    } );
     parent.focusedProperty().addListener( ( focus ) ->
     {
       if ( isShowing() && !m_parent.isFocused() )

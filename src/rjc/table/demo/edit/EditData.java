@@ -69,7 +69,8 @@ public class EditData extends TableData
       m_integer[row] = row + 100;
       m_double[row] = row + 10.0;
       m_date[row] = Date.now().plusDays( row * 5 - 20 );
-      m_time[row] = Time.now().addMilliseconds( row * 12345678 );
+      m_time[row] = Time.now();
+      m_time[row].addMilliseconds( row * 12345678 );
       m_datetime[row] = new DateTime( m_date[row], m_time[row] );
       m_fruit[row] = Fruit.values()[row % Fruit.values().length];
     }

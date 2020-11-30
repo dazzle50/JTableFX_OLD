@@ -18,7 +18,7 @@
 
 package rjc.table.cell.editor;
 
-import rjc.table.cell.XTextField;
+import rjc.table.control.XTextField;
 
 /*************************************************************************************************/
 /******************************* Table cell editor for simple text *******************************/

@@ -18,7 +18,7 @@
 
 package rjc.table.cell.editor;
 
-import rjc.table.cell.DateField;
+import rjc.table.control.DateField;
 import rjc.table.data.Date;
 
 /*************************************************************************************************/

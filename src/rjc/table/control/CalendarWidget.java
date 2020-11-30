@@ -16,7 +16,7 @@
  *  along with this program.  If not, see http://www.gnu.org/licenses/    *
  **************************************************************************/
 
-package rjc.table.cell;
+package rjc.table.control;
 
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
@@ -94,7 +94,6 @@ public class CalendarWidget extends Canvas implements ISignal, IWrapField
   private void keyPressed( KeyEvent event )
   {
     // update date depending on key pressed
-    event.consume();
     switch ( event.getCode() )
     {
       case RIGHT: // right -> arrow key
@@ -133,9 +132,14 @@ public class CalendarWidget extends Canvas implements ISignal, IWrapField
         stepValue( m_date.lengthOfMonth() - m_date.getDayOfMonth() );
         break;
 
-      default:
+      case TAB: // don't consume tab to enable focus traversal
         return;
+
+      default:
     }
+
+    // consume event
+    event.consume();
   }
 
   /****************************************** stepValue ******************************************/

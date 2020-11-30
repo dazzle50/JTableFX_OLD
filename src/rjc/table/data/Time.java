@@ -249,7 +249,7 @@ public class Time
   }
 
   /*************************************** addMilliseconds ***************************************/
-  public Time addMilliseconds( int ms )
+  public void addMilliseconds( int ms )
   {
     // add milliseconds to this time
     m_milliseconds += ms;
@@ -257,8 +257,6 @@ public class Time
       m_milliseconds = m_milliseconds % MILLISECONDS_IN_DAY + MILLISECONDS_IN_DAY;
     if ( m_milliseconds > MILLISECONDS_IN_DAY )
       m_milliseconds = m_milliseconds % MILLISECONDS_IN_DAY;
-
-    return this;
   }
 
 }

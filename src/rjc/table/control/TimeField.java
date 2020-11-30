@@ -16,66 +16,80 @@
  *  along with this program.  If not, see http://www.gnu.org/licenses/    *
  **************************************************************************/
 
-package rjc.table.cell;
+package rjc.table.control;
 
-import javafx.beans.property.SimpleIntegerProperty;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
 import javafx.scene.input.ScrollEvent;
-import rjc.table.Utils;
+import rjc.table.Status.Level;
 import rjc.table.data.Time;
+import rjc.table.signal.ISignal;
 
 /*************************************************************************************************/
 /************************************** Time field control ***************************************/
 /*************************************************************************************************/
 
-public class TimeField extends XTextField
+public class TimeField extends XTextField implements ISignal
 {
-  private SimpleIntegerProperty m_millisec; // editor time milliseconds (or most recent valid)
+  private Time m_time; // field current time (or most recent valid)
 
   /**************************************** constructor ******************************************/
   public TimeField()
   {
     // construct field
-    m_millisec = new SimpleIntegerProperty();
     setButtonType( ButtonType.DOWN );
+    new DateTimeDropDown( this );
 
-    // react to text changes
+    // react to text changes, for example user typing new time
     textProperty().addListener( ( property, oldText, newText ) ->
     {
-      Utils.trace( oldText, newText );
+      try
+      {
+        // if no exception raised and time is different send signal (but don't update text)
+        Time time = Time.fromString( newText );
+        if ( !time.equals( m_time ) )
+        {
+          m_time = time;
+          signal( time );
+        }
+
+        getStatus().update( Level.NORMAL, "Time: " + format( time ) );
+        setStyle( getStatus().getStyle() );
+      }
+      catch ( Exception exception )
+      {
+        getStatus().update( Level.ERROR, "Time is not valid" );
+        setStyle( getStatus().getStyle() );
+      }
     } );
 
-    // react to millisecond changes
-    m_millisec.addListener( ( property, oldMS, newMS ) ->
+    // react to focus change to ensure text shows time in correct format
+    focusedProperty().addListener( ( property, oldF, newF ) ->
     {
-      Utils.trace( oldMS, newMS, getTime().toString() );
-      setText( getTime().toString() );
+      setText( format( m_time ) );
+      positionCaret( getText().length() );
+      getStatus().update( Level.NORMAL, null );
     } );
 
-    // modify time if up or down arrows pressed
+    // react to key presses
     addEventFilter( KeyEvent.KEY_PRESSED, event ->
     {
       if ( event.getCode() == KeyCode.UP )
       {
         event.consume();
-        if ( !event.isShiftDown() && !event.isControlDown() )
-          setTime( getTime().addMilliseconds( Time.ONE_HOUR ) );
-        if ( event.isShiftDown() && !event.isControlDown() )
-          setTime( getTime().addMilliseconds( Time.ONE_MINUTE ) );
-        if ( !event.isShiftDown() && event.isControlDown() )
-          setTime( getTime().addMilliseconds( Time.ONE_SECOND ) );
+        step( 1, event.isShiftDown(), event.isControlDown() );
       }
 
       if ( event.getCode() == KeyCode.DOWN )
       {
         event.consume();
-        if ( !event.isShiftDown() && !event.isControlDown() )
-          setTime( getTime().addMilliseconds( -Time.ONE_HOUR ) );
-        if ( event.isShiftDown() && !event.isControlDown() )
-          setTime( getTime().addMilliseconds( -Time.ONE_MINUTE ) );
-        if ( !event.isShiftDown() && event.isControlDown() )
-          setTime( getTime().addMilliseconds( -Time.ONE_SECOND ) );
+        step( -1, event.isShiftDown(), event.isControlDown() );
+      }
+
+      if ( event.getCode() == KeyCode.ENTER )
+      {
+        setText( format( m_time ) );
+        positionCaret( getText().length() );
       }
     } );
 
@@ -86,32 +100,55 @@ public class TimeField extends XTextField
   /****************************************** getTime ********************************************/
   public Time getTime()
   {
-    // return editor time (or most recent valid)
-    return Time.fromMilliseconds( m_millisec.get() );
+    // return field time (or most recent valid)
+    return m_time;
   }
 
   /****************************************** setTime ********************************************/
   public void setTime( Time time )
   {
-    // set milliseconds property, which in turn will update the text
-    m_millisec.set( time.getDayMilliseconds() );
+    // set current field time, display in text, signal change
+    if ( !time.equals( m_time ) )
+    {
+      m_time = time;
+      setText( format( time ) );
+      positionCaret( getText().length() );
+      signal( time );
+    }
+  }
+
+  /******************************************* format ********************************************/
+  public String format( Time time )
+  {
+    // return time in display format
+    return time.toString();
+  }
+
+  /******************************************** step ********************************************/
+  public void step( int delta, boolean shift, boolean ctrl )
+  {
+    // modify field value
+    if ( !shift && !ctrl )
+      m_time.addMilliseconds( -Time.ONE_HOUR );
+    if ( shift && !ctrl )
+      m_time.addMilliseconds( -Time.ONE_MINUTE );
+    if ( !shift && ctrl )
+      m_time.addMilliseconds( -Time.ONE_SECOND );
+
+    // display in text and signal change
+    setText( format( m_time ) );
     positionCaret( getText().length() );
+    signal( m_time );
   }
 
   /**************************************** mouseScroll ******************************************/
+  @Override
   public void mouseScroll( ScrollEvent event )
   {
     // increment or decrement time depending on mouse wheel scroll event
-    int ms = 0;
+    int delta = event.getDeltaY() > 0 ? 1 : -1;
     event.consume();
-    if ( !event.isShiftDown() && !event.isControlDown() )
-      ms = Time.ONE_HOUR;
-    if ( event.isShiftDown() && !event.isControlDown() )
-      ms = Time.ONE_MINUTE;
-    if ( !event.isShiftDown() && event.isControlDown() )
-      ms = Time.ONE_SECOND;
-
-    setTime( getTime().addMilliseconds( event.getDeltaY() > 0 ? ms : -ms ) );
+    step( delta, event.isShiftDown(), event.isControlDown() );
   }
 
 }

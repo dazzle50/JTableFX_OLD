@@ -16,7 +16,7 @@
  *  along with this program.  If not, see http://www.gnu.org/licenses/    *
  **************************************************************************/
 
-package rjc.table.cell;
+package rjc.table.control;
 
 import java.util.Stack;
 import java.util.regex.Pattern;
@@ -66,6 +66,9 @@ public class XTextField extends TextField implements IWrapField
   /**************************************** constructor ******************************************/
   public XTextField()
   {
+    // create field status
+    m_status = new Status();
+
     // listen to text changes to check if field width needs changing
     textProperty().addListener( ( observable, oldText, newText ) ->
     {
@@ -108,7 +111,7 @@ public class XTextField extends TextField implements IWrapField
       // revert to valid value if error state
       if ( newFocus )
         m_preFocusText = getText();
-      else if ( m_status != null && m_status.isError() && !( getParent() instanceof TableView ) )
+      else if ( m_status.isError() && !( getParent() instanceof TableView ) )
         setText( m_preFocusText );
     } );
 
@@ -240,6 +243,8 @@ public class XTextField extends TextField implements IWrapField
   public void setStatus( Status status )
   {
     // set text field status
+    if ( status == null )
+      throw new NullPointerException( "Status cannot be null" );
     m_status = status;
   }
 

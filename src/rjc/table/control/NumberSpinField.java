@@ -16,7 +16,7 @@
  *  along with this program.  If not, see http://www.gnu.org/licenses/    *
  **************************************************************************/
 
-package rjc.table.cell;
+package rjc.table.control;
 
 import java.text.DecimalFormat;
 import java.util.regex.Pattern;
@@ -45,16 +45,13 @@ public class NumberSpinField extends SpinField implements ISignal
     // add listener to set control error state and remove any excess leading zeros
     textProperty().addListener( ( observable, oldText, newText ) ->
     {
-      if ( getStatus() != null )
-      {
-        // if spinner value not in range, set status to error
-        double num = getDouble();
-        if ( num < getMin() || num > getMax() )
-          getStatus().update( Level.ERROR, m_errorMsg );
-        else
-          getStatus().update( Level.NORMAL, null );
-        setStyle( getStatus().getStyle() );
-      }
+      // if spinner value not in range, set status to error
+      double num = getDouble();
+      if ( num < getMin() || num > getMax() )
+        getStatus().update( Level.ERROR, m_errorMsg );
+      else
+        getStatus().update( Level.NORMAL, null );
+      setStyle( getStatus().getStyle() );
 
       // remove any excess zeros from front of number
       String text = getValue();

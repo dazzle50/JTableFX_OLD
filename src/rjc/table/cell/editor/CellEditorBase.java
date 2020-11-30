@@ -22,7 +22,7 @@ import javafx.scene.control.Control;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
 import rjc.table.cell.CellStyle;
-import rjc.table.cell.XTextField;
+import rjc.table.control.XTextField;
 import rjc.table.view.TableView;
 
 /*************************************************************************************************/

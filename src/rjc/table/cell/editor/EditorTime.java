@@ -18,7 +18,7 @@
 
 package rjc.table.cell.editor;
 
-import rjc.table.cell.TimeField;
+import rjc.table.control.TimeField;
 import rjc.table.data.Time;
 
 /*************************************************************************************************/

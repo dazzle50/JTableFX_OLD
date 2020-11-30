@@ -18,7 +18,7 @@
 
 package rjc.table.cell.editor;
 
-import rjc.table.cell.NumberSpinField;
+import rjc.table.control.NumberSpinField;
 
 /*************************************************************************************************/
 /****************************** Table cell spin editor for double ********************************/

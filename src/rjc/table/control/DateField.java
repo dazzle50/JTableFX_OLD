@@ -16,11 +16,12 @@
  *  along with this program.  If not, see http://www.gnu.org/licenses/    *
  **************************************************************************/
 
-package rjc.table.cell;
+package rjc.table.control;
 
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
 import javafx.scene.input.ScrollEvent;
+import rjc.table.Status.Level;
 import rjc.table.data.Date;
 import rjc.table.signal.ISignal;
 
@@ -39,19 +40,56 @@ public class DateField extends XTextField implements ISignal
     setButtonType( ButtonType.DOWN );
     new DateTimeDropDown( this );
 
-    // modify date if up or down arrows pressed
+    // react to text changes, for example user typing new time
+    textProperty().addListener( ( property, oldText, newText ) ->
+    {
+      try
+      {
+        // if no exception raised and date is different send signal (but don't update text)
+        Date date = Date.parse( newText, "uuuu-MM-dd" );
+        if ( !date.equals( m_date ) )
+        {
+          m_date = date;
+          signal( date );
+        }
+
+        getStatus().update( Level.NORMAL, "Date: " + format( date ) );
+        setStyle( getStatus().getStyle() );
+      }
+      catch ( Exception exception )
+      {
+        getStatus().update( Level.ERROR, "Date format is not recognised" );
+        setStyle( getStatus().getStyle() );
+      }
+    } );
+
+    // react to focus change to ensure text shows date in correct format
+    focusedProperty().addListener( ( property, oldF, newF ) ->
+    {
+      setText( format( m_date ) );
+      positionCaret( getText().length() );
+      getStatus().update( Level.NORMAL, null );
+    } );
+
+    // react to key presses
     addEventFilter( KeyEvent.KEY_PRESSED, event ->
     {
       if ( event.getCode() == KeyCode.UP )
       {
         event.consume();
-        delta( 1, event.isShiftDown(), event.isControlDown() );
+        step( 1, event.isShiftDown(), event.isControlDown() );
       }
 
       if ( event.getCode() == KeyCode.DOWN )
       {
         event.consume();
-        delta( -1, event.isShiftDown(), event.isControlDown() );
+        step( -1, event.isShiftDown(), event.isControlDown() );
+      }
+
+      if ( event.getCode() == KeyCode.ENTER )
+      {
+        setText( format( m_date ) );
+        positionCaret( getText().length() );
       }
     } );
 
@@ -70,7 +108,7 @@ public class DateField extends XTextField implements ISignal
   public void setDate( Date date )
   {
     // set current field date, display in text, signal change
-    if ( date != m_date )
+    if ( !date.equals( m_date ) )
     {
       m_date = date;
       setText( format( date ) );
@@ -86,10 +124,10 @@ public class DateField extends XTextField implements ISignal
     return date.toString();
   }
 
-  /******************************************** delta ********************************************/
-  private void delta( int delta, boolean shift, boolean ctrl )
+  /******************************************** step ********************************************/
+  public void step( int delta, boolean shift, boolean ctrl )
   {
-    // modify field date
+    // modify field value
     if ( !shift && !ctrl )
       setDate( getDate().plusDays( delta ) );
     if ( shift && !ctrl )
@@ -105,7 +143,7 @@ public class DateField extends XTextField implements ISignal
     // increment or decrement date depending on mouse wheel scroll event
     int delta = event.getDeltaY() > 0 ? 1 : -1;
     event.consume();
-    delta( delta, event.isShiftDown(), event.isControlDown() );
+    step( delta, event.isShiftDown(), event.isControlDown() );
   }
 
 }

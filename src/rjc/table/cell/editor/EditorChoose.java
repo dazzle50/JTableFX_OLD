@@ -18,7 +18,7 @@
 
 package rjc.table.cell.editor;
 
-import rjc.table.cell.ChooseField;
+import rjc.table.control.ChooseField;
 
 /*************************************************************************************************/
 /************************** Table cell spin editor for choosing object ***************************/

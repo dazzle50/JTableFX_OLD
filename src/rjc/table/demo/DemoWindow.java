@@ -37,13 +37,13 @@ import javafx.stage.Screen;
 import javafx.stage.Stage;
 import rjc.table.Status;
 import rjc.table.Utils;
-import rjc.table.cell.ChooseField;
-import rjc.table.cell.DateField;
-import rjc.table.cell.DateTimeField;
-import rjc.table.cell.MonthSpinField;
-import rjc.table.cell.NumberSpinField;
-import rjc.table.cell.TimeField;
-import rjc.table.cell.XTextField;
+import rjc.table.control.ChooseField;
+import rjc.table.control.DateField;
+import rjc.table.control.DateTimeField;
+import rjc.table.control.MonthSpinField;
+import rjc.table.control.NumberSpinField;
+import rjc.table.control.TimeField;
+import rjc.table.control.XTextField;
 import rjc.table.data.TableData;
 import rjc.table.demo.edit.EditData;
 import rjc.table.demo.edit.EditView;
@@ -197,8 +197,6 @@ public class DemoWindow
     addToGrid( grid, "MonthSpinField", monthField, 1, 3 );
     addToGrid( grid, "Year Field", yearField, 1, 4 );
 
-    // 
-
     return grid;
   }
 
@@ -216,6 +214,7 @@ public class DemoWindow
       grid.add( node, 3 * col + 1, row );
     }
 
+    // attach the node to demo status if XTextField derived
     if ( node instanceof XTextField )
       ( (XTextField) node ).setStatus( m_status );
   }
