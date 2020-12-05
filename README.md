@@ -8,7 +8,7 @@ An open source project for JavaFX that aims to provide a flexible and configurab
 * Memory & performance efficient for large tables
 * Navigation and interaction by mouse and keyboard
 * Data model defines table size plus getting and setting values
-* Default table view implementation supports (not all implemented yet)
+* Default table view implementation supports
     * Display of different cell value data types
     * Editors for different cell value data types
     * Cell, column, and row selection

@@ -23,6 +23,8 @@ import javafx.geometry.Point2D;
 import javafx.scene.canvas.Canvas;
 import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.effect.DropShadow;
+import javafx.scene.input.KeyCode;
+import javafx.scene.input.KeyEvent;
 import javafx.scene.text.FontSmoothingType;
 import javafx.stage.Popup;
 import rjc.table.Colors;
@@ -70,6 +72,22 @@ public class DropDown extends Popup
     {
       if ( isShowing() && !m_parent.isFocused() )
         toggle();
+    } );
+    parent.addEventFilter( KeyEvent.KEY_PRESSED, event ->
+    {
+      if ( event.getCode() == KeyCode.F2 )
+      {
+        event.consume();
+        toggle();
+      }
+    } );
+    addEventFilter( KeyEvent.KEY_PRESSED, event ->
+    {
+      if ( event.getCode() == KeyCode.F2 )
+      {
+        event.consume();
+        toggle();
+      }
     } );
 
     // create listener for hiding drop-down on window movement

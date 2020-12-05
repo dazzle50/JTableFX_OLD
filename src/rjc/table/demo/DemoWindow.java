@@ -160,8 +160,7 @@ public class DemoWindow
     TabPane tabs = new TabPane();
     tabs.getSelectionModel().selectedItemProperty().addListener(
         ( observable, oldTab, newTab ) -> Platform.runLater( () -> ( newTab.getContent() ).requestFocus() ) );
-    //tabs.getTabs().addAll( defaultTab, largeTab, editTab, fieldTab );
-    tabs.getTabs().addAll( fieldTab, defaultTab, largeTab, editTab );
+    tabs.getTabs().addAll( defaultTab, largeTab, editTab, fieldTab );
 
     return tabs;
   }
@@ -193,7 +192,7 @@ public class DemoWindow
     addToGrid( grid, "ChooseField", new ChooseField( EditData.Fruit.values() ), 0, row++ );
 
     addToGrid( grid, "NumberSpinField", new NumberSpinField(), 1, 0 );
-    addToGrid( grid, "Below month field warps with year number spin field", null, 1, 2 );
+    addToGrid( grid, "Below month field wraps with year number spin field", null, 1, 2 );
     addToGrid( grid, "MonthSpinField", monthField, 1, 3 );
     addToGrid( grid, "Year Field", yearField, 1, 4 );
 

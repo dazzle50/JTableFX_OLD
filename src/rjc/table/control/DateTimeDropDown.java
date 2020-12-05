@@ -199,16 +199,17 @@ public class DateTimeDropDown extends DropDown
   /***************************************** updateField *****************************************/
   private void updateField()
   {
-    // update field text - but run later to allow any field wrapping to complete first
-    Platform.runLater( () ->
-    {
-      if ( m_timeField != null )
-        m_timeField.setTime( getTime() );
-      if ( m_dateField != null )
-        m_dateField.setDate( getDate() );
-      if ( m_datetimeField != null )
-        m_datetimeField.setDateTime( new DateTime( getDate(), getTime() ) );
-    } );
+    // update field text if drop-down showing - but run later to allow any field wrapping to complete first
+    if ( isShowing() )
+      Platform.runLater( () ->
+      {
+        if ( m_timeField != null )
+          m_timeField.setTime( getTime() );
+        if ( m_dateField != null )
+          m_dateField.setDate( getDate() );
+        if ( m_datetimeField != null )
+          m_datetimeField.setDateTime( new DateTime( getDate(), getTime() ) );
+      } );
 
   }
 
