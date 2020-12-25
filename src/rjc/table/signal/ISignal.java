@@ -19,6 +19,7 @@
 package rjc.table.signal;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 
 /*************************************************************************************************/
 /******************* Interface for signal senders with default implementation ********************/
@@ -26,39 +27,93 @@ import java.util.ArrayList;
 
 public interface ISignal
 {
+
+  static class Helper
+  {
+    final private static HashMap<ISignal, ArrayList<IListener>> m_listeners = new HashMap<>();
+
+    /******************************************* signal ********************************************/
+    private static void signal( ISignal signaller, Object[] objects )
+    {
+      // send signal objects to each listener registered with specified signal sender
+      var list = m_listeners.get( signaller );
+      if ( list != null )
+        list.forEach( ( listener ) -> listener.slot( objects ) );
+    }
+
+    /**************************************** addListener ******************************************/
+    private static void addListener( ISignal signaller, IListener lambda )
+    {
+      // register listener for specified signal sender
+      var list = m_listeners.get( signaller );
+      if ( list == null )
+      {
+        list = new ArrayList<>();
+        m_listeners.put( signaller, list );
+      }
+      list.add( lambda );
+    }
+
+    /*************************************** removeListener ****************************************/
+    private static void removeListener( ISignal signaller, IListener lambda )
+    {
+      // unregister listener for specified signal sender, no-action if not present
+      var list = m_listeners.get( signaller );
+      if ( list != null )
+        list.remove( lambda );
+    }
+
+    /************************************* removeAllListeners **************************************/
+    private static void removeAllListeners( ISignal signaller )
+    {
+      // unregister all listeners for specified signal sender
+      var list = m_listeners.get( signaller );
+      if ( list != null )
+        list.clear();
+    }
+
+    /**************************************** getListeners ******************************************/
+    private static ArrayList<IListener> getListeners( ISignal signaller )
+    {
+      // return list of all listeners for specified signal sender, can be null
+      return m_listeners.get( signaller );
+    }
+
+  }
+
   /******************************************* signal ********************************************/
   default void signal( Object... objects )
   {
     // default implementation for sending a signal to listeners 
-    SignalHelper.signal( this, objects );
+    Helper.signal( this, objects );
   }
 
   /***************************************** addListener *****************************************/
   default void addListener( IListener lambda )
   {
     // default implementation for adding a listener to a signal sender 
-    SignalHelper.addListener( this, lambda );
+    Helper.addListener( this, lambda );
   }
 
   /*************************************** removeListener ****************************************/
   default void removeListener( IListener lambda )
   {
     // default implementation for removing a listener from a signal sender
-    SignalHelper.removeListener( this, lambda );
+    Helper.removeListener( this, lambda );
   }
 
   /************************************* removeAllListeners **************************************/
   default void removeAllListeners()
   {
     // default implementation for removing all listeners from a signal sender
-    SignalHelper.removeAllListeners( this );
+    Helper.removeAllListeners( this );
   }
 
   /**************************************** getListeners *****************************************/
   default ArrayList<IListener> getListeners()
   {
     // default implementation for getting list of all listeners for a signal sender
-    return SignalHelper.getListeners( this );
+    return Helper.getListeners( this );
   }
 
 }

@@ -19,6 +19,7 @@
 package rjc.table.view;
 
 import javafx.geometry.Orientation;
+import javafx.scene.input.ContextMenuEvent;
 import javafx.scene.input.KeyEvent;
 import javafx.scene.input.MouseButton;
 import javafx.scene.input.MouseEvent;
@@ -410,6 +411,33 @@ public class TableEvents extends TableSelect
     getData().getUndoStack().redo();
   }
 
+  /***************************************** contextMenu *****************************************/
+  protected void contextMenu( ContextMenuEvent event )
+  {
+    // determine if context menu requested by mouse-click or keyboard-shortcut
+    if ( event.getTarget().equals( getView().getCanvas() ) )
+    {
+      // requested by keyboard so place context-menu next to focus cell
+      int colPos = getFocusCellProperty().getColumnPos();
+      int rowPos = getFocusCellProperty().getRowPos();
+      double x = getXStartFromColumnPos( colPos + 1 );
+      double y = getYStartFromRowPos( rowPos + 1 );
+      new TableContextMenu( getView(), x, y );
+    }
+    else
+    {
+      // requested by mouse so check mouse cell is selected and place context-menu where user clicked
+      int colPos = getMouseCellProperty().getColumnPos();
+      int rowPos = getMouseCellProperty().getRowPos();
+      if ( !isCellSelected( colPos, rowPos ) )
+        mousePressed( new MouseEvent( MouseEvent.MOUSE_PRESSED, event.getX(), event.getY(), event.getSceneX(),
+            event.getScreenY(), MouseButton.PRIMARY, 0, false, false, false, false, true, false, false, false, false,
+            true, false, true, null ) );
+
+      new TableContextMenu( getView(), event.getX(), event.getY() );
+    }
+  }
+
   /**************************************** mousePressed *****************************************/
   protected void mousePressed( MouseEvent event )
   {
@@ -421,14 +449,13 @@ public class TableEvents extends TableSelect
     MouseButton button = event.getButton();
     boolean shift = event.isShiftDown();
     boolean ctrl = event.isControlDown();
+    int columnPos = getMouseCellProperty().getColumnPos();
+    int rowPos = getMouseCellProperty().getRowPos();
 
-    // check if cell selected
+    // if selecting cells started
     if ( getCursor() == Cursors.CROSS && button == MouseButton.PRIMARY )
     {
-      // get column and row positions
       m_selecting = Selecting.CELLS;
-      int columnPos = getMouseCellProperty().getColumnPos();
-      int rowPos = getMouseCellProperty().getRowPos();
 
       if ( ctrl )
         startNewSelection();
@@ -437,13 +464,10 @@ public class TableEvents extends TableSelect
       return;
     }
 
-    // check if column selected
+    // if selecting columns started
     if ( getCursor() == Cursors.DOWNARROW && button == MouseButton.PRIMARY )
     {
-      // get column and row positions
       m_selecting = Selecting.COLUMNS;
-      int columnPos = getMouseCellProperty().getColumnPos();
-      int rowPos = getRowPositionAtY( getColumnHeaderHeight() );
 
       if ( ctrl )
         startNewSelection();
@@ -453,13 +477,10 @@ public class TableEvents extends TableSelect
       return;
     }
 
-    // check if row selected
+    // if selecting rows started
     if ( getCursor() == Cursors.RIGHTARROW && button == MouseButton.PRIMARY )
     {
-      // get column and row positions
       m_selecting = Selecting.ROWS;
-      int columnPos = getColumnPositionAtX( getRowHeaderWidth() );
-      int rowPos = getMouseCellProperty().getRowPos();
 
       if ( ctrl )
         startNewSelection();
@@ -469,23 +490,22 @@ public class TableEvents extends TableSelect
       return;
     }
 
-    // check if column resize started
+    // if column resize started
     if ( getCursor() == Cursors.H_RESIZE && button == MouseButton.PRIMARY )
     {
-      int pos = getMouseCellProperty().getColumnPos() - ( m_x - m_cellXstart < m_cellXend - m_x ? 1 : 0 );
+      int pos = columnPos - ( m_x - m_cellXstart < m_cellXend - m_x ? 1 : 0 );
       m_resize.start( getView(), Orientation.HORIZONTAL, pos, m_x );
     }
 
-    // check if row resize started
+    // if row resize started
     if ( getCursor() == Cursors.V_RESIZE && button == MouseButton.PRIMARY )
     {
-      int pos = getMouseCellProperty().getRowPos() - ( m_y - m_cellYstart < m_cellYend - m_y ? 1 : 0 );
+      int pos = rowPos - ( m_y - m_cellYstart < m_cellYend - m_y ? 1 : 0 );
       m_resize.start( getView(), Orientation.VERTICAL, pos, m_y );
     }
 
-    // check if whole table selected
-    if ( getCursor() == Cursors.DEFAULT && getMouseCellProperty().getColumnPos() == HEADER
-        && getMouseCellProperty().getRowPos() == HEADER )
+    // if header corner pressed - select whole table
+    if ( getCursor() == Cursors.DEFAULT && columnPos == HEADER && rowPos == HEADER && button == MouseButton.PRIMARY )
     {
       selectTable();
       getView().redraw();

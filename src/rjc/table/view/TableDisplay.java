@@ -98,6 +98,7 @@ public class TableDisplay extends TableParent
     setOnMousePressed( event -> view.mousePressed( event ) );
     setOnMouseClicked( event -> view.mouseClicked( event ) );
     setOnScroll( event -> view.mouseScroll( event ) );
+    setOnContextMenuRequested( event -> view.contextMenu( event ) );
 
     // react to keyboard events
     setOnKeyPressed( event -> view.keyPressed( event ) );
