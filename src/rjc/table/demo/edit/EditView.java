@@ -1,5 +1,5 @@
 /**************************************************************************
- *  Copyright (C) 2020 by Richard Crook                                   *
+ *  Copyright (C) 2021 by Richard Crook                                   *
  *  https://github.com/dazzle50/JTableFX                                  *
  *                                                                        *
  *  This program is free software: you can redistribute it and/or modify  *
@@ -18,18 +18,18 @@
 
 package rjc.table.demo.edit;
 
-import rjc.table.cell.CellContext;
-import rjc.table.cell.CellDraw;
-import rjc.table.cell.editor.CellEditorBase;
-import rjc.table.cell.editor.EditorChoose;
-import rjc.table.cell.editor.EditorDate;
-import rjc.table.cell.editor.EditorDateTime;
-import rjc.table.cell.editor.EditorDouble;
-import rjc.table.cell.editor.EditorInteger;
-import rjc.table.cell.editor.EditorText;
-import rjc.table.cell.editor.EditorTime;
 import rjc.table.demo.edit.EditData.Fruit;
 import rjc.table.view.TableView;
+import rjc.table.view.cell.CellContext;
+import rjc.table.view.cell.CellDraw;
+import rjc.table.view.cell.editor.CellEditorBase;
+import rjc.table.view.cell.editor.EditorChoose;
+import rjc.table.view.cell.editor.EditorDate;
+import rjc.table.view.cell.editor.EditorDateTime;
+import rjc.table.view.cell.editor.EditorDouble;
+import rjc.table.view.cell.editor.EditorInteger;
+import rjc.table.view.cell.editor.EditorText;
+import rjc.table.view.cell.editor.EditorTime;
 
 /*************************************************************************************************/
 /*********************** Example customised table view for editable table ************************/
@@ -43,11 +43,11 @@ public class EditView extends TableView
     // construct customised table view
     super( data );
 
-    getColumns().setCellSize( EditData.SECTION_READONLY, 120 );
-    getColumns().setCellSize( EditData.SECTION_TEXT, 120 );
-    getColumns().setCellSize( EditData.SECTION_INTEGER, 80 );
-    getColumns().setCellSize( EditData.SECTION_DOUBLE, 80 );
-    getColumns().setCellSize( EditData.SECTION_DATETIME, 200 );
+    getColumnsAxis().setCellSize( EditData.SECTION_READONLY, 120 );
+    getColumnsAxis().setCellSize( EditData.SECTION_TEXT, 120 );
+    getColumnsAxis().setCellSize( EditData.SECTION_INTEGER, 80 );
+    getColumnsAxis().setCellSize( EditData.SECTION_DOUBLE, 80 );
+    getColumnsAxis().setCellSize( EditData.SECTION_DATETIME, 200 );
   }
 
   /**************************************** getCellDrawer ****************************************/

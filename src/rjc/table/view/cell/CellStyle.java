@@ -1,5 +1,5 @@
 /**************************************************************************
- *  Copyright (C) 2020 by Richard Crook                                   *
+ *  Copyright (C) 2021 by Richard Crook                                   *
  *  https://github.com/dazzle50/JTableFX                                  *
  *                                                                        *
  *  This program is free software: you can redistribute it and/or modify  *
@@ -16,7 +16,7 @@
  *  along with this program.  If not, see http://www.gnu.org/licenses/    *
  **************************************************************************/
 
-package rjc.table.cell;
+package rjc.table.view.cell;
 
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
@@ -91,7 +91,7 @@ public class CellStyle extends CellContext
   {
     // get text inserts adjusted for zoom
     Insets insets = getTextInsets();
-    double zoom = view.getZoom();
+    double zoom = view.getZoom().get();
 
     if ( zoom != 1.0 )
       insets = new Insets( insets.getTop() * zoom, insets.getRight() * zoom, insets.getBottom() * zoom,
@@ -104,7 +104,7 @@ public class CellStyle extends CellContext
   public Font getZoomFont()
   {
     // get font adjusted for zoom
-    return Font.font( getTextFamily(), getTextWeight(), getTextPosture(), getTextSize() * view.getZoom() );
+    return Font.font( getTextFamily(), getTextWeight(), getTextPosture(), getTextSize() * view.getZoom().get() );
   }
 
   /*************************************** getBorderPaint ****************************************/
@@ -122,7 +122,7 @@ public class CellStyle extends CellContext
       return getBackgroundPaintHeader();
 
     // for selected cells
-    if ( view.isCellSelected( columnPos, rowPos ) )
+    if ( view.getSelection().isCellSelected( columnPos, rowPos ) )
       return getBackgroundPaintSelected();
 
     // otherwise default background
@@ -142,18 +142,19 @@ public class CellStyle extends CellContext
     // return header cell background
     if ( rowIndex == TableAxis.HEADER )
     {
-      if ( columnPos == view.getFocusCellProperty().getColumnPos() )
+      if ( columnPos == view.getFocusCell().getColumnPos() )
         return Colors.HEADER_FOCUS;
       else
-        return view.hasColumnSelection( columnPos ) ? Colors.HEADER_SELECTED_FILL : Colors.HEADER_DEFAULT_FILL;
+        return view.getSelection().hasColumnSelection( columnPos ) ? Colors.HEADER_SELECTED_FILL
+            : Colors.HEADER_DEFAULT_FILL;
     }
 
     if ( columnIndex == TableAxis.HEADER )
     {
-      if ( rowPos == view.getFocusCellProperty().getRowPos() )
+      if ( rowPos == view.getFocusCell().getRowPos() )
         return Colors.HEADER_FOCUS;
       else
-        return view.hasRowSelection( rowPos ) ? Colors.HEADER_SELECTED_FILL : Colors.HEADER_DEFAULT_FILL;
+        return view.getSelection().hasRowSelection( rowPos ) ? Colors.HEADER_SELECTED_FILL : Colors.HEADER_DEFAULT_FILL;
     }
 
     throw new IllegalArgumentException( "Not header " + columnIndex + " " + rowIndex );
@@ -163,26 +164,25 @@ public class CellStyle extends CellContext
   protected Paint getBackgroundPaintSelected()
   {
     // return selected cell background
-    if ( rowPos == view.getFocusCellProperty().getRowPos() && columnPos == view.getFocusCellProperty().getColumnPos() )
+    if ( rowPos == view.getFocusCell().getRowPos() && columnPos == view.getFocusCell().getColumnPos() )
       return getBackgroundPaintDefault();
 
     Color selected = Colors.CELL_SELECTED_FILL;
-    for ( int count = view.getSelectionCount( columnPos, rowPos ); count > 1; count-- )
+    for ( int count = view.getSelection().getSelectionCount( columnPos, rowPos ); count > 1; count-- )
       selected = selected.desaturate();
 
-    if ( rowPos == view.getSelectCellProperty().getRowPos()
-        && columnPos == view.getSelectCellProperty().getColumnPos() )
+    if ( rowPos == view.getSelectCell().getRowPos() && columnPos == view.getSelectCell().getColumnPos() )
       selected = selected.desaturate();
 
-    return view.isTableFocused() ? selected : selected.desaturate();
+    return view.isFocused() ? selected : selected.desaturate();
   }
 
   /**************************************** getTextPaint *****************************************/
   protected Paint getTextPaint()
   {
     // return cell text paint
-    if ( view.isCellSelected( columnPos, rowPos ) && !( rowPos == view.getFocusCellProperty().getRowPos()
-        && columnPos == view.getFocusCellProperty().getColumnPos() ) )
+    if ( view.getSelection().isCellSelected( columnPos, rowPos )
+        && !( rowPos == view.getFocusCell().getRowPos() && columnPos == view.getFocusCell().getColumnPos() ) )
       return Colors.TEXT_SELECTED;
     else
       return Colors.TEXT_DEFAULT;

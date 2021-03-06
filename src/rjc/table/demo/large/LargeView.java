@@ -1,5 +1,5 @@
 /**************************************************************************
- *  Copyright (C) 2020 by Richard Crook                                   *
+ *  Copyright (C) 2021 by Richard Crook                                   *
  *  https://github.com/dazzle50/JTableFX                                  *
  *                                                                        *
  *  This program is free software: you can redistribute it and/or modify  *
@@ -18,8 +18,8 @@
 
 package rjc.table.demo.large;
 
-import rjc.table.cell.CellDraw;
 import rjc.table.view.TableView;
+import rjc.table.view.cell.CellDraw;
 
 /*************************************************************************************************/
 /********************** Example customised table view for extra large table **********************/
@@ -34,7 +34,7 @@ public class LargeView extends TableView
     super( data );
 
     // when mouse moved to new cell, redraw table to move shading
-    getMouseCellProperty().addListener( observable -> redraw() );
+    getMouseCell().addListener( x -> redraw() );
   }
 
   /**************************************** getCellDrawer ****************************************/
@@ -51,7 +51,7 @@ public class LargeView extends TableView
   {
     // reset table view to default settings with wider header
     super.reset();
-    getColumns().setHeaderSize( 60 );
+    getColumnsAxis().setHeaderSize( 60 );
   }
 
 }

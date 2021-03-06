@@ -1,5 +1,5 @@
 /**************************************************************************
- *  Copyright (C) 2020 by Richard Crook                                   *
+ *  Copyright (C) 2021 by Richard Crook                                   *
  *  https://github.com/dazzle50/JTableFX                                  *
  *                                                                        *
  *  This program is free software: you can redistribute it and/or modify  *
@@ -20,7 +20,7 @@ package rjc.table.demo.large;
 
 import javafx.scene.paint.Color;
 import javafx.scene.paint.Paint;
-import rjc.table.cell.CellDraw;
+import rjc.table.view.cell.CellDraw;
 
 /*************************************************************************************************/
 /******************************** Example customised cell drawer *********************************/
@@ -39,8 +39,8 @@ public class LargeCellDraw extends CellDraw
     // if white background shade different colour if mouse pointer on row/column
     if ( paint == Color.WHITE )
     {
-      int col = view.getMouseCellProperty().getColumnPos();
-      int row = view.getMouseCellProperty().getRowPos();
+      int col = view.getMouseCell().getColumnPos();
+      int row = view.getMouseCell().getRowPos();
 
       // highlight cell green where mouse is positioned
       if ( columnPos == col && rowPos == row )

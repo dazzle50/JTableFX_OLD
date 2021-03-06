@@ -1,5 +1,5 @@
 /**************************************************************************
- *  Copyright (C) 2020 by Richard Crook                                   *
+ *  Copyright (C) 2021 by Richard Crook                                   *
  *  https://github.com/dazzle50/JTableFX                                  *
  *                                                                        *
  *  This program is free software: you can redistribute it and/or modify  *
@@ -25,8 +25,8 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
-import javafx.beans.property.ReadOnlyIntegerProperty;
-import javafx.beans.property.ReadOnlyIntegerWrapper;
+import rjc.table.signal.ObservableInteger;
+import rjc.table.signal.ObservableInteger.ReadOnlyInteger;
 
 /*************************************************************************************************/
 /*********************** Controls axis cell pixel size (including header) ************************/
@@ -35,32 +35,32 @@ import javafx.beans.property.ReadOnlyIntegerWrapper;
 public class AxisSize extends AxisBase
 {
   // variables defining default & minimum cell size (width or height) equals pixels if zoom is 1.0
-  private int                          m_defaultSize;
-  private int                          m_minimumSize;
-  private int                          m_headerSize;
-  private double                       m_zoom                   = 1.0;
+  private int                         m_defaultSize;
+  private int                         m_minimumSize;
+  private int                         m_headerSize;
+  private double                      m_zoom                   = 1.0;
 
   // exceptions to default size, -ve means hidden
-  final private Map<Integer, Integer>  m_sizeExceptions         = new HashMap<>();
+  final private Map<Integer, Integer> m_sizeExceptions         = new HashMap<>();
 
   // cached cell position start pixel coordinate
-  final private ArrayList<Integer>     m_cellPositionStartCache = new ArrayList<>();
+  final private ArrayList<Integer>    m_cellPositionStartCache = new ArrayList<>();
 
   // observable integer for axis total body size in pixels (excludes header)
-  final private ReadOnlyIntegerWrapper m_bodyPixelsCache        = new ReadOnlyIntegerWrapper( INVALID );
+  private ObservableInteger           m_bodyPixelsCache        = new ObservableInteger( INVALID );
 
   /***************************************** constructor *****************************************/
-  public AxisSize( ReadOnlyIntegerProperty countProperty )
+  public AxisSize( ReadOnlyInteger countProperty )
   {
     // call super
     super( countProperty );
 
     // if axis count changes
-    countProperty.addListener( ( observable, oldCount, newCount ) ->
+    countProperty.addListener( x ->
     {
       // set cached body size to invalid and remove any exceptions beyond count
       m_bodyPixelsCache.set( INVALID );
-      int count = newCount.intValue();
+      int count = countProperty.get();
       for ( int key : m_sizeExceptions.keySet() )
         if ( key >= count )
           m_sizeExceptions.remove( key );
@@ -126,10 +126,10 @@ public class AxisSize extends AxisBase
   }
 
   /************************************ getBodyPixelsProperty ************************************/
-  final public ReadOnlyIntegerProperty getBodyPixelsProperty()
+  final public ReadOnlyInteger getBodyPixelsProperty()
   {
     // return read-only property for body size in pixels (excludes header)
-    return m_bodyPixelsCache.getReadOnlyProperty();
+    return m_bodyPixelsCache.getReadOnly();
   }
 
   /*************************************** getDefaultSize ****************************************/

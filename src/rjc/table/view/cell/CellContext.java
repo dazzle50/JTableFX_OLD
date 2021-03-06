@@ -1,5 +1,5 @@
 /**************************************************************************
- *  Copyright (C) 2020 by Richard Crook                                   *
+ *  Copyright (C) 2021 by Richard Crook                                   *
  *  https://github.com/dazzle50/JTableFX                                  *
  *                                                                        *
  *  This program is free software: you can redistribute it and/or modify  *
@@ -16,7 +16,7 @@
  *  along with this program.  If not, see http://www.gnu.org/licenses/    *
  **************************************************************************/
 
-package rjc.table.cell;
+package rjc.table.view.cell;
 
 import javafx.scene.canvas.GraphicsContext;
 import rjc.table.view.TableView;
@@ -61,12 +61,12 @@ public class CellContext
     this.rowIndex = rowIndex;
 
     gc = view.getCanvas().getGraphicsContext2D();
-    columnPos = view.getColumns().getPositionFromIndex( columnIndex );
-    rowPos = view.getRows().getPositionFromIndex( rowIndex );
+    columnPos = view.getColumnsAxis().getPositionFromIndex( columnIndex );
+    rowPos = view.getRowsAxis().getPositionFromIndex( rowIndex );
     x = view.getXStartFromColumnPos( columnPos );
     y = view.getYStartFromRowPos( rowPos );
-    w = view.getColumns().getCellPixels( columnIndex );
-    h = view.getRows().getCellPixels( rowIndex );
+    w = view.getColumnsAxis().getCellPixels( columnIndex );
+    h = view.getRowsAxis().getCellPixels( rowIndex );
   }
 
   /***************************************** setPosition *****************************************/
@@ -78,12 +78,19 @@ public class CellContext
     this.rowPos = rowPos;
 
     gc = view.getCanvas().getGraphicsContext2D();
-    columnIndex = view.getColumns().getIndexFromPosition( columnPos );
-    rowIndex = view.getRows().getIndexFromPosition( rowPos );
+    columnIndex = view.getColumnsAxis().getIndexFromPosition( columnPos );
+    rowIndex = view.getRowsAxis().getIndexFromPosition( rowPos );
     x = view.getXStartFromColumnPos( columnPos );
     y = view.getYStartFromRowPos( rowPos );
-    w = view.getColumns().getCellPixels( columnIndex );
-    h = view.getRows().getCellPixels( rowIndex );
+    w = view.getColumnsAxis().getCellPixels( columnIndex );
+    h = view.getRowsAxis().getCellPixels( rowIndex );
+  }
+
+  /***************************************** setPosition *****************************************/
+  public void setPosition( TableView view, CellPosition pos )
+  {
+    // set cell context from cell position
+    setPosition( view, pos.getColumnPos(), pos.getRowPos() );
   }
 
 }

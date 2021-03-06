@@ -1,5 +1,5 @@
 /**************************************************************************
- *  Copyright (C) 2020 by Richard Crook                                   *
+ *  Copyright (C) 2021 by Richard Crook                                   *
  *  https://github.com/dazzle50/JTableFX                                  *
  *                                                                        *
  *  This program is free software: you can redistribute it and/or modify  *
@@ -22,7 +22,7 @@ import java.util.ArrayList;
 import java.util.Set;
 import java.util.TreeSet;
 
-import javafx.beans.property.ReadOnlyIntegerProperty;
+import rjc.table.signal.ObservableInteger.ReadOnlyInteger;
 
 /*************************************************************************************************/
 /**************** Base class for table X or Y axis with index to position mapping ****************/
@@ -30,8 +30,8 @@ import javafx.beans.property.ReadOnlyIntegerProperty;
 
 public class AxisBase
 {
-  // property from TableData defining axis count
-  private ReadOnlyIntegerProperty  m_countProperty;
+  // count of body cells on axis
+  private ReadOnlyInteger          m_count;
 
   // array mapping from position to index
   final private ArrayList<Integer> m_indexFromPosition = new ArrayList<>();
@@ -44,13 +44,13 @@ public class AxisBase
   final static public int          AFTER               = Integer.MAX_VALUE - 1;
 
   /**************************************** constructor ******************************************/
-  public AxisBase( ReadOnlyIntegerProperty countProperty )
+  public AxisBase( ReadOnlyInteger count )
   {
     // store private variable
-    m_countProperty = countProperty;
+    m_count = count;
 
     // if axis count changes
-    countProperty.addListener( ( observable, oldCount, newCount ) ->
+    count.addListener( x ->
     {
       // truncate position to index mapping if size greater than new count
       if ( m_indexFromPosition.size() > getCount() )
@@ -61,8 +61,8 @@ public class AxisBase
   /****************************************** getCount *******************************************/
   final public int getCount()
   {
-    // return axis count as defined in TableData column or row count property
-    return m_countProperty.get();
+    // return count of body cells on axis
+    return m_count.get();
   }
 
   /******************************************** reset ********************************************/

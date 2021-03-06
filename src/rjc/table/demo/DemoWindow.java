@@ -1,5 +1,5 @@
 /**************************************************************************
- *  Copyright (C) 2020 by Richard Crook                                   *
+ *  Copyright (C) 2021 by Richard Crook                                   *
  *  https://github.com/dazzle50/JTableFX                                  *
  *                                                                        *
  *  This program is free software: you can redistribute it and/or modify  *
@@ -37,18 +37,13 @@ import javafx.stage.Screen;
 import javafx.stage.Stage;
 import rjc.table.Status;
 import rjc.table.Utils;
-import rjc.table.control.ChooseField;
-import rjc.table.control.DateField;
-import rjc.table.control.DateTimeField;
-import rjc.table.control.MonthSpinField;
-import rjc.table.control.NumberSpinField;
-import rjc.table.control.TimeField;
 import rjc.table.control.XTextField;
 import rjc.table.data.TableData;
 import rjc.table.demo.edit.EditData;
 import rjc.table.demo.edit.EditView;
 import rjc.table.demo.large.LargeData;
 import rjc.table.demo.large.LargeView;
+import rjc.table.undo.UndoStack;
 import rjc.table.undo.UndoStackWindow;
 import rjc.table.view.TableView;
 
@@ -63,6 +58,7 @@ public class DemoWindow
 
   private MenuBar         m_menus;        // menu bar at top of window
   private TabPane         m_tabs;         // tabs pane to show the demos
+  private UndoStack       m_undostack;    // shared undostack for whole demo application
   private UndoStackWindow m_undoWindow;   // window to interact with undo-stack
 
   private TableData       m_defaultTable; // data for 'Default' tab
@@ -77,12 +73,9 @@ public class DemoWindow
     m_largeTable = new LargeData();
     m_editTable = new EditData();
 
-    // use one common undo-stack for whole demo app
-    m_largeTable.setUndoStack( m_defaultTable.getUndoStack() );
-    m_editTable.setUndoStack( m_defaultTable.getUndoStack() );
-
     // create demo windows contents
     m_status = new Status();
+    m_undostack = new UndoStack();
     m_menus = makeMenuBar();
     m_tabs = makeTabs();
     m_statusBar = new TextField( "Started" );
@@ -90,7 +83,7 @@ public class DemoWindow
     m_statusBar.setEditable( false );
 
     // display status changes on status-bar
-    m_status.addListener( ( x ) ->
+    m_status.addListener( x ->
     {
       m_statusBar.setText( m_status.getMessage() );
       m_statusBar.setStyle( m_status.getStyle() );
@@ -132,6 +125,7 @@ public class DemoWindow
     defaultTab.setClosable( false );
     defaultTab.setContent( defaultView );
     defaultView.visibleProperty().bind( defaultTab.selectedProperty() );
+    defaultView.setUndoStack( m_undostack );
 
     // create large table in tab
     TableView largeView = new LargeView( m_largeTable );
@@ -140,6 +134,7 @@ public class DemoWindow
     largeTab.setClosable( false );
     largeTab.setContent( largeView );
     largeView.visibleProperty().bind( largeTab.selectedProperty() );
+    largeView.setUndoStack( m_undostack );
 
     // create editable table in tab
     TableView editView = new EditView( m_editTable );
@@ -149,6 +144,7 @@ public class DemoWindow
     editTab.setClosable( false );
     editTab.setContent( editView );
     editView.visibleProperty().bind( editTab.selectedProperty() );
+    editView.setUndoStack( m_undostack );
 
     // create field controls demo tab
     Tab fieldTab = new Tab();
@@ -174,15 +170,16 @@ public class DemoWindow
     grid.setHgap( 8 );
     grid.setVgap( 8 );
 
+    /**
     // prepare fields
     var yearField = new NumberSpinField();
     yearField.setRange( 1000, 5000 );
     yearField.setPrefixSuffix( "Year ", " CE" );
     yearField.setValue( 2000 );
-
+    
     var monthField = new MonthSpinField();
     monthField.setWrapField( yearField );
-
+    
     // layout fields with labels
     int row = 0;
     addToGrid( grid, "XTextField", new XTextField(), 0, row++ );
@@ -190,11 +187,12 @@ public class DemoWindow
     addToGrid( grid, "TimeField", new TimeField(), 0, row++ );
     addToGrid( grid, "DateTimeField", new DateTimeField(), 0, row++ );
     addToGrid( grid, "ChooseField", new ChooseField( EditData.Fruit.values() ), 0, row++ );
-
+    
     addToGrid( grid, "NumberSpinField", new NumberSpinField(), 1, 0 );
     addToGrid( grid, "Below month field wraps with year number spin field", null, 1, 2 );
     addToGrid( grid, "MonthSpinField", monthField, 1, 3 );
     addToGrid( grid, "Year Field", yearField, 1, 4 );
+    **/
 
     return grid;
   }
@@ -245,7 +243,7 @@ public class DemoWindow
     {
       var tab = m_tabs.getSelectionModel().getSelectedItem();
       TableView view = (TableView) tab.getContent();
-      view.redrawNow();
+      view.getCanvas().redrawNow();
     }, 1000 );
 
     // views
@@ -276,7 +274,7 @@ public class DemoWindow
     // create undo-stack window if not already created
     if ( m_undoWindow == null )
     {
-      m_undoWindow = new UndoStackWindow( m_editTable.getUndoStack() );
+      m_undoWindow = new UndoStackWindow( m_undostack );
       m_undoWindow.setOnHiding( event -> menuitem.setSelected( false ) );
     }
 

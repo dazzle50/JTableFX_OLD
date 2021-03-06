@@ -1,5 +1,5 @@
 /**************************************************************************
- *  Copyright (C) 2020 by Richard Crook                                   *
+ *  Copyright (C) 2021 by Richard Crook                                   *
  *  https://github.com/dazzle50/JTableFX                                  *
  *                                                                        *
  *  This program is free software: you can redistribute it and/or modify  *
@@ -27,7 +27,7 @@ import java.time.format.DateTimeFormatter;
 
 public class Utils
 {
-  public static final String      VERSION            = "v0.0.6-alpha WIP";
+  public static final String      VERSION            = "v0.1.0-alpha WIP";
 
   public static DateTimeFormatter timestampFormatter = DateTimeFormatter.ofPattern( "uuuu-MM-dd HH:mm:ss.SSS " );
 

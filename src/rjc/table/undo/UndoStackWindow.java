@@ -1,5 +1,5 @@
 /**************************************************************************
- *  Copyright (C) 2020 by Richard Crook                                   *
+ *  Copyright (C) 2021 by Richard Crook                                   *
  *  https://github.com/dazzle50/JTableFX                                  *
  *                                                                        *
  *  This program is free software: you can redistribute it and/or modify  *
@@ -29,7 +29,7 @@ public class UndoStackWindow extends Stage
 {
 
   /**************************************** constructor ******************************************/
-  public UndoStackWindow( UndoStack undostack )
+  public UndoStackWindow( UndoStack undoStack )
   {
     // create undo-stack window
     setTitle( "Undostack" );
@@ -37,7 +37,7 @@ public class UndoStackWindow extends Stage
     setHeight( 300 );
 
     // setup scene
-    UndoStackView control = new UndoStackView( undostack );
+    UndoStackView control = new UndoStackView( undoStack );
     Scene scene = new Scene( control );
     setScene( scene );
   }

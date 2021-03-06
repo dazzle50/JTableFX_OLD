@@ -1,5 +1,5 @@
 /**************************************************************************
- *  Copyright (C) 2020 by Richard Crook                                   *
+ *  Copyright (C) 2021 by Richard Crook                                   *
  *  https://github.com/dazzle50/JTableFX                                  *
  *                                                                        *
  *  This program is free software: you can redistribute it and/or modify  *
@@ -16,33 +16,33 @@
  *  along with this program.  If not, see http://www.gnu.org/licenses/    *
  **************************************************************************/
 
-package rjc.table.cell.editor;
+package rjc.table.view.cell.editor;
 
-import rjc.table.control.DateField;
-import rjc.table.data.Date;
+import rjc.table.control.DateTimeField;
+import rjc.table.data.DateTime;
 
 /*************************************************************************************************/
-/********************************** Table cell editor for dates **********************************/
+/******************************* Table cell editor for date-times ********************************/
 /*************************************************************************************************/
 
-public class EditorDate extends CellEditorBase
+public class EditorDateTime extends CellEditorBase
 {
-  private DateField m_dateEditor = new DateField();
+  private DateTimeField m_datetimeEditor = new DateTimeField();
 
   /**************************************** constructor ******************************************/
-  public EditorDate()
+  public EditorDateTime()
   {
-    // create table cell editor for date
+    // create table cell editor for date-time
     super();
-    setControl( m_dateEditor );
+    setControl( m_datetimeEditor );
   }
 
   /******************************************* getValue ******************************************/
   @Override
   public Object getValue()
   {
-    // get editor date value
-    return m_dateEditor.getDate();
+    // get editor date-time value
+    return m_datetimeEditor.getDateTime();
   }
 
   /******************************************* setValue ******************************************/
@@ -51,15 +51,15 @@ public class EditorDate extends CellEditorBase
   {
     // set value depending on type
     if ( value == null )
-      m_dateEditor.setDate( Date.now() );
-    else if ( value instanceof Date )
-      m_dateEditor.setDate( (Date) value );
+      m_datetimeEditor.setDateTime( DateTime.now() );
+    else if ( value instanceof DateTime )
+      m_datetimeEditor.setDateTime( (DateTime) value );
     else if ( value instanceof String )
     {
-      // seed editor with a valid date before setting with input string which may not be a valid date
-      m_dateEditor.setDate( Date.now() );
-      m_dateEditor.setText( (String) value );
-      m_dateEditor.positionCaret( ( (String) value ).length() );
+      // seed editor with a valid date-time before setting with input string which may not be a valid date-time
+      m_datetimeEditor.setDateTime( DateTime.now() );
+      m_datetimeEditor.setText( (String) value );
+      m_datetimeEditor.positionCaret( ( (String) value ).length() );
     }
     else
       throw new IllegalArgumentException( "Don't know how to handle " + value.getClass() + " " + value );

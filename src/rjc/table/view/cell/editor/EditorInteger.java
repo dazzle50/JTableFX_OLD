@@ -1,5 +1,5 @@
 /**************************************************************************
- *  Copyright (C) 2020 by Richard Crook                                   *
+ *  Copyright (C) 2021 by Richard Crook                                   *
  *  https://github.com/dazzle50/JTableFX                                  *
  *                                                                        *
  *  This program is free software: you can redistribute it and/or modify  *
@@ -16,40 +16,40 @@
  *  along with this program.  If not, see http://www.gnu.org/licenses/    *
  **************************************************************************/
 
-package rjc.table.cell.editor;
+package rjc.table.view.cell.editor;
 
-import rjc.table.control.ChooseField;
+import rjc.table.control.NumberSpinField;
 
 /*************************************************************************************************/
-/************************** Table cell spin editor for choosing object ***************************/
+/****************************** Table cell spin editor for integer *******************************/
 /*************************************************************************************************/
 
-public class EditorChoose extends CellEditorBase
+public class EditorInteger extends CellEditorBase
 {
-  private ChooseField m_choose;
+  private NumberSpinField m_spin = new NumberSpinField();
 
   /**************************************** constructor ******************************************/
-  public EditorChoose( Object[] values )
+  public EditorInteger()
   {
     // create spin table cell editor for integer
     super();
-    m_choose = new ChooseField( values );
-    setControl( m_choose );
+    setControl( m_spin );
   }
 
   /******************************************* getValue ******************************************/
   @Override
   public Object getValue()
   {
-    // get editor current value
-    return m_choose.getSelected();
+    // get editor integer value
+    return m_spin.getInteger();
   }
 
   /******************************************* setValue ******************************************/
   @Override
   public void setValue( Object value )
   {
-    // set editor current value
-    m_choose.setSelected( value );
+    // set spin field value
+    m_spin.setValue( value );
   }
+
 }

@@ -1,5 +1,5 @@
 /**************************************************************************
- *  Copyright (C) 2020 by Richard Crook                                   *
+ *  Copyright (C) 2021 by Richard Crook                                   *
  *  https://github.com/dazzle50/JTableFX                                  *
  *                                                                        *
  *  This program is free software: you can redistribute it and/or modify  *
@@ -16,14 +16,17 @@
  *  along with this program.  If not, see http://www.gnu.org/licenses/    *
  **************************************************************************/
 
-package rjc.table.cell.editor;
+package rjc.table.view.cell.editor;
 
 import javafx.scene.control.Control;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
-import rjc.table.cell.CellStyle;
+import rjc.table.Utils;
 import rjc.table.control.XTextField;
+import rjc.table.data.TableData;
+import rjc.table.undo.CommandSetValue;
 import rjc.table.view.TableView;
+import rjc.table.view.cell.CellStyle;
 
 /*************************************************************************************************/
 /****************************** Base class for a table cell editor *******************************/
@@ -96,10 +99,22 @@ public class CellEditorBase
   }
 
   /******************************************** commit ********************************************/
-  public void commit()
+  public boolean commit()
   {
     // attempt to commit editor value to data source
-    m_cell.view.setValue( m_cell.columnIndex, m_cell.rowIndex, getValue() );
+    TableData data = m_cell.view.getData();
+    int columnIndex = m_cell.columnIndex;
+    int rowIndex = m_cell.rowIndex;
+
+    // if new value equals old value, or is not valid, exit with no command
+    Object oldValue = data.getValue( columnIndex, rowIndex );
+    Object newValue = getValue();
+    if ( Utils.equal( newValue, oldValue ) || !data.isValid( columnIndex, rowIndex, newValue ) )
+      return false;
+
+    // push new command on undo-stack to update cell value
+    m_cell.view.getUndoStack().push( new CommandSetValue( data, columnIndex, rowIndex, oldValue, newValue ) );
+    return true;
   }
 
   /******************************************* getValue ******************************************/

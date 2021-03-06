@@ -1,5 +1,5 @@
 /**************************************************************************
- *  Copyright (C) 2020 by Richard Crook                                   *
+ *  Copyright (C) 2021 by Richard Crook                                   *
  *  https://github.com/dazzle50/JTableFX                                  *
  *                                                                        *
  *  This program is free software: you can redistribute it and/or modify  *
@@ -47,7 +47,7 @@ public class TableScrollBar extends ScrollBar
   // types of scroll bar animations
   public static enum Animation
   {
-    NONE, POSITION, START, END
+    NONE, TO_POSITION, TO_START, TO_END
   }
 
   /**************************************** constructor ******************************************/
@@ -185,7 +185,7 @@ public class TableScrollBar extends ScrollBar
       double ms = ( getMax() - getValue() ) * 1e3 / pixelsPerSec;
       m_scrollingTo = INVALID;
       animate( (int) getMax(), (int) ms );
-      m_animation = Animation.END;
+      m_animation = Animation.TO_END;
     }
   }
 
@@ -205,7 +205,7 @@ public class TableScrollBar extends ScrollBar
       double ms = getValue() * 1000.0 / pixelsPerSec;
       m_scrollingTo = INVALID;
       animate( 0, (int) ms );
-      m_animation = Animation.START;
+      m_animation = Animation.TO_START;
     }
   }
 
@@ -242,7 +242,7 @@ public class TableScrollBar extends ScrollBar
       m_animation = Animation.NONE;
     } );
     m_timeline.play();
-    m_animation = Animation.POSITION;
+    m_animation = Animation.TO_POSITION;
   }
 
   /*************************************** finishAnimation ***************************************/
@@ -270,7 +270,7 @@ public class TableScrollBar extends ScrollBar
   public void stopAnimationStartEnd()
   {
     // stop any scrolling to edges
-    if ( m_animation == Animation.START || m_animation == Animation.END )
+    if ( m_animation == Animation.TO_START || m_animation == Animation.TO_END )
       stopAnimation();
   }
 

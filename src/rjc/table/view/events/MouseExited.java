@@ -1,5 +1,5 @@
 /**************************************************************************
- *  Copyright (C) 2020 by Richard Crook                                   *
+ *  Copyright (C) 2021 by Richard Crook                                   *
  *  https://github.com/dazzle50/JTableFX                                  *
  *                                                                        *
  *  This program is free software: you can redistribute it and/or modify  *
@@ -16,49 +16,24 @@
  *  along with this program.  If not, see http://www.gnu.org/licenses/    *
  **************************************************************************/
 
-package rjc.table.cell.editor;
+package rjc.table.view.events;
 
-import rjc.table.control.XTextField;
+import javafx.event.EventHandler;
+import javafx.scene.input.MouseEvent;
 
 /*************************************************************************************************/
-/******************************* Table cell editor for simple text *******************************/
+/************************* Handles mouse exited events from table-view ***************************/
 /*************************************************************************************************/
 
-public class EditorText extends CellEditorBase
+public class MouseExited implements EventHandler<MouseEvent>
 {
-  private XTextField editor = new XTextField();
 
-  /**************************************** constructor ******************************************/
-  public EditorText()
-  {
-    // create text table cell editor
-    super();
-    setControl( editor );
-  }
-
-  /******************************************* getValue ******************************************/
+  /******************************************* handle ********************************************/
   @Override
-  public Object getValue()
+  public void handle( MouseEvent event )
   {
-    // get editor text
-    return editor.getText();
-  }
+    // mouse pointer has exited the table-view
 
-  /******************************************* setValue ******************************************/
-  @Override
-  public void setValue( Object value )
-  {
-    // set editor text
-    String str = value == null ? "" : value.toString();
-    editor.setText( str );
-    editor.positionCaret( str.length() );
-  }
-
-  /****************************************** setAllowed *****************************************/
-  public void setAllowed( String regex )
-  {
-    // regular expression that limits what can be entered into editor
-    editor.setAllowed( regex );
   }
 
 }

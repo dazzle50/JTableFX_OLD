@@ -1,5 +1,5 @@
 /**************************************************************************
- *  Copyright (C) 2020 by Richard Crook                                   *
+ *  Copyright (C) 2021 by Richard Crook                                   *
  *  https://github.com/dazzle50/JTableFX                                  *
  *                                                                        *
  *  This program is free software: you can redistribute it and/or modify  *
@@ -16,29 +16,47 @@
  *  along with this program.  If not, see http://www.gnu.org/licenses/    *
  **************************************************************************/
 
-package rjc.table.view;
+package rjc.table.view.actions;
 
-import javafx.scene.input.Clipboard;
-import javafx.scene.input.ClipboardContent;
-import rjc.table.Utils;
+import rjc.table.view.TableView;
 
-/*************************************************************************************************/
-/************************** Copy table-cells to clipboard functionality **************************/
-/*************************************************************************************************/
-
-public class ContentCopy
+public class Content
 {
 
-  /**************************************** constructor ******************************************/
-  public ContentCopy( TableView view, int colPos, int rowPos )
+  public static void insert()
   {
-    // copy cell values & format from selected cells
-    Utils.trace( "Copy - TODO not yet implemented", colPos, rowPos, view );
+    // TODO Auto-generated method stub
 
-    Clipboard clipboard = Clipboard.getSystemClipboard();
-    ClipboardContent content = new ClipboardContent();
-    content.putString( view.toString() );
-    clipboard.setContent( content );
+  }
+
+  public static void delete()
+  {
+    // TODO Auto-generated method stub
+
+  }
+
+  public static void fillDown( TableView view )
+  {
+    // TODO Auto-generated method stub
+
+  }
+
+  public static void paste( TableView view )
+  {
+    // TODO Auto-generated method stub
+
+  }
+
+  public static void copy( TableView view )
+  {
+    // TODO Auto-generated method stub
+
+  }
+
+  public static void cut( TableView view )
+  {
+    // TODO Auto-generated method stub
+
   }
 
 }

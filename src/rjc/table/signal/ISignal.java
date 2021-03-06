@@ -1,5 +1,5 @@
 /**************************************************************************
- *  Copyright (C) 2020 by Richard Crook                                   *
+ *  Copyright (C) 2021 by Richard Crook                                   *
  *  https://github.com/dazzle50/JTableFX                                  *
  *                                                                        *
  *  This program is free software: you can redistribute it and/or modify  *
@@ -21,6 +21,8 @@ package rjc.table.signal;
 import java.util.ArrayList;
 import java.util.HashMap;
 
+import javafx.application.Platform;
+
 /*************************************************************************************************/
 /******************* Interface for signal senders with default implementation ********************/
 /*************************************************************************************************/
@@ -32,7 +34,7 @@ public interface ISignal
   {
     final private static HashMap<ISignal, ArrayList<IListener>> m_listeners = new HashMap<>();
 
-    /******************************************* signal ********************************************/
+    /****************************************** signal *******************************************/
     private static void signal( ISignal signaller, Object[] objects )
     {
       // send signal objects to each listener registered with specified signal sender
@@ -41,7 +43,16 @@ public interface ISignal
         list.forEach( ( listener ) -> listener.slot( objects ) );
     }
 
-    /**************************************** addListener ******************************************/
+    /**************************************** signalLater ****************************************/
+    private static void signalLater( ISignal signaller, Object[] objects )
+    {
+      // send signal objects using Platform.runLater to each listener registered with specified signal sender
+      var list = m_listeners.get( signaller );
+      if ( list != null )
+        list.forEach( ( listener ) -> Platform.runLater( () -> listener.slot( objects ) ) );
+    }
+
+    /*************************************** addListener *****************************************/
     private static void addListener( ISignal signaller, IListener lambda )
     {
       // register listener for specified signal sender
@@ -54,7 +65,7 @@ public interface ISignal
       list.add( lambda );
     }
 
-    /*************************************** removeListener ****************************************/
+    /************************************** removeListener ***************************************/
     private static void removeListener( ISignal signaller, IListener lambda )
     {
       // unregister listener for specified signal sender, no-action if not present
@@ -63,7 +74,7 @@ public interface ISignal
         list.remove( lambda );
     }
 
-    /************************************* removeAllListeners **************************************/
+    /************************************ removeAllListeners *************************************/
     private static void removeAllListeners( ISignal signaller )
     {
       // unregister all listeners for specified signal sender
@@ -72,7 +83,7 @@ public interface ISignal
         list.clear();
     }
 
-    /**************************************** getListeners ******************************************/
+    /*************************************** getListeners ****************************************/
     private static ArrayList<IListener> getListeners( ISignal signaller )
     {
       // return list of all listeners for specified signal sender, can be null
@@ -84,8 +95,15 @@ public interface ISignal
   /******************************************* signal ********************************************/
   default void signal( Object... objects )
   {
-    // default implementation for sending a signal to listeners 
+    // default implementation for sending immediate signal to listeners 
     Helper.signal( this, objects );
+  }
+
+  /***************************************** signalLater *****************************************/
+  default void signalLater( Object... objects )
+  {
+    // default implementation for sending delayed signal to listeners 
+    Helper.signalLater( this, objects );
   }
 
   /***************************************** addListener *****************************************/

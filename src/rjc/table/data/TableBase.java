@@ -1,5 +1,5 @@
 /**************************************************************************
- *  Copyright (C) 2020 by Richard Crook                                   *
+ *  Copyright (C) 2021 by Richard Crook                                   *
  *  https://github.com/dazzle50/JTableFX                                  *
  *                                                                        *
  *  This program is free software: you can redistribute it and/or modify  *
@@ -18,30 +18,36 @@
 
 package rjc.table.data;
 
-import javafx.beans.property.ReadOnlyIntegerProperty;
-import javafx.beans.property.ReadOnlyIntegerWrapper;
-import javafx.beans.property.ReadOnlyListProperty;
-import javafx.beans.property.ReadOnlyListWrapper;
-import javafx.collections.FXCollections;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+
 import rjc.table.Utils;
+import rjc.table.signal.ISignal;
+import rjc.table.signal.ObservableInteger;
+import rjc.table.signal.ObservableInteger.ReadOnlyInteger;
 import rjc.table.view.TableView;
 
 /*************************************************************************************************/
 /******************* Column & row counts + registering associated table views ********************/
 /*************************************************************************************************/
 
-public class TableBase
+public class TableBase implements ISignal
 {
-  // observable list of registered table views
-  final private ReadOnlyListWrapper<TableView> m_views       = new ReadOnlyListWrapper<>(
-      FXCollections.observableArrayList() );
+  //observable integers for table body column & row counts
+  private ObservableInteger    m_columnCount = new ObservableInteger( 3 );
+  private ObservableInteger    m_rowCount    = new ObservableInteger( 10 );
 
-  // observable integers for table body column & row counts
-  final private ReadOnlyIntegerWrapper         m_columnCount = new ReadOnlyIntegerWrapper( 3 );
-  final private ReadOnlyIntegerWrapper         m_rowCount    = new ReadOnlyIntegerWrapper( 10 );
+  // list of registered table views
+  private ArrayList<TableView> m_views       = new ArrayList<>();
+
+  public enum Signal
+  {
+    VIEW_REGISTERED, VIEW_UNREGISTERED
+  }
 
   // column & row index starts at 0 for table body, index of -1 is for header
-  final static public int                      HEADER        = -1;
+  final static public int HEADER = -1;
 
   /*************************************** getColumnCount ****************************************/
   final public int getColumnCount()
@@ -72,27 +78,30 @@ public class TableBase
   }
 
   /*********************************** getColumnCountProperty ************************************/
-  final public ReadOnlyIntegerProperty getColumnCountProperty()
+  final public ReadOnlyInteger getColumnCountProperty()
   {
     // return read-only property for column count
-    return m_columnCount.getReadOnlyProperty();
+    return m_columnCount.getReadOnly();
   }
 
   /************************************ getRowCountProperty **************************************/
-  final public ReadOnlyIntegerProperty getRowCountProperty()
+  final public ReadOnlyInteger getRowCountProperty()
   {
     // return read-only property for row count
-    return m_rowCount.getReadOnlyProperty();
+    return m_rowCount.getReadOnly();
   }
 
   /****************************************** register *******************************************/
   public void register( TableView view )
   {
     // register associated table view
-    if ( !m_views.contains( view ) )
-      m_views.add( view );
-    else
+    if ( m_views.contains( view ) )
       Utils.trace( "WARNING: view already registered", view, this );
+    else
+    {
+      m_views.add( view );
+      signal( Signal.VIEW_REGISTERED, view );
+    }
   }
 
   /***************************************** unregister ******************************************/
@@ -100,15 +109,17 @@ public class TableBase
   {
     // unregister associated table view
     boolean contained = m_views.remove( view );
-    if ( !contained )
+    if ( contained )
+      signal( Signal.VIEW_UNREGISTERED, view );
+    else
       Utils.trace( "WARNING: view was not registered", view, this );
   }
 
   /****************************************** getViews *******************************************/
-  public ReadOnlyListProperty<TableView> getViews()
+  public List<TableView> getViews()
   {
     // return read-only list of associated table views
-    return m_views.getReadOnlyProperty();
+    return Collections.unmodifiableList( m_views );
   }
 
   /***************************************** resetViews ******************************************/

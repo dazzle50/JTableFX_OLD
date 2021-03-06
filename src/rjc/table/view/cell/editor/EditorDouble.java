@@ -1,5 +1,5 @@
 /**************************************************************************
- *  Copyright (C) 2020 by Richard Crook                                   *
+ *  Copyright (C) 2021 by Richard Crook                                   *
  *  https://github.com/dazzle50/JTableFX                                  *
  *                                                                        *
  *  This program is free software: you can redistribute it and/or modify  *
@@ -16,23 +16,24 @@
  *  along with this program.  If not, see http://www.gnu.org/licenses/    *
  **************************************************************************/
 
-package rjc.table.cell.editor;
+package rjc.table.view.cell.editor;
 
 import rjc.table.control.NumberSpinField;
 
 /*************************************************************************************************/
-/****************************** Table cell spin editor for integer *******************************/
+/****************************** Table cell spin editor for double ********************************/
 /*************************************************************************************************/
 
-public class EditorInteger extends CellEditorBase
+public class EditorDouble extends CellEditorBase
 {
   private NumberSpinField m_spin = new NumberSpinField();
 
   /**************************************** constructor ******************************************/
-  public EditorInteger()
+  public EditorDouble()
   {
-    // create spin table cell editor for integer
+    // create spin table cell editor for double
     super();
+    m_spin.setFormat( "0.0", 1 );
     setControl( m_spin );
   }
 
@@ -40,8 +41,8 @@ public class EditorInteger extends CellEditorBase
   @Override
   public Object getValue()
   {
-    // get editor integer value
-    return m_spin.getInteger();
+    // get editor double value
+    return m_spin.getDouble();
   }
 
   /******************************************* setValue ******************************************/

@@ -1,5 +1,5 @@
 /**************************************************************************
- *  Copyright (C) 2020 by Richard Crook                                   *
+ *  Copyright (C) 2021 by Richard Crook                                   *
  *  https://github.com/dazzle50/JTableFX                                  *
  *                                                                        *
  *  This program is free software: you can redistribute it and/or modify  *
@@ -21,7 +21,7 @@ package rjc.table.undo;
 import java.util.HashMap;
 
 import javafx.geometry.Orientation;
-import rjc.table.view.TableSelect.SelectedSet;
+import rjc.table.view.TableSelection.SelectedSet;
 import rjc.table.view.TableView;
 import rjc.table.view.axis.TableAxis;
 
@@ -49,7 +49,7 @@ public class CommandResize implements IUndoCommand
     m_view = view;
     m_orientation = orientation;
     m_indexes = indexes;
-    TableAxis axis = m_orientation == Orientation.HORIZONTAL ? view.getColumns() : view.getRows();
+    TableAxis axis = m_orientation == Orientation.HORIZONTAL ? view.getColumnsAxis() : view.getRowsAxis();
 
     // get old default size and exceptions before resizing starts
     m_oldDefault = axis.getDefaultSize();
@@ -76,7 +76,7 @@ public class CommandResize implements IUndoCommand
   public void redo()
   {
     // action command
-    TableAxis axis = m_orientation == Orientation.HORIZONTAL ? m_view.getColumns() : m_view.getRows();
+    TableAxis axis = m_orientation == Orientation.HORIZONTAL ? m_view.getColumnsAxis() : m_view.getRowsAxis();
     if ( m_indexes.all )
     {
       axis.setDefaultSize( m_newSize );
@@ -95,7 +95,7 @@ public class CommandResize implements IUndoCommand
   public void undo()
   {
     // revert command
-    TableAxis axis = m_orientation == Orientation.HORIZONTAL ? m_view.getColumns() : m_view.getRows();
+    TableAxis axis = m_orientation == Orientation.HORIZONTAL ? m_view.getColumnsAxis() : m_view.getRowsAxis();
 
     // if all revert default size
     if ( m_indexes.all )

@@ -1,5 +1,5 @@
 /**************************************************************************
- *  Copyright (C) 2020 by Richard Crook                                   *
+ *  Copyright (C) 2021 by Richard Crook                                   *
  *  https://github.com/dazzle50/JTableFX                                  *
  *                                                                        *
  *  This program is free software: you can redistribute it and/or modify  *
@@ -21,7 +21,7 @@ package rjc.table.view.axis;
 import java.util.HashSet;
 import java.util.Set;
 
-import javafx.beans.property.ReadOnlyIntegerProperty;
+import rjc.table.signal.ObservableInteger.ReadOnlyInteger;
 
 /*************************************************************************************************/
 /************************** Extends axis to support section collapsing ***************************/
@@ -33,7 +33,7 @@ public class TableAxis extends AxisSize
   private HashSet<Integer> m_collapsed = new HashSet<>();
 
   /**************************************** constructor ******************************************/
-  public TableAxis( ReadOnlyIntegerProperty countProperty )
+  public TableAxis( ReadOnlyInteger countProperty )
   {
     // call super
     super( countProperty );
@@ -98,6 +98,9 @@ public class TableAxis extends AxisSize
   public int getNext( int position )
   {
     // return next cell body position visible, or last if there isn't one
+    if ( position < HEADER )
+      position = HEADER;
+
     int max = getCount() - 1;
     boolean hidden = true;
     while ( position < max && hidden )
@@ -112,6 +115,9 @@ public class TableAxis extends AxisSize
   public int getPrevious( int position )
   {
     // return previous cell body position visible, or first if there isn't one
+    if ( position > getCount() )
+      position = getCount();
+
     boolean hidden = true;
     while ( position > FIRSTCELL && hidden )
       hidden = isPositionHidden( --position );
@@ -119,6 +125,13 @@ public class TableAxis extends AxisSize
     if ( hidden )
       return getFirst();
     return position;
+  }
+
+  /****************************************** isVisible ******************************************/
+  public boolean isVisible( int position )
+  {
+    // return true if cell is visible body cell
+    return position >= FIRSTCELL && position < getCount() && !isPositionHidden( position );
   }
 
 }

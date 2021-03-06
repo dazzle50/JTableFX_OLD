@@ -1,5 +1,5 @@
 /**************************************************************************
- *  Copyright (C) 2020 by Richard Crook                                   *
+ *  Copyright (C) 2021 by Richard Crook                                   *
  *  https://github.com/dazzle50/JTableFX                                  *
  *                                                                        *
  *  This program is free software: you can redistribute it and/or modify  *
@@ -22,8 +22,8 @@ import java.util.Set;
 import java.util.TreeSet;
 
 import javafx.geometry.Orientation;
-import rjc.table.view.Reorder;
 import rjc.table.view.TableView;
+import rjc.table.view.actions.Reorder;
 import rjc.table.view.axis.TableAxis;
 
 /*************************************************************************************************/
@@ -53,7 +53,7 @@ public class CommandReorder implements IUndoCommand
   public void redo()
   {
     // action command
-    TableAxis axis = m_orientation == Orientation.HORIZONTAL ? m_view.getColumns() : m_view.getRows();
+    TableAxis axis = m_orientation == Orientation.HORIZONTAL ? m_view.getColumnsAxis() : m_view.getRowsAxis();
     axis.movePositions( m_positions, m_newPos );
 
     // redraw table in this view only
@@ -65,7 +65,7 @@ public class CommandReorder implements IUndoCommand
   public void undo()
   {
     // revert command
-    TableAxis axis = m_orientation == Orientation.HORIZONTAL ? m_view.getColumns() : m_view.getRows();
+    TableAxis axis = m_orientation == Orientation.HORIZONTAL ? m_view.getColumnsAxis() : m_view.getRowsAxis();
     int newOffset = Reorder.countBefore( m_positions, m_newPos );
     int oldOffset = m_positions.size() - newOffset;
 

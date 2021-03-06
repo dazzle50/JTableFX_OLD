@@ -1,5 +1,5 @@
 /**************************************************************************
- *  Copyright (C) 2020 by Richard Crook                                   *
+ *  Copyright (C) 2021 by Richard Crook                                   *
  *  https://github.com/dazzle50/JTableFX                                  *
  *                                                                        *
  *  This program is free software: you can redistribute it and/or modify  *
@@ -63,7 +63,7 @@ public class CommandZoom implements IUndoCommand
   public void redo()
   {
     // action command
-    m_view.setViewZoom( m_newZoom );
+    m_view.getZoom().set( m_newZoom );
     m_view.redraw();
   }
 
@@ -72,7 +72,7 @@ public class CommandZoom implements IUndoCommand
   public void undo()
   {
     // revert command
-    m_view.setViewZoom( m_oldZoom );
+    m_view.getZoom().set( m_oldZoom );
     m_view.redraw();
   }
 

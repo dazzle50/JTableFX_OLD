@@ -1,5 +1,5 @@
 /**************************************************************************
- *  Copyright (C) 2020 by Richard Crook                                   *
+ *  Copyright (C) 2021 by Richard Crook                                   *
  *  https://github.com/dazzle50/JTableFX                                  *
  *                                                                        *
  *  This program is free software: you can redistribute it and/or modify  *
@@ -18,356 +18,498 @@
 
 package rjc.table.view;
 
-import java.util.HashSet;
-import java.util.concurrent.atomic.AtomicBoolean;
-
-import javafx.application.Platform;
-import javafx.scene.canvas.GraphicsContext;
-import rjc.table.Colors;
+import javafx.geometry.Orientation;
+import javafx.scene.control.ScrollBar;
 import rjc.table.Status;
-import rjc.table.Utils;
-import rjc.table.cell.CellContext;
-import rjc.table.cell.CellDraw;
-import rjc.table.cell.editor.CellEditorBase;
 import rjc.table.data.TableData;
-import rjc.table.undo.CommandSetValue;
+import rjc.table.signal.ObservableDouble;
+import rjc.table.undo.UndoStack;
+import rjc.table.view.TableScrollBar.Animation;
+import rjc.table.view.actions.Resize;
+import rjc.table.view.axis.TableAxis;
+import rjc.table.view.cell.CellContext;
+import rjc.table.view.cell.CellDraw;
+import rjc.table.view.cell.CellStyle;
+import rjc.table.view.cell.MousePosition;
+import rjc.table.view.cell.ViewPosition;
+import rjc.table.view.cell.editor.CellEditorBase;
+import rjc.table.view.events.ContextMenu;
+import rjc.table.view.events.KeyPressed;
+import rjc.table.view.events.KeyTyped;
+import rjc.table.view.events.MouseClicked;
+import rjc.table.view.events.MouseDragged;
+import rjc.table.view.events.MouseEntered;
+import rjc.table.view.events.MouseExited;
+import rjc.table.view.events.MouseMoved;
+import rjc.table.view.events.MousePressed;
+import rjc.table.view.events.MouseReleased;
+import rjc.table.view.events.MouseScroll;
 
 /*************************************************************************************************/
 /********************************** Base class for table views ***********************************/
 /*************************************************************************************************/
 
-public class TableView extends TableXML
+public class TableView extends TableParent
 {
-  private AtomicBoolean    m_redrawIsRequested; // flag if redraw has been scheduled
-  private boolean          m_fullRedraw;        // full view redraw (headers & body)
-  private HashSet<Integer> m_columns;           // requested column indexes
-  private HashSet<Integer> m_rows;              // requested row indexes
-  private HashSet<Long>    m_cells;             // long = (long) column << 32 | row & 0xFFFFFFFFL
+  private TableData          m_data;
 
-  private Status           m_status;            // status for this view
+  protected TableCanvas      m_canvas;
+  protected TableScrollBar   m_verticalScrollBar;
+  protected TableScrollBar   m_horizontalScrollBar;
+
+  protected ObservableDouble m_zoom;
+  protected TableAxis        m_columnsAxis;        // columns (horizontal) axis
+  protected TableAxis        m_rowsAxis;           // rows (vertical) axis
+
+  protected TableSelection   m_selection;
+  protected UndoStack        m_undostack;
+  protected Status           m_status;
+
+  protected ViewPosition     m_focusCell;
+  protected ViewPosition     m_selectCell;
+  protected MousePosition    m_mouseCell;
 
   /**************************************** constructor ******************************************/
   public TableView( TableData data )
   {
-    // setup and register table view
-    m_redrawIsRequested = new AtomicBoolean( false );
-    m_fullRedraw = false;
-    m_columns = new HashSet<>();
-    m_rows = new HashSet<>();
-    m_cells = new HashSet<>();
+    // check parameters and setup table-view
+    if ( data == null )
+      throw new NullPointerException( "TableData must not be null" );
+    m_data = data;
+    m_data.register( this );
+    construct();
+  }
 
-    construct( this, data );
+  /***************************************** construct *******************************************/
+  public void construct()
+  {
+    // construct the table-view
+    m_zoom = new ObservableDouble( 1.0 );
+    m_columnsAxis = new TableAxis( m_data.getColumnCountProperty() );
+    m_rowsAxis = new TableAxis( m_data.getRowCountProperty() );
+
+    m_canvas = new TableCanvas( this );
+    m_horizontalScrollBar = new TableScrollBar( m_columnsAxis, Orientation.HORIZONTAL );
+    m_verticalScrollBar = new TableScrollBar( m_rowsAxis, Orientation.VERTICAL );
+    getChildren().addAll( m_canvas, m_canvas.m_overlay, m_horizontalScrollBar, m_verticalScrollBar );
+
+    m_selection = new TableSelection( this );
+    m_status = new Status();
+
+    m_focusCell = new ViewPosition( this );
+    m_selectCell = new ViewPosition( this );
+    m_mouseCell = new MousePosition( this );
+
+    // reset table view to default settings
+    reset();
+
+    // react to mouse events
+    setOnMouseMoved( new MouseMoved() );
+    setOnMouseClicked( new MouseClicked() );
+    setOnMousePressed( new MousePressed() );
+    setOnMouseReleased( new MouseReleased() );
+    setOnMouseExited( new MouseExited() );
+    setOnMouseEntered( new MouseEntered() );
+    setOnMouseDragged( new MouseDragged() );
+    setOnScroll( new MouseScroll() );
+    setOnContextMenuRequested( new ContextMenu() );
+
+    // react to keyboard events
+    setOnKeyPressed( new KeyPressed() );
+    setOnKeyTyped( new KeyTyped() );
+
+    // react to focus & select cell movement
+    m_focusCell.addListener( x ->
+    {
+      getSelection().update();
+      redraw();
+      scrollTo( m_focusCell.getColumnPos(), m_focusCell.getRowPos() );
+    } );
+    m_selectCell.addListener( x ->
+    {
+      getSelection().update();
+      redraw();
+      scrollTo( m_selectCell.getColumnPos(), m_selectCell.getRowPos() );
+    } );
+
+    // react to scroll bar position value changes
+    m_horizontalScrollBar.valueProperty().addListener( ( observable, oldV, newV ) -> tableScrolled() );
+    m_verticalScrollBar.valueProperty().addListener( ( observable, oldV, newV ) -> tableScrolled() );
   }
 
   /******************************************** reset ********************************************/
   public void reset()
   {
     // reset table view to default settings
-    getColumns().reset();
-    getRows().reset();
-    getRows().setDefaultSize( 20 );
-    getRows().setHeaderSize( 20 );
+    getColumnsAxis().reset();
+    getRowsAxis().reset();
+    getRowsAxis().setDefaultSize( 20 );
+    getRowsAxis().setHeaderSize( 20 );
   }
 
-  /*************************************** performRedraws ****************************************/
-  private void performRedraws()
+  /****************************************** getData ********************************************/
+  public TableData getData()
   {
-    // redraw parts of table that have been requested
-    m_redrawIsRequested.set( false );
-    if ( m_fullRedraw )
-      redrawNow(); // full redraw requested so don't need to redraw anything else
-    else
-    {
-      // redraw requested cells that aren't covered by requested columns & rows
-      for ( long hash : m_cells )
-      {
-        int columnIndex = (int) ( hash >> 32 );
-        int rowIndex = (int) hash;
-        if ( !m_columns.contains( columnIndex ) && !m_rows.contains( rowIndex ) )
-          redrawCellNow( columnIndex, rowIndex );
-      }
-
-      // redraw requested columns & rows
-      for ( int columnIndex : m_columns )
-        redrawColumnNow( columnIndex );
-      for ( int rowIndex : m_rows )
-        redrawRowNow( rowIndex );
-    }
-
-    // clear requests
-    m_fullRedraw = false;
-    m_columns.clear();
-    m_rows.clear();
-    m_cells.clear();
+    // return data model for table-view
+    return m_data;
   }
 
-  /****************************************** schedule *******************************************/
-  private void schedule()
+  /***************************************** getCanvas *******************************************/
+  public TableCanvas getCanvas()
   {
-    // schedule redrawing of what has been requested
-    if ( m_redrawIsRequested.compareAndSet( false, true ) )
-      Platform.runLater( () -> performRedraws() );
+    // return canvas (shows table headers & body cells + BLANK excess space) for table-view
+    return m_canvas;
   }
 
-  /******************************************* redraw ********************************************/
-  public void redraw()
+  /*********************************** getHorizontalScrollBar ************************************/
+  public TableScrollBar getHorizontalScrollBar()
   {
-    // request redraw full visible table (headers and body)
-    m_fullRedraw = true;
-    schedule();
+    // return horizontal scroll bar (will not be visible if not needed) for table-view
+    return m_horizontalScrollBar;
   }
 
-  /***************************************** redrawCell ******************************************/
-  public void redrawCell( int columnIndex, int rowIndex )
+  /************************************ getVerticalScrollBar *************************************/
+  public TableScrollBar getVerticalScrollBar()
   {
-    // request redraw specified table body or header cell
-    m_cells.add( (long) columnIndex << 32 | rowIndex & 0xFFFFFFFFL );
-    schedule();
+    // return vertical scroll bar (will not be visible if not needed) for table-view
+    return m_verticalScrollBar;
   }
 
-  /**************************************** redrawColumn *****************************************/
-  public void redrawColumn( int columnIndex )
+  /*************************************** getColumnsAxis ****************************************/
+  public TableAxis getColumnsAxis()
   {
-    // request redraw visible bit of column including header
-    m_columns.add( columnIndex );
-    schedule();
+    // return horizontal axis for column widths and mapping of index to position for table-view
+    return m_columnsAxis;
   }
 
-  /****************************************** redrawRow ******************************************/
-  public void redrawRow( int rowIndex )
+  /**************************************** getRowsAxis ******************************************/
+  public TableAxis getRowsAxis()
   {
-    // request redraw visible bit of row including header
-    m_rows.add( rowIndex );
-    schedule();
+    // return vertical axis for row heights and mapping of index to position for table-view
+    return m_rowsAxis;
+  }
+
+  /****************************************** getZoom ********************************************/
+  public ObservableDouble getZoom()
+  {
+    // return observable zoom factor (1.0 is normal 100% size) for table-view
+    return m_zoom;
+  }
+
+  /*************************************** getSelection ******************************************/
+  public TableSelection getSelection()
+  {
+    // return selection model for table-view
+    return m_selection;
+  }
+
+  /***************************************** getUndoStack ****************************************/
+  public UndoStack getUndoStack()
+  {
+    // return undo-stack for table-view (create if necessary)
+    if ( m_undostack == null )
+      m_undostack = new UndoStack();
+    return m_undostack;
+  }
+
+  /***************************************** setUndoStack ****************************************/
+  public void setUndoStack( UndoStack undostack )
+  {
+    // set the undo-stack for table-view
+    m_undostack = undostack;
+  }
+
+  /***************************************** getStatus *******************************************/
+  public Status getStatus()
+  {
+    // return status object for table-view
+    return m_status;
+  }
+
+  /***************************************** setStatus *******************************************/
+  public void setStatus( Status status )
+  {
+    // set status object for table-view
+    m_status = status;
+  }
+
+  /**************************************** getFocusCell *****************************************/
+  public ViewPosition getFocusCell()
+  {
+    // return observable focus cell position on table-view
+    return m_focusCell;
+  }
+
+  /**************************************** getSelectCell ****************************************/
+  public ViewPosition getSelectCell()
+  {
+    // return observable select cell position on table-view
+    return m_selectCell;
+  }
+
+  /**************************************** getMouseCell *****************************************/
+  public MousePosition getMouseCell()
+  {
+    // return observable mouse cell position on table-view
+    return m_mouseCell;
   }
 
   /**************************************** getCellDrawer ****************************************/
   public CellDraw getCellDrawer()
   {
-    // return new instance of class that draws table cells
+    // return new instance of class that draws table cells (override to use different drawer)
     return new CellDraw();
   }
 
   /**************************************** getCellEditor ****************************************/
   public CellEditorBase getCellEditor( CellContext cell )
   {
-    // return cell editor, or null if cell is read-only
+    // return cell editor control (or null if cell is read-only)
     return null;
   }
 
-  /****************************************** setValue *******************************************/
-  public boolean setValue( int columnIndex, int rowIndex, Object newValue )
+  /***************************************** openEditor ******************************************/
+  public void openEditor( Object value )
   {
-    // if new value equals old value, exit with no command
-    Object oldValue = getData().getValue( columnIndex, rowIndex );
-    if ( Utils.equal( newValue, oldValue ) )
-      return false;
+    // generate cell context from cell drawer
+    CellStyle cell = getCellDrawer();
+    cell.setPosition( this, getFocusCell() );
+    CellEditorBase editor = getCellEditor( cell );
 
-    // push new command on undo-stack to update cell value
-    getData().getUndoStack().push( new CommandSetValue( getData(), columnIndex, rowIndex, oldValue, newValue ) );
-    return true;
+    // open editor if provided and valid value
+    if ( editor != null && editor.isValueValid( value ) )
+      editor.open( value, cell );
   }
 
-  /****************************************** redrawNow ******************************************/
-  public void redrawNow()
+  /******************************************* redraw ********************************************/
+  public void redraw()
   {
-    // request complete redraw of table canvas (-1 and +1 to ensure canvas graphics context does a reset)
-    widthChange( -1, getWidth() + 1 );
+    // request redraw of full visible table (headers and body)
+    getCanvas().redraw();
   }
 
-  /*************************************** redrawCellNow *****************************************/
-  public void redrawCellNow( int columnIndex, int rowIndex )
+  /***************************************** redrawCell ******************************************/
+  public void redrawCell( int columnIndex, int rowIndex )
   {
-    // redraw table body or header cell
-    CellDraw cell = getCellDrawer();
-    if ( isVisible() && columnIndex >= HEADER && rowIndex >= HEADER )
+    // request redraw of specified table body or header cell
+    getCanvas().redrawCell( columnIndex, rowIndex );
+  }
+
+  /**************************************** redrawColumn *****************************************/
+  public void redrawColumn( int columnIndex )
+  {
+    // request redraw of visible part of column including header
+    getCanvas().redrawColumn( columnIndex );
+  }
+
+  /****************************************** redrawRow ******************************************/
+  public void redrawRow( int rowIndex )
+  {
+    // request redraw of visible part of row including header
+    getCanvas().redrawRow( rowIndex );
+  }
+
+  /*********************************** getXStartFromColumnPos ************************************/
+  public int getXStartFromColumnPos( int columnPos )
+  {
+    // return x coordinate of cell start for specified column position
+    return getColumnsAxis().getStartFromPosition( columnPos, (int) getHorizontalScrollBar().getValue() );
+  }
+
+  /************************************* getYStartFromRowPos *************************************/
+  public int getYStartFromRowPos( int rowPos )
+  {
+    // return y coordinate of cell start for specified row position
+    return getRowsAxis().getStartFromPosition( rowPos, (int) getVerticalScrollBar().getValue() );
+  }
+
+  /*********************************** getColumnPositionAtX **************************************/
+  public int getColumnPositionAtX( int x )
+  {
+    // return column position at specified x coordinate
+    return getColumnsAxis().getPositionFromCoordinate( x, (int) getHorizontalScrollBar().getValue() );
+  }
+
+  /************************************* getRowPositionAtY ***************************************/
+  public int getRowPositionAtY( int y )
+  {
+    // return row position at specified y coordinate
+    return getRowsAxis().getPositionFromCoordinate( y, (int) getVerticalScrollBar().getValue() );
+  }
+
+  /************************************** getTableHeight *****************************************/
+  public int getTableHeight()
+  {
+    // return height in pixels of all whole table including header (with zoom but no scrolling) - probably larger than canvas
+    return getRowsAxis().getHeaderPixels() + getRowsAxis().getBodyPixels();
+  }
+
+  /*************************************** getTableWidth *****************************************/
+  public int getTableWidth()
+  {
+    // return width in pixels of all whole non-scrolled table including header (with zoom but no scrolling) - probably larger than canvas
+    return getColumnsAxis().getHeaderPixels() + getColumnsAxis().getBodyPixels();
+  }
+
+  /************************************* getHeaderHeight *****************************************/
+  public int getHeaderHeight()
+  {
+    // return header height in pixels (taking zoom into account)
+    return getRowsAxis().getHeaderPixels();
+  }
+
+  /************************************** getHeaderWidth *****************************************/
+  public int getHeaderWidth()
+  {
+    // return header width in pixels (taking zoom into account)
+    return getColumnsAxis().getHeaderPixels();
+  }
+
+  /******************************************* resize ********************************************/
+  @Override
+  public void resize( double width, double height )
+  {
+    // do nothing if no change in size
+    if ( (int) width == getWidth() && (int) height == getHeight() )
+      return;
+
+    // only resize if width && height less than max integer (which happens on first pass)
+    if ( width < Integer.MAX_VALUE && height < Integer.MAX_VALUE )
     {
-      cell.setIndex( getView(), columnIndex, rowIndex );
-      cell.draw();
+      // resize parent and re-layout canvas and scroll bars
+      super.resize( width, height );
+      layoutDisplay();
     }
   }
 
-  /*************************************** redrawColumnNow ***************************************/
-  public void redrawColumnNow( int columnIndex )
+  /**************************************** layoutDisplay ****************************************/
+  public void layoutDisplay()
   {
-    // redraw visible bit of column including header
-    if ( isVisible() && columnIndex >= HEADER )
+    // determine which scroll-bars should be visible
+    int tableH = getTableHeight();
+    int tableW = getTableWidth();
+    int scrollbarSize = (int) getVerticalScrollBar().getWidth();
+
+    boolean isVSBvisible = getHeight() < tableH;
+    int visibleWidth = isVSBvisible ? getWidth() - scrollbarSize : getWidth();
+    boolean isHSBvisible = visibleWidth < tableW;
+    int visibleHeight = isHSBvisible ? getHeight() - scrollbarSize : getHeight();
+    isVSBvisible = visibleHeight < tableH;
+    visibleWidth = isVSBvisible ? getWidth() - scrollbarSize : getWidth();
+
+    // update vertical scroll bar
+    ScrollBar sb = getVerticalScrollBar();
+    sb.setVisible( isVSBvisible );
+    if ( isVSBvisible )
     {
-      CellDraw cell = getCellDrawer();
-      cell.view = getView();
-      cell.gc = getCanvas().getGraphicsContext2D();
-      cell.columnIndex = columnIndex;
-      cell.columnPos = getColumns().getPositionFromIndex( columnIndex );
+      sb.setPrefHeight( visibleHeight );
+      sb.relocate( getWidth() - scrollbarSize, 0.0 );
 
-      // calculate which rows are visible
-      int minRowPos = getRowPositionAtY( getColumnHeaderHeight() );
-      int maxRowPos = getRowPositionAtY( (int) getCanvas().getHeight() );
-      cell.x = getXStartFromColumnPos( cell.columnPos );
-      cell.w = getColumns().getCellPixels( columnIndex );
+      double max = tableH - visibleHeight;
+      sb.setMax( max );
+      sb.setVisibleAmount( max * visibleHeight / tableH );
+      sb.setBlockIncrement( visibleHeight - getRowsAxis().getHeaderPixels() );
 
-      // redraw all body cells between min and max row positions inclusive
-      int max = getData().getRowCount() - 1;
-      if ( minRowPos <= max && maxRowPos >= FIRSTCELL )
-      {
-        if ( minRowPos < FIRSTCELL )
-          minRowPos = FIRSTCELL;
-        if ( maxRowPos > max )
-          maxRowPos = max;
-
-        cell.y = getYStartFromRowPos( minRowPos );
-        for ( cell.rowPos = minRowPos; cell.rowPos <= maxRowPos; cell.rowPos++ )
-        {
-          cell.h = getYStartFromRowPos( cell.rowPos + 1 ) - cell.y;
-          if ( cell.h > 0.0 )
-          {
-            cell.rowIndex = getRows().getIndexFromPosition( cell.rowPos );
-            cell.draw();
-            cell.y += cell.h;
-          }
-        }
-      }
-
-      // redraw column header
-      cell.rowIndex = HEADER;
-      cell.rowPos = HEADER;
-      cell.y = 0.0;
-      cell.h = getColumnHeaderHeight();
-      cell.draw();
+      if ( sb.getValue() > max )
+        sb.setValue( max );
     }
-  }
-
-  /**************************************** redrawRowNow *****************************************/
-  public void redrawRowNow( int rowIndex )
-  {
-    // redraw visible bit of row including header
-    if ( isVisible() && rowIndex >= HEADER )
+    else
     {
-      CellDraw cell = getCellDrawer();
-      cell.view = getView();
-      cell.gc = getCanvas().getGraphicsContext2D();
-      cell.rowIndex = rowIndex;
-      cell.rowPos = getRows().getPositionFromIndex( rowIndex );
-
-      // calculate which columns are visible
-      int minColumnPos = getColumnPositionAtX( getRowHeaderWidth() );
-      int maxColumnPos = getColumnPositionAtX( (int) getCanvas().getWidth() );
-      cell.y = getYStartFromRowPos( cell.rowPos );
-      cell.h = getRows().getCellPixels( rowIndex );
-
-      // redraw all body cells between min and max column positions inclusive
-      int max = getData().getColumnCount() - 1;
-      if ( minColumnPos <= max && maxColumnPos >= FIRSTCELL )
-      {
-        if ( minColumnPos < FIRSTCELL )
-          minColumnPos = FIRSTCELL;
-        if ( maxColumnPos > max )
-          maxColumnPos = max;
-
-        cell.x = getXStartFromColumnPos( minColumnPos );
-        for ( cell.columnPos = minColumnPos; cell.columnPos <= maxColumnPos; cell.columnPos++ )
-        {
-          cell.w = getXStartFromColumnPos( cell.columnPos + 1 ) - cell.x;
-          if ( cell.w > 0.0 )
-          {
-            cell.columnIndex = getColumns().getIndexFromPosition( cell.columnPos );
-            cell.draw();
-            cell.x += cell.w;
-          }
-        }
-      }
-
-      // redraw row header
-      cell.columnIndex = HEADER;
-      cell.columnPos = HEADER;
-      cell.x = 0.0;
-      cell.w = getRowHeaderWidth();
-      cell.draw();
+      sb.setValue( 0.0 );
+      sb.setMax( 0.0 );
     }
-  }
 
-  /************************************* redrawColumnsNow ****************************************/
-  public void redrawColumnsNow( int minColumnPos, int maxColumnPos )
-  {
-    // redraw all table body columns between min and max column positions inclusive
-    int max = getData().getColumnCount() - 1;
-    if ( minColumnPos <= max && maxColumnPos >= FIRSTCELL )
+    // update horizontal scroll bar
+    sb = getHorizontalScrollBar();
+    sb.setVisible( isHSBvisible );
+    if ( isHSBvisible )
     {
-      if ( minColumnPos < FIRSTCELL )
-        minColumnPos = FIRSTCELL;
-      if ( maxColumnPos > max )
-        maxColumnPos = max;
+      sb.setPrefWidth( visibleWidth );
+      sb.relocate( 0.0, getHeight() - scrollbarSize );
 
-      for ( int pos = minColumnPos; pos <= maxColumnPos; pos++ )
-        redrawColumnNow( getColumns().getIndexFromPosition( pos ) );
+      double max = tableW - visibleWidth;
+      sb.setMax( max );
+      sb.setVisibleAmount( max * visibleWidth / tableW );
+      sb.setBlockIncrement( visibleWidth - getColumnsAxis().getHeaderPixels() );
+
+      if ( sb.getValue() > max )
+        sb.setValue( max );
     }
-  }
-
-  /*************************************** redrawRowsNow *****************************************/
-  public void redrawRowsNow( int minRowPos, int maxRowPos )
-  {
-    // redraw all table body rows between min and max row positions inclusive
-    int max = getData().getRowCount() - 1;
-    if ( minRowPos <= max && maxRowPos >= FIRSTCELL )
+    else
     {
-      if ( minRowPos < FIRSTCELL )
-        minRowPos = FIRSTCELL;
-      if ( maxRowPos > max )
-        maxRowPos = max;
-
-      for ( int pos = minRowPos; pos <= maxRowPos; pos++ )
-        redrawRowNow( getRows().getIndexFromPosition( pos ) );
+      sb.setValue( 0.0 );
+      sb.setMax( 0.0 );
     }
+
+    // update canvas & overlay size (table + blank excess space)
+    getCanvas().resize( visibleWidth, visibleHeight );
   }
 
-  /************************************** redrawOverlayNow ***************************************/
-  public void redrawOverlayNow()
+  /****************************************** scrollTo *******************************************/
+  public void scrollTo( int columnPos, int rowPos )
   {
-    // highlight focus cell with special border
-    int focusColumnPos = getFocusCellProperty().getColumnPos();
-    int focusRowPos = getFocusCellProperty().getRowPos();
+    // scroll view if necessary to show specified position
+    if ( columnPos >= TableAxis.FIRSTCELL && columnPos < TableAxis.AFTER )
+      getHorizontalScrollBar().scrollToPos( columnPos );
+    if ( rowPos >= TableAxis.FIRSTCELL && rowPos < TableAxis.AFTER )
+      getVerticalScrollBar().scrollToPos( rowPos );
+  }
 
-    if ( focusColumnPos >= FIRSTCELL && focusRowPos >= FIRSTCELL )
+  /**************************************** tableScrolled ****************************************/
+  private void tableScrolled()
+  {
+    // handle any actions needed due to the table scrolled
+    redraw();
+    getMouseCell().checkXY();
+    CellEditorBase.endEditing();
+
+    // if resize in progress, no need to do anything more
+    if ( Resize.inProgress() )
+      return;
+
+    // if animating to start or end means drag is in progress, so update select cell position
+    var animation = getHorizontalScrollBar().getAnimation();
+    if ( animation == Animation.TO_START )
     {
-      GraphicsContext gc = getOverlay().getGraphicsContext2D();
-      gc.clearRect( -1, -1, getOverlay().getWidth() + 1, getOverlay().getHeight() + 1 );
-
-      if ( isTableFocused() )
-        gc.setStroke( Colors.OVERLAY_FOCUS );
-      else
-        gc.setStroke( Colors.OVERLAY_FOCUS.desaturate() );
-
-      double x = getXStartFromColumnPos( focusColumnPos );
-      double y = getYStartFromRowPos( focusRowPos );
-      double w = getXStartFromColumnPos( focusColumnPos + 1 ) - x;
-      double h = getYStartFromRowPos( focusRowPos + 1 ) - y;
-
-      // clip drawing to table body
-      gc.save();
-      gc.beginPath();
-      gc.rect( getRowHeaderWidth() - 1, getColumnHeaderHeight() - 1, getCanvas().getWidth(), getCanvas().getHeight() );
-      gc.clip();
-
-      // draw special border
-      gc.strokeRect( x - 0.5, y - 0.5, w, h );
-      gc.strokeRect( x + 0.5, y + 0.5, w - 2, h - 2 );
-
-      // remove clip
-      gc.restore();
+      int columnPos = getColumnPositionAtX( getHeaderWidth() );
+      columnPos = getColumnsAxis().getNext( columnPos );
+      getSelectCell().setColumnPos( columnPos );
     }
-  }
+    if ( animation == Animation.TO_END )
+    {
+      int columnPos = getColumnPositionAtX( (int) getCanvas().getWidth() );
+      columnPos = getColumnsAxis().getPrevious( columnPos );
+      getSelectCell().setColumnPos( columnPos );
+    }
 
-  /****************************************** getStatus ******************************************/
-  public Status getStatus()
-  {
-    // return status associated with this view (might be null)
-    return m_status;
-  }
+    animation = getVerticalScrollBar().getAnimation();
+    if ( animation == Animation.TO_START )
+    {
+      int rowPos = getRowPositionAtY( getHeaderHeight() );
+      rowPos = getRowsAxis().getNext( rowPos );
+      getSelectCell().setRowPos( rowPos );
+    }
+    if ( animation == Animation.TO_END )
+    {
+      int rowPos = getRowPositionAtY( (int) getCanvas().getHeight() );
+      rowPos = getRowsAxis().getPrevious( rowPos );
+      getSelectCell().setRowPos( rowPos );
+    }
 
-  /****************************************** setStatus ******************************************/
-  public void setStatus( Status status )
-  {
-    // set status for this view
-    m_status = status;
+    /**
+    TODO
+    // if column or row reordering, ensure reorder mark placed correctly
+    if ( m_reorder.getOrientation() == Orientation.HORIZONTAL )
+      m_reorder.setPlacement( m_x );
+    if ( m_reorder.getOrientation() == Orientation.VERTICAL )
+      m_reorder.setPlacement( m_y );
+    
+    // if column or row resizing, update
+    if ( m_resize.getOrientation() == Orientation.HORIZONTAL )
+      m_resize.resize( m_x );
+    if ( m_resize.getOrientation() == Orientation.VERTICAL )
+      m_resize.resize( m_y );
+    **/
   }
 
 }

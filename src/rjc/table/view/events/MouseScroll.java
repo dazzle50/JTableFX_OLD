@@ -1,5 +1,5 @@
 /**************************************************************************
- *  Copyright (C) 2020 by Richard Crook                                   *
+ *  Copyright (C) 2021 by Richard Crook                                   *
  *  https://github.com/dazzle50/JTableFX                                  *
  *                                                                        *
  *  This program is free software: you can redistribute it and/or modify  *
@@ -16,41 +16,39 @@
  *  along with this program.  If not, see http://www.gnu.org/licenses/    *
  **************************************************************************/
 
-package rjc.table.cell.editor;
+package rjc.table.view.events;
 
-import rjc.table.control.NumberSpinField;
+import javafx.event.EventHandler;
+import javafx.scene.input.ScrollEvent;
+import rjc.table.view.TableView;
 
 /*************************************************************************************************/
-/****************************** Table cell spin editor for double ********************************/
+/************************** Handles mouse scroll events from table-view **************************/
 /*************************************************************************************************/
 
-public class EditorDouble extends CellEditorBase
+public class MouseScroll implements EventHandler<ScrollEvent>
 {
-  private NumberSpinField m_spin = new NumberSpinField();
 
-  /**************************************** constructor ******************************************/
-  public EditorDouble()
-  {
-    // create spin table cell editor for double
-    super();
-    m_spin.setFormat( "0.0", 1 );
-    setControl( m_spin );
-  }
-
-  /******************************************* getValue ******************************************/
+  /******************************************* handle ********************************************/
   @Override
-  public Object getValue()
+  public void handle( ScrollEvent event )
   {
-    // get editor double value
-    return m_spin.getDouble();
-  }
+    // scroll up or down depending on mouse wheel scroll event
+    var scrollbar = ( (TableView) event.getSource() ).getVerticalScrollBar();
 
-  /******************************************* setValue ******************************************/
-  @Override
-  public void setValue( Object value )
-  {
-    // set spin field value
-    m_spin.setValue( value );
+    if ( scrollbar.isVisible() )
+    {
+      if ( event.getDeltaY() > 0 )
+      {
+        scrollbar.finishAnimation();
+        scrollbar.decrement();
+      }
+      else
+      {
+        scrollbar.finishAnimation();
+        scrollbar.increment();
+      }
+    }
   }
 
 }

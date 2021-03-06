@@ -1,5 +1,5 @@
 /**************************************************************************
- *  Copyright (C) 2020 by Richard Crook                                   *
+ *  Copyright (C) 2021 by Richard Crook                                   *
  *  https://github.com/dazzle50/JTableFX                                  *
  *                                                                        *
  *  This program is free software: you can redistribute it and/or modify  *
@@ -16,7 +16,7 @@
  *  along with this program.  If not, see http://www.gnu.org/licenses/    *
  **************************************************************************/
 
-package rjc.table.cell;
+package rjc.table.view.cell;
 
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
@@ -41,8 +41,8 @@ public class CellDraw extends CellStyle
       gc.rect( x, y, w, h );
     else
     {
-      double cx = x > view.getRowHeaderWidth() ? x : view.getRowHeaderWidth();
-      double cy = y > view.getColumnHeaderHeight() ? y : view.getColumnHeaderHeight();
+      double cx = x > view.getHeaderWidth() ? x : view.getHeaderWidth();
+      double cy = y > view.getHeaderHeight() ? y : view.getHeaderHeight();
       double cw = w + x - cx;
       double ch = h + y - cy;
       gc.rect( cx, cy, cw, ch );

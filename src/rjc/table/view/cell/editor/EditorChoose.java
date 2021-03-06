@@ -1,5 +1,5 @@
 /**************************************************************************
- *  Copyright (C) 2020 by Richard Crook                                   *
+ *  Copyright (C) 2021 by Richard Crook                                   *
  *  https://github.com/dazzle50/JTableFX                                  *
  *                                                                        *
  *  This program is free software: you can redistribute it and/or modify  *
@@ -16,13 +16,40 @@
  *  along with this program.  If not, see http://www.gnu.org/licenses/    *
  **************************************************************************/
 
-package rjc.table.view;
+package rjc.table.view.cell.editor;
+
+import rjc.table.control.ChooseField;
 
 /*************************************************************************************************/
-/*********************** Reading and writing table view config XML streams ***********************/
+/************************** Table cell spin editor for choosing object ***************************/
 /*************************************************************************************************/
 
-public class TableXML extends TableEvents
+public class EditorChoose extends CellEditorBase
 {
+  private ChooseField m_choose;
 
+  /**************************************** constructor ******************************************/
+  public EditorChoose( Object[] values )
+  {
+    // create spin table cell editor for integer
+    super();
+    m_choose = new ChooseField( values );
+    setControl( m_choose );
+  }
+
+  /******************************************* getValue ******************************************/
+  @Override
+  public Object getValue()
+  {
+    // get editor current value
+    return m_choose.getSelected();
+  }
+
+  /******************************************* setValue ******************************************/
+  @Override
+  public void setValue( Object value )
+  {
+    // set editor current value
+    m_choose.setSelected( value );
+  }
 }

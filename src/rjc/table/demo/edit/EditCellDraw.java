@@ -1,5 +1,5 @@
 /**************************************************************************
- *  Copyright (C) 2020 by Richard Crook                                   *
+ *  Copyright (C) 2021 by Richard Crook                                   *
  *  https://github.com/dazzle50/JTableFX                                  *
  *                                                                        *
  *  This program is free software: you can redistribute it and/or modify  *
@@ -20,8 +20,8 @@ package rjc.table.demo.edit;
 
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
-import rjc.table.cell.CellDraw;
 import rjc.table.view.axis.TableAxis;
+import rjc.table.view.cell.CellDraw;
 
 /*************************************************************************************************/
 /******************************** Example customised cell drawer *********************************/

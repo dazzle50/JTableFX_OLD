@@ -1,5 +1,5 @@
 /**************************************************************************
- *  Copyright (C) 2020 by Richard Crook                                   *
+ *  Copyright (C) 2021 by Richard Crook                                   *
  *  https://github.com/dazzle50/JTableFX                                  *
  *                                                                        *
  *  This program is free software: you can redistribute it and/or modify  *
@@ -18,16 +18,12 @@
 
 package rjc.table.data;
 
-import rjc.table.undo.UndoStack;
-
 /*************************************************************************************************/
 /*********************** Table data source (with default implementations) ************************/
 /*************************************************************************************************/
 
 public class TableData extends TableBase
 {
-  private UndoStack m_undostack; // undo-stack for the table data
-
   /****************************************** getValue *******************************************/
   public Object getValue( int columnIndex, int rowIndex )
   {
@@ -54,20 +50,11 @@ public class TableData extends TableBase
     return false;
   }
 
-  /***************************************** getUndoStack ****************************************/
-  public UndoStack getUndoStack()
+  /****************************************** isValid ******************************************/
+  public boolean isValid( int columnIndex, int rowIndex, Object testValue )
   {
-    // return the data undo-stack (create if necessary)
-    if ( m_undostack == null )
-      m_undostack = new UndoStack();
-    return m_undostack;
-  }
-
-  /***************************************** setUndoStack ****************************************/
-  public void setUndoStack( UndoStack undostack )
-  {
-    // set the data undo-stack
-    m_undostack = undostack;
+    // returns true if test-value is would be allowed
+    return true;
   }
 
 }

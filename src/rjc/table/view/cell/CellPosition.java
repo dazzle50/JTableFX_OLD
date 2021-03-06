@@ -1,5 +1,5 @@
 /**************************************************************************
- *  Copyright (C) 2020 by Richard Crook                                   *
+ *  Copyright (C) 2021 by Richard Crook                                   *
  *  https://github.com/dazzle50/JTableFX                                  *
  *                                                                        *
  *  This program is free software: you can redistribute it and/or modify  *
@@ -16,7 +16,7 @@
  *  along with this program.  If not, see http://www.gnu.org/licenses/    *
  **************************************************************************/
 
-package rjc.table.cell;
+package rjc.table.view.cell;
 
 import rjc.table.signal.ISignal;
 import rjc.table.view.axis.TableAxis;
@@ -25,19 +25,19 @@ import rjc.table.view.axis.TableAxis;
 /*************************** Observable table cell position reference ****************************/
 /*************************************************************************************************/
 
-public class CellProperty implements ISignal
+public class CellPosition implements ISignal
 {
   private int m_columnPos = TableAxis.INVALID;;
   private int m_rowPos    = TableAxis.INVALID;;
 
   /**************************************** constructor ******************************************/
-  public CellProperty()
+  public CellPosition()
   {
     // construct
   }
 
   /**************************************** constructor ******************************************/
-  public CellProperty( int columnPos, int rowPos )
+  public CellPosition( int columnPos, int rowPos )
   {
     // construct and set position
     m_columnPos = columnPos;
@@ -54,6 +54,13 @@ public class CellProperty implements ISignal
       m_rowPos = rowPos;
       signal();
     }
+  }
+
+  /***************************************** setPosition *****************************************/
+  public void setPosition( CellPosition pos )
+  {
+    // set to position
+    setPosition( pos.getColumnPos(), pos.getRowPos() );
   }
 
   /**************************************** setColumnPos *****************************************/
@@ -90,13 +97,6 @@ public class CellProperty implements ISignal
   {
     // return row position
     return m_rowPos;
-  }
-
-  /******************************************* isBody ********************************************/
-  public boolean isBody()
-  {
-    // is current position on table body
-    return m_columnPos >= TableAxis.FIRSTCELL && m_rowPos >= TableAxis.FIRSTCELL;
   }
 
   /****************************************** toString *******************************************/

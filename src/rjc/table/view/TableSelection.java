@@ -1,5 +1,5 @@
 /**************************************************************************
- *  Copyright (C) 2020 by Richard Crook                                   *
+ *  Copyright (C) 2021 by Richard Crook                                   *
  *  https://github.com/dazzle50/JTableFX                                  *
  *                                                                        *
  *  This program is free software: you can redistribute it and/or modify  *
@@ -18,18 +18,20 @@
 
 package rjc.table.view;
 
+import java.util.ArrayList;
 import java.util.HashSet;
 
-import javafx.beans.property.ReadOnlyListProperty;
-import javafx.beans.property.ReadOnlyListWrapper;
-import javafx.collections.FXCollections;
+import rjc.table.signal.ISignal;
+import rjc.table.view.axis.TableAxis;
+import rjc.table.view.cell.CellPosition;
 
 /*************************************************************************************************/
 /************************************* Table area selection **************************************/
 /*************************************************************************************************/
 
-public class TableSelect extends TableNavigate
+public class TableSelection implements ISignal
 {
+  // class represents one selected rectangle
   public class Selected
   {
     public int c1; // smallest column position
@@ -41,12 +43,14 @@ public class TableSelect extends TableNavigate
     {
       // set private variables in correct order
       c1 = Math.min( columnPos1, columnPos2 );
+      c1 = c1 < FIRSTCELL ? FIRSTCELL : c1;
       c2 = Math.max( columnPos1, columnPos2 );
       r1 = Math.min( rowPos1, rowPos2 );
+      r1 = r1 < FIRSTCELL ? FIRSTCELL : r1;
       r2 = Math.max( rowPos1, rowPos2 );
     }
 
-    public boolean isSelected( int columnPos, int rowPos )
+    public boolean isCellSelected( int columnPos, int rowPos )
     {
       // return true is specified position is selected
       return columnPos >= c1 && columnPos <= c2 && rowPos >= r1 && rowPos <= r2;
@@ -60,6 +64,7 @@ public class TableSelect extends TableNavigate
     }
   }
 
+  // class represents set of selected column or row positions, or all
   static public class SelectedSet
   {
     public boolean          all = false;          // all columns or rows selected
@@ -73,74 +78,32 @@ public class TableSelect extends TableNavigate
     }
   }
 
-  // observable list of selected areas for this table view (should always include focus cell)
-  final private ReadOnlyListWrapper<Selected> m_selected = new ReadOnlyListWrapper<>(
-      FXCollections.observableArrayList() );
+  final static public int     INVALID   = TableAxis.INVALID;
+  final static public int     HEADER    = TableAxis.HEADER;
+  final static public int     FIRSTCELL = TableAxis.FIRSTCELL;
+  final static public int     BEFORE    = TableAxis.BEFORE;
+  final static public int     AFTER     = TableAxis.AFTER;
 
-  private Selected                            m_currentSelection;                    // current selection area
+  private ArrayList<Selected> m_selected;
+  private TableView           m_view;
 
-  /************************************** clearAllSelection **************************************/
-  public void clearAllSelection()
+  /**************************************** constructor ******************************************/
+  public TableSelection( TableView view )
+  {
+    // construct selection model
+    m_view = view;
+    m_selected = new ArrayList<>();
+  }
+
+  /******************************************** clear ********************************************/
+  public void clear()
   {
     // remove all selected areas
-    m_selected.clear();
-    m_currentSelection = null;
-  }
-
-  /***************************************** selectTable *****************************************/
-  public void selectTable()
-  {
-    // select entire table
-    clearAllSelection();
-    setCurrentSelection( FIRSTCELL, FIRSTCELL, AFTER, AFTER );
-  }
-
-  /************************************* setCurrentSelection *************************************/
-  public void setCurrentSelection()
-  {
-    // set current selection area to rectangle between focus and select cells
-    if ( getFocusCellProperty().getColumnPos() > HEADER )
-      setCurrentSelection( getFocusCellProperty().getColumnPos(), getFocusCellProperty().getRowPos(),
-          getSelectCellProperty().getColumnPos(), getSelectCellProperty().getRowPos() );
-  }
-
-  /************************************* setCurrentSelection *************************************/
-  public void setCurrentSelection( int columnPos1, int rowPos1, int columnPos2, int rowPos2 )
-  {
-    // check column & row positions are zero or positive
-    if ( columnPos1 <= HEADER || rowPos1 <= HEADER || columnPos2 <= HEADER || rowPos2 <= HEADER )
-      throw new IllegalArgumentException(
-          "Positions not valid " + columnPos1 + " " + rowPos1 + " " + columnPos2 + " " + rowPos2 );
-
-    // if no current selection, start new selection area
-    if ( m_currentSelection == null )
+    if ( !m_selected.isEmpty() )
     {
-      m_currentSelection = new Selected();
-      m_selected.add( m_currentSelection );
+      m_selected.clear();
+      signal( m_selected.size() ); // signal selection model has been cleared
     }
-
-    // ensure selected columns start at top of table, and selected rows start at left edge of table
-    if ( rowPos2 == AFTER )
-      rowPos1 = FIRSTCELL;
-    if ( columnPos2 == AFTER )
-      columnPos1 = FIRSTCELL;
-
-    // set current selection area
-    m_currentSelection.set( columnPos1, rowPos1, columnPos2, rowPos2 );
-  }
-
-  /************************************ getSelectionProperty *************************************/
-  public ReadOnlyListProperty<Selected> getSelectionProperty()
-  {
-    // return selected areas list property
-    return m_selected.getReadOnlyProperty();
-  }
-
-  /************************************** getSelectionCount **************************************/
-  public int getSelectionCount()
-  {
-    // return number of table selected areas
-    return m_selected.size();
   }
 
   /************************************** getSelectionCount **************************************/
@@ -149,7 +112,7 @@ public class TableSelect extends TableNavigate
     // return count of selected areas covering specified cell
     int count = 0;
     for ( Selected area : m_selected )
-      if ( area.isSelected( columnPos, rowPos ) )
+      if ( area.isCellSelected( columnPos, rowPos ) )
         count++;
 
     return count;
@@ -160,7 +123,7 @@ public class TableSelect extends TableNavigate
   {
     // return true if specified cell is in a selected area
     for ( Selected area : m_selected )
-      if ( area.isSelected( columnPos, rowPos ) )
+      if ( area.isCellSelected( columnPos, rowPos ) )
         return true;
 
     return false;
@@ -192,13 +155,15 @@ public class TableSelect extends TableNavigate
   public boolean isColumnSelected( int columnPos )
   {
     // return true if all visible cells in specified column are selected
-    int top = getRows().getFirst();
-    int bottom = getRows().getLast();
+    TableAxis axis = m_view.getRowsAxis();
+    int top = axis.getFirst();
+    int bottom = axis.getLast();
+
     for ( int rowPos = top; rowPos <= bottom; rowPos++ )
-      rows: if ( !getRows().isPositionHidden( rowPos ) )
+      rows: if ( !axis.isPositionHidden( rowPos ) )
       {
         for ( Selected area : m_selected )
-          if ( area.isSelected( columnPos, rowPos ) )
+          if ( area.isCellSelected( columnPos, rowPos ) )
           {
             rowPos = area.r2;
             break rows;
@@ -215,10 +180,10 @@ public class TableSelect extends TableNavigate
     // return return list of selected column positions
     SelectedSet columns = new SelectedSet();
 
-    int first = getColumns().getFirst();
-    int last = getColumns().getLast();
-    int top = getRows().getFirst();
-    int bottom = getRows().getLast();
+    int first = m_view.getColumnsAxis().getFirst();
+    int last = m_view.getColumnsAxis().getLast();
+    int top = m_view.getRowsAxis().getFirst();
+    int bottom = m_view.getRowsAxis().getLast();
 
     // loop through the selected areas
     for ( Selected area : m_selected )
@@ -231,7 +196,7 @@ public class TableSelect extends TableNavigate
         return columns;
       }
 
-      // if columns selected then to list
+      // if columns selected then add to list
       if ( area.r1 <= top && area.r2 >= bottom )
       {
         for ( int column = area.c1; column <= area.c2; column++ )
@@ -248,10 +213,10 @@ public class TableSelect extends TableNavigate
     // return return list of selected row positions
     SelectedSet rows = new SelectedSet();
 
-    int first = getColumns().getFirst();
-    int last = getColumns().getLast();
-    int top = getRows().getFirst();
-    int bottom = getRows().getLast();
+    int first = m_view.getColumnsAxis().getFirst();
+    int last = m_view.getColumnsAxis().getLast();
+    int top = m_view.getRowsAxis().getFirst();
+    int bottom = m_view.getRowsAxis().getLast();
 
     // loop through the selected areas
     for ( Selected area : m_selected )
@@ -264,7 +229,7 @@ public class TableSelect extends TableNavigate
         return rows;
       }
 
-      // if rows selected then to list
+      // if rows selected then add to list
       if ( area.c1 <= first && area.c2 >= last )
       {
         for ( int row = area.r1; row <= area.r2; row++ )
@@ -279,13 +244,15 @@ public class TableSelect extends TableNavigate
   public boolean isRowSelected( int rowPos )
   {
     // return true if all visible cells in specified row are selected
-    int left = getColumns().getFirst();
-    int right = getColumns().getLast();
+    TableAxis axis = m_view.getColumnsAxis();
+
+    int left = axis.getFirst();
+    int right = axis.getLast();
     for ( int columnPos = left; columnPos <= right; columnPos++ )
-      columns: if ( !getColumns().isPositionHidden( columnPos ) )
+      columns: if ( !axis.isPositionHidden( columnPos ) )
       {
         for ( Selected area : m_selected )
-          if ( area.isSelected( columnPos, rowPos ) )
+          if ( area.isCellSelected( columnPos, rowPos ) )
           {
             columnPos = area.c2;
             break columns;
@@ -296,45 +263,6 @@ public class TableSelect extends TableNavigate
     return true;
   }
 
-  /************************************** startNewSelection **************************************/
-  public void startNewSelection()
-  {
-    // start new selection
-    m_currentSelection = null;
-    setCurrentSelection();
-  }
-
-  /*********************************** setSelectFocusPosition ************************************/
-  protected void setSelectFocusPosition( int columnPos, int rowPos, boolean setFocus, boolean clearSelection,
-      boolean scroll )
-  {
-    // clear previous selections
-    if ( clearSelection )
-      clearAllSelection();
-
-    // check column & row positions are valid
-    if ( columnPos < FIRSTCELL )
-      columnPos = FIRSTCELL;
-    if ( rowPos < FIRSTCELL )
-      rowPos = FIRSTCELL;
-
-    // set table select & focus cell positions
-    getSelectCellProperty().setPosition( columnPos, rowPos );
-    if ( setFocus || getFocusCellProperty().getColumnPos() < FIRSTCELL
-        || getFocusCellProperty().getRowPos() < FIRSTCELL )
-      getFocusCellProperty().setPosition( columnPos, rowPos );
-    setCurrentSelection();
-
-    // scroll table if necessary to show cell position
-    if ( scroll )
-    {
-      if ( columnPos < AFTER )
-        getHorizontalScrollBar().scrollToPos( columnPos );
-      if ( rowPos < AFTER )
-        getVerticalScrollBar().scrollToPos( rowPos );
-    }
-  }
-
   /***************************************** selectArea ******************************************/
   public void selectArea( int columnPos1, int rowPos1, int columnPos2, int rowPos2 )
   {
@@ -342,6 +270,41 @@ public class TableSelect extends TableNavigate
     Selected newArea = new Selected();
     newArea.set( columnPos1, rowPos1, columnPos2, rowPos2 );
     m_selected.add( newArea );
+    signal( m_selected.size() );
+  }
+
+  /******************************************** start ********************************************/
+  public void start()
+  {
+    // start selecting new area
+    CellPosition focus = m_view.getFocusCell();
+    CellPosition select = m_view.getSelectCell();
+    selectArea( focus.getColumnPos(), focus.getRowPos(), select.getColumnPos(), select.getRowPos() );
+  }
+
+  /******************************************* update ********************************************/
+  public void update()
+  {
+    // update last selected area if one
+    if ( m_selected.isEmpty() )
+      return;
+
+    CellPosition focus = m_view.getFocusCell();
+    CellPosition select = m_view.getSelectCell();
+    Selected last = m_selected.get( m_selected.size() - 1 );
+
+    // if selecting columns or rows, then start selecting from first cell
+    int focusColumn = select.getColumnPos() == AFTER ? FIRSTCELL : focus.getColumnPos();
+    int focusRow = select.getRowPos() == AFTER ? FIRSTCELL : focus.getRowPos();
+    last.set( focusColumn, focusRow, select.getColumnPos(), select.getRowPos() );
+  }
+
+  /****************************************** selectAll ******************************************/
+  public void selectAll()
+  {
+    // select entire table
+    m_selected.clear(); // direct clear to avoid clear signal before add signal
+    selectArea( FIRSTCELL, FIRSTCELL, AFTER, AFTER );
   }
 
   /****************************************** toString *******************************************/
@@ -350,12 +313,7 @@ public class TableSelect extends TableNavigate
   {
     // convert to string
     String text = getClass().getSimpleName() + "@" + Integer.toHexString( System.identityHashCode( this ) );
-    text += "[cols=" + getData().getColumnCount();
-    text += " rows=" + getData().getRowCount();
-    text += " w=" + getWidth() + " h=" + getHeight();
-    text += " selected=" + m_selected.size();
-
-    return text + "]";
+    return text + "[selected=" + m_selected + "]";
   }
 
 }
