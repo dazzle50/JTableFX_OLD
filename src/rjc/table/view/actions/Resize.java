@@ -18,9 +18,8 @@
 
 package rjc.table.view.actions;
 
-import javafx.geometry.Orientation;
 import rjc.table.undo.CommandResize;
-import rjc.table.view.TableScrollBar.Animation;
+import rjc.table.view.TableScrollBar;
 import rjc.table.view.TableSelection.SelectedSet;
 import rjc.table.view.TableView;
 import rjc.table.view.axis.TableAxis;
@@ -31,60 +30,107 @@ import rjc.table.view.axis.TableAxis;
 
 public class Resize
 {
-  private static TableView     m_view;    // table view for resizing
-  private static TableAxis     m_axis;    // horizontal or vertical axis
-  private static SelectedSet   m_indexes; // columns or rows being resized
-  private static int           m_offset;  // resize coordinate offset
-  private static int           m_before;  // number of positions being resized before current position
-  private static double        m_scroll;  // scroll bar value
-  private static CommandResize m_command; // command for undo-stack
+  private static TableView      m_view;       // table view for resizing
+  private static TableAxis      m_axis;       // horizontal or vertical axis
+  private static TableScrollBar m_scrollbar;  // horizontal or vertical scroll-bar
+
+  private static int            m_coordinate; // latest coordinate used when table scrolled
+  private static int            m_offset;     // resize coordinate offset
+  private static int            m_before;     // number of positions being resized before current position
+  private static CommandResize  m_command;    // command for undo-stack
+
+  // static class to support column resizing
+  public static class HorizontalResize extends Resize
+  {
+    /******************************************** start ********************************************/
+    public static void start( TableView view, int coordinate )
+    {
+      // initialise variables
+      m_view = view;
+      m_axis = view.getColumnsAxis();
+      m_scrollbar = view.getHorizontalScrollBar();
+      start( coordinate, view.getSelection().getSelectedColumns() );
+    }
+  }
+
+  // static class to support row resizing
+  public static class VerticalResize extends Resize
+  {
+    /******************************************** start ********************************************/
+    public static void start( TableView view, int coordinate )
+    {
+      // initialise variables
+      m_view = view;
+      m_axis = view.getRowsAxis();
+      m_scrollbar = view.getVerticalScrollBar();
+      start( coordinate, view.getSelection().getSelectedRows() );
+    }
+  }
 
   /******************************************** start ********************************************/
-  public static void start( TableView view, Orientation orientation, int coordinate )
+  private static void start( int coordinate, SelectedSet positions )
   {
-    // determine set of columns or rows positions to be resized
-    SelectedSet positions;
-    int position;
-    if ( orientation == Orientation.HORIZONTAL )
+    // determine cursor position for resizing
+    int scroll = (int) m_scrollbar.getValue();
+    int position = m_axis.getPositionFromCoordinate( coordinate, scroll );
+    int posStart = m_axis.getStartFromPosition( position, scroll );
+    int posEnd = m_axis.getStartFromPosition( position + 1, scroll );
+
+    if ( coordinate - posStart < posEnd - coordinate )
     {
-      position = view.getColumnPositionAtX( coordinate );
-      int xs = view.getXStartFromColumnPos( position );
-      int xe = view.getXStartFromColumnPos( position + 1 );
-
-      if ( coordinate - xs < xe - coordinate )
-      {
-        m_offset = xs;
-        position--;
-      }
-      else
-        m_offset = xe;
-
-      m_scroll = view.getHorizontalScrollBar().getValue();
-      m_axis = view.getColumnsAxis();
-      positions = view.getSelection().getSelectedColumns();
+      m_offset = posStart + scroll;
+      position--;
     }
     else
-    {
-      position = view.getRowPositionAtY( coordinate );
-      int ys = view.getYStartFromRowPos( position );
-      int ye = view.getYStartFromRowPos( position + 1 );
+      m_offset = posEnd + scroll;
 
-      if ( coordinate - ys < ye - coordinate )
-      {
-        m_offset = ys;
-        position--;
-      }
-      else
-        m_offset = ye;
+    // prepare resize command
+    m_command = new CommandResize( m_view, m_axis, determineIndexes( position, positions ) );
 
-      m_scroll = view.getVerticalScrollBar().getValue();
-      m_axis = view.getRowsAxis();
-      positions = view.getSelection().getSelectedRows();
-    }
+    // start reordering
+    drag( coordinate );
+  }
 
-    // determine set of columns or rows indexes to be resized
-    m_indexes = new SelectedSet();
-    m_indexes.all = positions.all;
+  /******************************************** drag *********************************************/
+  public static void drag( int coordinate )
+  {
+    // resize columns or rows
+    m_coordinate = coordinate;
+    double pixels = ( coordinate - m_offset + m_scrollbar.getValue() ) / m_before;
+    int size = (int) ( pixels / m_view.getZoom().get() );
+
+    // resize
+    m_command.setNewSize( size );
+    m_command.redo();
+  }
+
+  /***************************************** inProgress ******************************************/
+  public static boolean inProgress()
+  {
+    // if no resize in progress return false
+    if ( m_view == null )
+      return false;
+
+    // return true as resize in progress
+    drag( m_coordinate );
+    return true;
+  }
+
+  /********************************************* end *********************************************/
+  public static void end()
+  {
+    // end resizing, push resize command onto undo-stack
+    m_view.getUndoStack().push( m_command );
+    m_view = null;
+    m_command = null;
+  }
+
+  /************************************** determineIndexes ***************************************/
+  private static SelectedSet determineIndexes( int position, SelectedSet positions )
+  {
+    // determine set of column or row indexes to be resized
+    SelectedSet indexes = new SelectedSet();
+    indexes.all = positions.all;
     m_before = 0;
     int index = m_axis.getIndexFromPosition( position );
     if ( positions.set != null && positions.set.contains( position ) )
@@ -93,7 +139,7 @@ public class Resize
       for ( var pos : positions.set )
       {
         int i = m_axis.getIndexFromPosition( pos );
-        m_indexes.set.add( i );
+        indexes.set.add( i );
         if ( pos < position )
         {
           m_offset -= m_axis.getCellPixels( i );
@@ -108,89 +154,20 @@ public class Resize
         m_before = position;
       else
         // resize just current (not-selected) position
-        m_indexes.set.add( index );
+        indexes.set.add( index );
     }
-
-    // prepare resize command
-    m_command = new CommandResize( view, orientation, m_indexes );
 
     // calculate offset
     if ( positions.all )
     {
       m_axis.clearSizeExceptions();
-      if ( orientation == Orientation.HORIZONTAL )
-        m_offset = view.getXStartFromColumnPos( TableAxis.FIRSTCELL );
-      else
-        m_offset = view.getYStartFromRowPos( TableAxis.FIRSTCELL );
+      m_offset = m_axis.getCellPixels( TableAxis.HEADER );
     }
     else
       m_offset -= m_axis.getCellPixels( index );
     m_before++;
 
-    // start reordering
-    m_view = view;
-    drag( coordinate );
+    return indexes;
   }
 
-  /******************************************** drag *********************************************/
-  public static void drag( int coordinate )
-  {
-    // resize columns or rows
-    int pixels = ( coordinate - m_offset ) / m_before;
-    int size = (int) ( pixels / m_view.getZoom().get() );
-
-    // resize
-    m_command.setNewSize( size );
-    if ( m_indexes.all )
-      m_axis.setDefaultSize( size );
-    else
-      for ( var index : m_indexes.set )
-        m_axis.setCellSize( index, size );
-
-    // redraw table and update scroll bars
-    m_view.layoutDisplay();
-    m_view.redraw();
-  }
-
-  /********************************************* end *********************************************/
-  public static void end()
-  {
-    // end resizing, push resize command onto undo-stack
-    m_view.getUndoStack().push( m_command );
-    m_view = null;
-  }
-
-  /***************************************** inProgress ******************************************/
-  public static boolean inProgress()
-  {
-    // if no resize in progress return false
-    if ( m_view == null )
-      return false;
-
-    // check if table is scrolling horizontally and adjust offset accordingly
-    var scrollbar = m_view.getHorizontalScrollBar();
-    if ( scrollbar.getAnimation() == Animation.TO_START )
-      updateOffset( scrollbar.getValue(), m_view.getHeaderWidth() );
-    else if ( scrollbar.getAnimation() == Animation.TO_END )
-      updateOffset( scrollbar.getValue(), m_view.getCanvas().getWidth() );
-
-    // check if table is scrolling vertically and adjust offset accordingly
-    scrollbar = m_view.getVerticalScrollBar();
-    if ( scrollbar.getAnimation() == Animation.TO_START )
-      updateOffset( scrollbar.getValue(), m_view.getHeaderHeight() );
-    else if ( scrollbar.getAnimation() == Animation.TO_END )
-      updateOffset( scrollbar.getValue(), m_view.getCanvas().getHeight() );
-
-    // return true as resize in progress
-    return true;
-  }
-
-  /**************************************** updateOffset *****************************************/
-  private static void updateOffset( double value, double coordinate )
-  {
-    // update offset and resize columns or rows
-    m_offset += m_scroll - value;
-    m_scroll = value;
-    drag( (int) coordinate );
-  }
 }

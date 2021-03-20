@@ -31,6 +31,7 @@ import javafx.scene.input.ScrollEvent;
 import javafx.scene.text.Text;
 import rjc.table.Colors;
 import rjc.table.Status;
+import rjc.table.control.DateTimeDropDown.GridField;
 import rjc.table.view.TableView;
 
 /*************************************************************************************************/
@@ -105,7 +106,11 @@ public class XTextField extends TextField implements IWrapField
         }
         else // revert
           parent.setOnScroll( m_scrollHandlers.pop() );
-        parent = parent.getParent();
+
+        if ( parent instanceof GridField )
+          parent = ( (GridField) parent ).getField();
+        else
+          parent = parent.getParent();
       }
 
       // revert to valid value if error state

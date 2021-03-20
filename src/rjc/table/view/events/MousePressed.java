@@ -25,7 +25,8 @@ import javafx.scene.input.MouseButton;
 import javafx.scene.input.MouseEvent;
 import rjc.table.view.TableView;
 import rjc.table.view.actions.Reorder;
-import rjc.table.view.actions.Resize;
+import rjc.table.view.actions.Resize.HorizontalResize;
+import rjc.table.view.actions.Resize.VerticalResize;
 import rjc.table.view.axis.TableAxis;
 import rjc.table.view.cell.MousePosition;
 import rjc.table.view.cell.ViewPosition;
@@ -106,9 +107,9 @@ public class MousePressed implements EventHandler<MouseEvent>
 
       // check if resizing
       else if ( cursor == Cursors.H_RESIZE )
-        Resize.start( view, Orientation.HORIZONTAL, x );
+        HorizontalResize.start( view, x );
       else if ( cursor == Cursors.V_RESIZE )
-        Resize.start( view, Orientation.VERTICAL, y );
+        VerticalResize.start( view, y );
 
       // check if reordering
       else if ( cursor == Cursors.H_MOVE )

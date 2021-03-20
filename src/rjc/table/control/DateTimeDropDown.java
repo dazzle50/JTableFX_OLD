@@ -23,6 +23,7 @@ import java.time.YearMonth;
 
 import javafx.application.Platform;
 import javafx.geometry.Insets;
+import javafx.scene.Parent;
 import javafx.scene.control.Button;
 import javafx.scene.layout.GridPane;
 import rjc.table.data.Date;
@@ -30,7 +31,7 @@ import rjc.table.data.DateTime;
 import rjc.table.data.Time;
 
 /*************************************************************************************************/
-/**************************** Pop-up window to support selecting date ****************************/
+/***************** Pop-up window to support selecting date or date-time or time ******************/
 /*************************************************************************************************/
 
 public class DateTimeDropDown extends DropDown
@@ -47,6 +48,19 @@ public class DateTimeDropDown extends DropDown
 
   private static final int BORDER = 4;
 
+  // because GridPane getParent method is final need extra method to get parent field
+  protected class GridField extends GridPane
+  {
+    public Parent getField()
+    {
+      if ( m_dateField != null )
+        return m_dateField;
+      if ( m_datetimeField != null )
+        return m_datetimeField;
+      return m_timeField;
+    }
+  }
+
   /**************************************** constructor ******************************************/
   public DateTimeDropDown( XTextField parent )
   {
@@ -62,7 +76,7 @@ public class DateTimeDropDown extends DropDown
       throw new IllegalArgumentException( "Parent must be DateField, TimeField or DateTimeField " + parent.getClass() );
 
     // prepare grid for layout
-    GridPane grid = new GridPane();
+    GridField grid = new GridField();
     grid.setHgap( BORDER );
     grid.setVgap( BORDER );
     grid.setPadding( new Insets( BORDER ) );

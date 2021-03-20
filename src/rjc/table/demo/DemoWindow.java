@@ -37,6 +37,12 @@ import javafx.stage.Screen;
 import javafx.stage.Stage;
 import rjc.table.Status;
 import rjc.table.Utils;
+import rjc.table.control.ChooseField;
+import rjc.table.control.DateField;
+import rjc.table.control.DateTimeField;
+import rjc.table.control.MonthSpinField;
+import rjc.table.control.NumberSpinField;
+import rjc.table.control.TimeField;
 import rjc.table.control.XTextField;
 import rjc.table.data.TableData;
 import rjc.table.demo.edit.EditData;
@@ -170,16 +176,15 @@ public class DemoWindow
     grid.setHgap( 8 );
     grid.setVgap( 8 );
 
-    /**
     // prepare fields
     var yearField = new NumberSpinField();
     yearField.setRange( 1000, 5000 );
     yearField.setPrefixSuffix( "Year ", " CE" );
     yearField.setValue( 2000 );
-    
+
     var monthField = new MonthSpinField();
     monthField.setWrapField( yearField );
-    
+
     // layout fields with labels
     int row = 0;
     addToGrid( grid, "XTextField", new XTextField(), 0, row++ );
@@ -187,12 +192,11 @@ public class DemoWindow
     addToGrid( grid, "TimeField", new TimeField(), 0, row++ );
     addToGrid( grid, "DateTimeField", new DateTimeField(), 0, row++ );
     addToGrid( grid, "ChooseField", new ChooseField( EditData.Fruit.values() ), 0, row++ );
-    
+
     addToGrid( grid, "NumberSpinField", new NumberSpinField(), 1, 0 );
     addToGrid( grid, "Below month field wraps with year number spin field", null, 1, 2 );
     addToGrid( grid, "MonthSpinField", monthField, 1, 3 );
     addToGrid( grid, "Year Field", yearField, 1, 4 );
-    **/
 
     return grid;
   }

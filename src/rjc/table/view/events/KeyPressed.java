@@ -21,6 +21,7 @@ package rjc.table.view.events;
 import javafx.event.EventHandler;
 import javafx.scene.input.KeyEvent;
 import rjc.table.Utils;
+import rjc.table.undo.CommandZoom;
 import rjc.table.view.TableScrollBar;
 import rjc.table.view.TableView;
 import rjc.table.view.actions.Content;
@@ -82,16 +83,16 @@ public class KeyPressed implements EventHandler<KeyEvent>
 
         case MINUS: // zoom out (Ctrl-minus)
         case SUBTRACT:
-          //commandZoom( getZoom() / Math.pow( 2.0, 0.0625 ) );
+          commandZoom( m_view.getZoom().get() / Math.pow( 2.0, 0.0625 ) );
           return;
 
         case EQUALS: // zoom in (Ctrl-plus)
         case ADD:
-          //commandZoom( getZoom() * Math.pow( 2.0, 0.0625 ) );
+          commandZoom( m_view.getZoom().get() * Math.pow( 2.0, 0.0625 ) );
           return;
 
         case DIGIT0: // reset zoom 1:1 (Ctrl-0)
-          //commandZoom( 1.0 );
+          commandZoom( 1.0 );
           return;
 
         default:
@@ -158,6 +159,27 @@ public class KeyPressed implements EventHandler<KeyEvent>
           break;
       }
 
+  }
+
+  /***************************************** commandZoom *****************************************/
+  public void commandZoom( double zoom )
+  {
+    // check if can merge with previous undo command 
+    var command = m_view.getUndoStack().getUndoCommand();
+    if ( command instanceof CommandZoom && ( (CommandZoom) command ).isThisView( m_view ) )
+    {
+      // merge with previous zoom command
+      CommandZoom zc = (CommandZoom) command;
+      zc.setNewZoom( zoom );
+      zc.redo();
+      m_view.getUndoStack().triggerListeners();
+    }
+    else
+    {
+      // create new command for zoom change
+      CommandZoom zc = new CommandZoom( m_view, m_view.getZoom().get(), zoom );
+      m_view.getUndoStack().push( zc );
+    }
   }
 
   /****************************************** moveRight ******************************************/
@@ -313,6 +335,10 @@ public class KeyPressed implements EventHandler<KeyEvent>
   {
     // move selected and focus cell position home (left edge)
     m_view.getSelectCell().moveLeftEdge();
+
+    if ( m_ctrl )
+      m_view.getSelectCell().moveTop();
+
     if ( !m_shift )
       m_view.getFocusCell().setPosition( m_view.getSelectCell() );
   }
@@ -320,149 +346,25 @@ public class KeyPressed implements EventHandler<KeyEvent>
   /****************************************** moveEnd ********************************************/
   private void moveEnd()
   {
-    // TODO Auto-generated method stub
-    Utils.trace( "TODO - Not implemented yet" );
+    // move selected and focus cell position end (right edge)
+    m_view.getSelectCell().moveRightEdge();
+
+    if ( m_ctrl )
+      m_view.getSelectCell().moveBottom();
+
+    if ( !m_shift )
+      m_view.getFocusCell().setPosition( m_view.getSelectCell() );
   }
 
   /***************************************** openEditor ******************************************/
   private void openEditor()
   {
-    // TODO Auto-generated method stub
-    Utils.trace( "TODO - Not implemented yet" );
+    // open cell editor with current focus cell contents
+    var focus = m_view.getFocusCell();
+    int columnIndex = m_view.getColumnsAxis().getIndexFromPosition( focus.getColumnPos() );
+    int rowIndex = m_view.getRowsAxis().getIndexFromPosition( focus.getRowPos() );
+    m_view.openEditor( m_view.getData().getValue( columnIndex, rowIndex ) );
+    return;
   }
-
-  /**
-  if ( !alt )
-    switch ( event.getCode() )
-    {
-      case RIGHT: // right -> arrow key
-      case KP_RIGHT:
-        columnPos = ctrl ? getColumns().getLast() : getColumns().getNext( columnPos );
-        setSelectFocusPosition( columnPos, rowPos, !shift, !shift, true );
-        getView().redraw();
-        return;
-  
-      case LEFT: // left <- arrow key
-      case KP_LEFT:
-        columnPos = ctrl ? getColumns().getFirst() : getColumns().getPrevious( columnPos );
-        setSelectFocusPosition( columnPos, rowPos, !shift, !shift, true );
-        getView().redraw();
-        return;
-  
-      case DOWN: // down arrow key
-      case KP_DOWN:
-        rowPos = ctrl ? getRows().getLast() : getRows().getNext( rowPos );
-        setSelectFocusPosition( columnPos, rowPos, !shift, !shift, true );
-        getView().redraw();
-        return;
-  
-      case UP: // up arrow key
-      case KP_UP:
-        rowPos = ctrl ? getRows().getFirst() : getRows().getPrevious( rowPos );
-        setSelectFocusPosition( columnPos, rowPos, !shift, !shift, true );
-        getView().redraw();
-        return;
-  
-      case PAGE_DOWN: // page down key
-        getVerticalScrollBar().finishAnimation();
-        if ( getVerticalScrollBar().isVisible()
-            && getVerticalScrollBar().getValue() < getVerticalScrollBar().getMax() )
-        {
-          // bottom of table not visible, make sure scroll down at least one row
-          int newTopRow = getRowPositionAtY( (int) getCanvas().getHeight() + 1 );
-          if ( newTopRow == getRowPositionAtY( getColumnHeaderHeight() ) )
-            newTopRow = getRows().getNext( newTopRow );
-          int newYScroll = getRows().getStartFromPosition( newTopRow, 0 ) - getColumnHeaderHeight();
-  
-          // determine new position for select/focus 
-          int ySelect = ( getYStartFromRowPos( rowPos ) + getYStartFromRowPos( rowPos + 1 ) ) / 2;
-          ySelect = Utils.clamp( ySelect, getColumnHeaderHeight(), (int) getCanvas().getHeight() );
-          rowPos = getRowPositionAtY( ySelect + newYScroll - (int) getVerticalScrollBar().getValue() );
-          if ( rowPos >= AFTER )
-            rowPos = getRows().getLast();
-          boolean rowNotCompletelyVisible = getYStartFromRowPos( rowPos + 1 ) > getCanvas().getHeight() + newYScroll
-              - (int) getVerticalScrollBar().getValue();
-          boolean rowAboveCompletelyVisible = getYStartFromRowPos(
-              getRows().getPrevious( rowPos ) ) > getColumnHeaderHeight() + newYScroll
-                  - (int) getVerticalScrollBar().getValue();
-          if ( rowNotCompletelyVisible && rowAboveCompletelyVisible )
-            rowPos = getRows().getPrevious( rowPos );
-  
-          // move select/focus and scroll table
-          setSelectFocusPosition( columnPos, rowPos, !shift, !ctrl, true );
-          getVerticalScrollBar().animate( newYScroll, TableScrollBar.SCROLL_TO_DURATION );
-        }
-        else
-        {
-          // bottom of table already visible so move to last row
-          setSelectFocusPosition( columnPos, getRows().getLast(), !shift, !ctrl, true );
-          getView().redraw();
-        }
-        return;
-  
-      case PAGE_UP: // page up key
-        getVerticalScrollBar().finishAnimation();
-        if ( getVerticalScrollBar().isVisible() && getVerticalScrollBar().getValue() > 0.0 )
-        {
-          // top of table not visible, make sure scroll up at least one row
-          int newTopY = (int) getVerticalScrollBar().getValue() + 2 * getColumnHeaderHeight()
-              - (int) getCanvas().getHeight();
-          int newTopRow = getRows().getPositionFromCoordinate( newTopY, 0 );
-          if ( newTopRow <= HEADER )
-            newTopRow = getRows().getFirst();
-          if ( newTopRow == getRowPositionAtY( getColumnHeaderHeight() ) )
-            newTopRow = getRows().getPrevious( newTopRow );
-          int newYScroll = getRows().getStartFromPosition( newTopRow, 0 ) - getColumnHeaderHeight();
-  
-          // determine new position for select/focus
-          int ySelect = ( getYStartFromRowPos( rowPos ) + getYStartFromRowPos( rowPos + 1 ) ) / 2;
-          ySelect = Utils.clamp( ySelect, getColumnHeaderHeight(), (int) getCanvas().getHeight() );
-          rowPos = getRows().getPositionFromCoordinate( ySelect, newYScroll );
-          if ( rowPos <= HEADER )
-            rowPos = getRows().getFirst();
-  
-          // move select/focus and scroll table
-          setSelectFocusPosition( columnPos, rowPos, !shift, !ctrl, true );
-          getVerticalScrollBar().animate( newYScroll, TableScrollBar.SCROLL_TO_DURATION );
-        }
-        else
-        {
-          // top of table visible so move to first row
-          setSelectFocusPosition( columnPos, getRows().getFirst(), !shift, !ctrl, true );
-          getView().redraw();
-        }
-        return;
-  
-      case HOME: // home key - navigate to left-most visible column
-        setSelectFocusPosition( getColumns().getFirst(), getSelectCellProperty().getRowPos(), !shift, !ctrl, true );
-        getView().redraw();
-        return;
-  
-      case END: // end key - navigate to right-most visible column
-        setSelectFocusPosition( getColumns().getLast(), getSelectCellProperty().getRowPos(), !shift, !ctrl, true );
-        getView().redraw();
-        return;
-  
-      case DELETE: // delete key - delete selected cells content
-        deleteKeyPressed();
-        return;
-  
-      case INSERT: // insert key - insert row or column
-        insertKeyPressed();
-        return;
-  
-      case F2: // F2 key - open cell editor with current focus cell contents
-        int columnIndex = getColumns().getIndexFromPosition( getFocusCellProperty().getColumnPos() );
-        int rowIndex = getRows().getIndexFromPosition( getFocusCellProperty().getRowPos() );
-        openEditor( getData().getValue( columnIndex, rowIndex ) );
-        return;
-  
-      case F5: // F5 key - redraw table
-        getView().redraw();
-        return;
-  
-      default:
-        break;
-    **/
 
 }

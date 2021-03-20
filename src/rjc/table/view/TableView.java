@@ -132,6 +132,16 @@ public class TableView extends TableParent
       scrollTo( m_selectCell.getColumnPos(), m_selectCell.getRowPos() );
     } );
 
+    // react to zoom values changes
+    m_zoom.addListener( x ->
+    {
+      m_columnsAxis.setZoom( m_zoom.get() );
+      m_rowsAxis.setZoom( m_zoom.get() );
+      layoutDisplay();
+      m_mouseCell.checkXY();
+      redraw();
+    } );
+
     // react to scroll bar position value changes
     m_horizontalScrollBar.valueProperty().addListener( ( observable, oldV, newV ) -> tableScrolled() );
     m_verticalScrollBar.valueProperty().addListener( ( observable, oldV, newV ) -> tableScrolled() );

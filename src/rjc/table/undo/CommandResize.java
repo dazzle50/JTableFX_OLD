@@ -20,7 +20,6 @@ package rjc.table.undo;
 
 import java.util.HashMap;
 
-import javafx.geometry.Orientation;
 import rjc.table.view.TableSelection.SelectedSet;
 import rjc.table.view.TableView;
 import rjc.table.view.axis.TableAxis;
@@ -32,7 +31,7 @@ import rjc.table.view.axis.TableAxis;
 public class CommandResize implements IUndoCommand
 {
   private TableView                 m_view;                 // table view
-  private Orientation               m_orientation;          // columns or rows being resized
+  private TableAxis                 m_axis;                 // columns or rows being resized
   private SelectedSet               m_indexes;              // indexes being resized
   private String                    m_text;                 // text describing command
 
@@ -43,13 +42,12 @@ public class CommandResize implements IUndoCommand
   final static private int          NO_EXCEPTION = -999999; // no size exception
 
   /**************************************** constructor ******************************************/
-  public CommandResize( TableView view, Orientation orientation, SelectedSet indexes )
+  public CommandResize( TableView view, TableAxis axis, SelectedSet indexes )
   {
     // prepare resize command
     m_view = view;
-    m_orientation = orientation;
     m_indexes = indexes;
-    TableAxis axis = m_orientation == Orientation.HORIZONTAL ? view.getColumnsAxis() : view.getRowsAxis();
+    m_axis = axis;
 
     // get old default size and exceptions before resizing starts
     m_oldDefault = axis.getDefaultSize();
@@ -76,14 +74,14 @@ public class CommandResize implements IUndoCommand
   public void redo()
   {
     // action command
-    TableAxis axis = m_orientation == Orientation.HORIZONTAL ? m_view.getColumnsAxis() : m_view.getRowsAxis();
     if ( m_indexes.all )
     {
-      axis.setDefaultSize( m_newSize );
-      axis.clearSizeExceptions();
+      m_axis.setDefaultSize( m_newSize );
+      m_axis.clearSizeExceptions();
     }
     else
-      m_indexes.set.forEach( ( index ) -> axis.setCellSize( index, m_newSize ) );
+      for ( var index : m_indexes.set )
+        m_axis.setCellSize( index, m_newSize );
 
     // update layout in case scroll-bar need changed and redraw table in this view only
     m_view.layoutDisplay();
@@ -94,27 +92,24 @@ public class CommandResize implements IUndoCommand
   @Override
   public void undo()
   {
-    // revert command
-    TableAxis axis = m_orientation == Orientation.HORIZONTAL ? m_view.getColumnsAxis() : m_view.getRowsAxis();
-
-    // if all revert default size
+    // revert command - if all revert default size
     if ( m_indexes.all )
-      axis.setDefaultSize( m_oldDefault );
+      m_axis.setDefaultSize( m_oldDefault );
 
     // revert exceptions including hidden
     m_oldExceptions.forEach( ( index, size ) ->
     {
       if ( size == NO_EXCEPTION )
-        axis.clearCellSize( index );
+        m_axis.clearCellSize( index );
       else
       {
         if ( size < 0 )
         {
-          axis.setCellSize( index, -size );
-          axis.hideIndex( index );
+          m_axis.setCellSize( index, -size );
+          m_axis.hideIndex( index );
         }
         else
-          axis.setCellSize( index, size );
+          m_axis.setCellSize( index, size );
       }
     } );
 
@@ -130,7 +125,7 @@ public class CommandResize implements IUndoCommand
     // command description
     if ( m_text == null )
       m_text = "Resizing " + ( m_indexes.all ? "all" : m_indexes.set.size() )
-          + ( m_orientation == Orientation.HORIZONTAL ? " column" : " row" )
+          + ( m_axis == m_view.getColumnsAxis() ? " column" : " row" )
           + ( m_indexes.all || m_indexes.set.size() > 1 ? "s" : "" );
 
     return m_text;
