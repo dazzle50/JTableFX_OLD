@@ -20,14 +20,21 @@ package rjc.table.view.events;
 
 import javafx.event.EventHandler;
 import javafx.scene.input.ContextMenuEvent;
+import rjc.table.Utils;
+
+/*************************************************************************************************/
+/***************************** Handles requests to show context menu *****************************/
+/*************************************************************************************************/
 
 public class ContextMenu implements EventHandler<ContextMenuEvent>
 {
 
+  /******************************************* handle ********************************************/
   @Override
   public void handle( ContextMenuEvent event )
   {
     // TODO Auto-generated method stub
+    Utils.trace( "context menu!", event );
 
   }
 

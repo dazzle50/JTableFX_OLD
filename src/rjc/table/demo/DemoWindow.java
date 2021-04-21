@@ -36,6 +36,7 @@ import javafx.scene.layout.Priority;
 import javafx.stage.Screen;
 import javafx.stage.Stage;
 import rjc.table.Status;
+import rjc.table.Status.Level;
 import rjc.table.Utils;
 import rjc.table.control.ChooseField;
 import rjc.table.control.DateField;
@@ -84,16 +85,20 @@ public class DemoWindow
     m_undostack = new UndoStack();
     m_menus = makeMenuBar();
     m_tabs = makeTabs();
-    m_statusBar = new TextField( "Started" );
+    m_statusBar = new TextField();
     m_statusBar.setFocusTraversable( false );
     m_statusBar.setEditable( false );
 
-    // display status changes on status-bar
+    // display status changes on status-bar using runLater so can handle signals from other threads
     m_status.addListener( x ->
     {
-      m_statusBar.setText( m_status.getMessage() );
-      m_statusBar.setStyle( m_status.getStyle() );
+      Platform.runLater( () ->
+      {
+        m_statusBar.setText( m_status.getMessage() );
+        m_statusBar.setStyle( m_status.getStyle() );
+      } );
     } );
+    m_status.update( Level.NORMAL, "Started" );
 
     // create demo window layout
     GridPane grid = new GridPane();
@@ -132,6 +137,7 @@ public class DemoWindow
     defaultTab.setContent( defaultView );
     defaultView.visibleProperty().bind( defaultTab.selectedProperty() );
     defaultView.setUndoStack( m_undostack );
+    defaultView.setStatus( m_status );
 
     // create large table in tab
     TableView largeView = new LargeView( m_largeTable );
@@ -141,16 +147,17 @@ public class DemoWindow
     largeTab.setContent( largeView );
     largeView.visibleProperty().bind( largeTab.selectedProperty() );
     largeView.setUndoStack( m_undostack );
+    largeView.setStatus( m_status );
 
     // create editable table in tab
     TableView editView = new EditView( m_editTable );
-    editView.setStatus( m_status );
     Tab editTab = new Tab();
     editTab.setText( "Edit" );
     editTab.setClosable( false );
     editTab.setContent( editView );
     editView.visibleProperty().bind( editTab.selectedProperty() );
     editView.setUndoStack( m_undostack );
+    editView.setStatus( m_status );
 
     // create field controls demo tab
     Tab fieldTab = new Tab();

@@ -32,7 +32,7 @@ import rjc.table.view.cell.CellPosition;
 public class TableSelection implements ISignal
 {
   // class represents one selected rectangle
-  public class Selected
+  private class Selected
   {
     public int c1; // smallest column position
     public int r1; // smallest row position
@@ -65,7 +65,7 @@ public class TableSelection implements ISignal
   }
 
   // class represents set of selected column or row positions, or all
-  static public class SelectedSet
+  public static class SelectedSet
   {
     public boolean          all = false;          // all columns or rows selected
     public HashSet<Integer> set = new HashSet<>();
@@ -78,16 +78,13 @@ public class TableSelection implements ISignal
     }
   }
 
-  final static public int     INVALID   = TableAxis.INVALID;
-  final static public int     HEADER    = TableAxis.HEADER;
-  final static public int     FIRSTCELL = TableAxis.FIRSTCELL;
-  final static public int     BEFORE    = TableAxis.BEFORE;
-  final static public int     AFTER     = TableAxis.AFTER;
+  final static private int    FIRSTCELL = TableAxis.FIRSTCELL;
+  final static private int    AFTER     = TableAxis.AFTER;
 
   private ArrayList<Selected> m_selected;
   private TableView           m_view;
 
-  /**************************************** constructor ******************************************/
+  /***************************************** constructor *****************************************/
   public TableSelection( TableView view )
   {
     // construct selection model
@@ -106,8 +103,15 @@ public class TableSelection implements ISignal
     }
   }
 
-  /************************************** getSelectionCount **************************************/
-  public int getSelectionCount( int columnPos, int rowPos )
+  /****************************************** getCount *******************************************/
+  public int getCount()
+  {
+    // return number of selected areas on table-view
+    return m_selected.size();
+  }
+
+  /****************************************** getCount *******************************************/
+  public int getCount( int columnPos, int rowPos )
   {
     // return count of selected areas covering specified cell
     int count = 0;
@@ -116,6 +120,18 @@ public class TableSelection implements ISignal
         count++;
 
     return count;
+  }
+
+  /***************************************** getSelected *****************************************/
+  public ArrayList<Integer> getSelected( int num )
+  {
+    // returns a list of 4 integers representing selected area
+    ArrayList<Integer> list = new ArrayList<Integer>( 4 );
+    list.add( m_selected.get( num ).c1 );
+    list.add( m_selected.get( num ).r1 );
+    list.add( m_selected.get( num ).c2 );
+    list.add( m_selected.get( num ).r2 );
+    return list;
   }
 
   /*************************************** isCellSelected ****************************************/
@@ -276,10 +292,13 @@ public class TableSelection implements ISignal
   /******************************************** start ********************************************/
   public void start()
   {
-    // start selecting new area
+    // start selecting new area (doesn't send signal)
     CellPosition focus = m_view.getFocusCell();
     CellPosition select = m_view.getSelectCell();
-    selectArea( focus.getColumnPos(), focus.getRowPos(), select.getColumnPos(), select.getRowPos() );
+
+    Selected newArea = new Selected();
+    newArea.set( focus.getColumnPos(), focus.getRowPos(), select.getColumnPos(), select.getRowPos() );
+    m_selected.add( newArea );
   }
 
   /******************************************* update ********************************************/
@@ -287,16 +306,17 @@ public class TableSelection implements ISignal
   {
     // update last selected area if one
     if ( m_selected.isEmpty() )
-      return;
+      start();
 
     CellPosition focus = m_view.getFocusCell();
     CellPosition select = m_view.getSelectCell();
     Selected last = m_selected.get( m_selected.size() - 1 );
 
     // if selecting columns or rows, then start selecting from first cell
-    int focusColumn = select.getColumnPos() == AFTER ? FIRSTCELL : focus.getColumnPos();
-    int focusRow = select.getRowPos() == AFTER ? FIRSTCELL : focus.getRowPos();
+    int focusColumn = select.isColumnAfter() ? FIRSTCELL : focus.getColumnPos();
+    int focusRow = select.isRowAfter() ? FIRSTCELL : focus.getRowPos();
     last.set( focusColumn, focusRow, select.getColumnPos(), select.getRowPos() );
+    signal( m_selected.size() );
   }
 
   /****************************************** selectAll ******************************************/
@@ -305,6 +325,7 @@ public class TableSelection implements ISignal
     // select entire table
     m_selected.clear(); // direct clear to avoid clear signal before add signal
     selectArea( FIRSTCELL, FIRSTCELL, AFTER, AFTER );
+    m_view.getSelectCell().setPosition( TableAxis.AFTER, TableAxis.AFTER );
   }
 
   /****************************************** toString *******************************************/

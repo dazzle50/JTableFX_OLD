@@ -55,7 +55,8 @@ public class MousePressed implements EventHandler<MouseEvent>
       MousePosition mouse = view.getMouseCell();
       Cursor cursor = view.getCursor();
 
-      // request focus & update mouse cell position and cursor
+      // clear status, request focus & update mouse cell position and cursor
+      view.getStatus().clear();
       view.requestFocus();
       mouse.setXY( x, y, true );
 
@@ -116,6 +117,13 @@ public class MousePressed implements EventHandler<MouseEvent>
         Reorder.start( view, Orientation.HORIZONTAL, x );
       else if ( cursor == Cursors.V_MOVE )
         Reorder.start( view, Orientation.VERTICAL, y );
+
+      // check if header corner to select whole table
+      else if ( x < view.getHeaderWidth() && y < view.getHeaderHeight() )
+      {
+        view.getSelection().selectAll();
+        view.redraw();
+      }
     }
 
   }

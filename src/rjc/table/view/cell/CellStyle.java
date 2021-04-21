@@ -40,7 +40,14 @@ public class CellStyle extends CellContext
   protected String getText()
   {
     // return cell value as string
-    Object value = view.getData().getValue( columnIndex, rowIndex );
+    return getText( columnIndex, rowIndex );
+  }
+
+  /****************************************** getText ********************************************/
+  public String getText( int cIndex, int rIndex )
+  {
+    // return cell value as string for specified cell index
+    Object value = view.getData().getValue( cIndex, rIndex );
     return value == null ? null : value.toString();
   }
 
@@ -168,7 +175,7 @@ public class CellStyle extends CellContext
       return getBackgroundPaintDefault();
 
     Color selected = Colors.CELL_SELECTED_FILL;
-    for ( int count = view.getSelection().getSelectionCount( columnPos, rowPos ); count > 1; count-- )
+    for ( int count = view.getSelection().getCount( columnPos, rowPos ); count > 1; count-- )
       selected = selected.desaturate();
 
     if ( rowPos == view.getSelectCell().getRowPos() && columnPos == view.getSelectCell().getColumnPos() )

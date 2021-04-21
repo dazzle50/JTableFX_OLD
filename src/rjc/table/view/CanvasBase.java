@@ -38,18 +38,24 @@ public class CanvasBase extends Canvas
   protected TableView      m_view;
   protected Canvas         m_overlay;
 
-  private AtomicBoolean    m_redrawIsRequested;            // flag if redraw has been scheduled
-  private boolean          m_fullRedraw;                   // full view redraw (headers & body)
-  private HashSet<Integer> m_columns;                      // requested column indexes
-  private HashSet<Integer> m_rows;                         // requested row indexes
-  private HashSet<Long>    m_cells;                        // long = (long) column << 32 | row & 0xFFFFFFFFL
+  private AtomicBoolean    m_redrawIsRequested;                      // flag if redraw has been scheduled
+  private boolean          m_fullRedraw;                             // full view redraw (headers & body)
+  private HashSet<Integer> m_columns;                                // requested column indexes
+  private HashSet<Integer> m_rows;                                   // requested row indexes
+  private HashSet<Long>    m_cells;                                  // long = (long) column << 32 | row & 0xFFFFFFFFL
+  private int              m_redrawCount;                            // count to ensure canvas cleared periodically  
 
   // column & row index starts at 0 for table body, index of -1 is for axis header
-  final static public int  INVALID   = TableAxis.INVALID;
-  final static public int  HEADER    = TableAxis.HEADER;
-  final static public int  FIRSTCELL = TableAxis.FIRSTCELL;
-  final static public int  BEFORE    = TableAxis.BEFORE;
-  final static public int  AFTER     = TableAxis.AFTER;
+  final static public int  INVALID             = TableAxis.INVALID;
+  final static public int  HEADER              = TableAxis.HEADER;
+  final static public int  FIRSTCELL           = TableAxis.FIRSTCELL;
+  final static public int  BEFORE              = TableAxis.BEFORE;
+  final static public int  AFTER               = TableAxis.AFTER;
+
+  final static private int REDRAW_COUNT_MAX    = 1000;
+  final static private int REDRAW_COUNT_CELL   = 1;
+  final static private int REDRAW_COUNT_COLUMN = 20;
+  final static private int REDRAW_COUNT_ROW    = 5;
 
   /**************************************** constructor ******************************************/
   public CanvasBase( TableView tableView )
@@ -70,6 +76,8 @@ public class CanvasBase extends Canvas
   public void redraw()
   {
     // request redraw full visible table (headers and body)
+    if ( m_fullRedraw )
+      return;
     m_fullRedraw = true;
     schedule();
   }
@@ -78,7 +86,10 @@ public class CanvasBase extends Canvas
   public void redrawCell( int columnIndex, int rowIndex )
   {
     // request redraw specified table body or header cell
-    m_cells.add( (long) columnIndex << 32 | rowIndex & 0xFFFFFFFFL );
+    if ( m_fullRedraw )
+      return;
+    if ( m_cells.add( (long) columnIndex << 32 | rowIndex & 0xFFFFFFFFL ) )
+      m_redrawCount += REDRAW_COUNT_CELL;
     schedule();
   }
 
@@ -86,8 +97,30 @@ public class CanvasBase extends Canvas
   public void redrawColumn( int columnIndex )
   {
     // request redraw visible bit of column including header
-    m_columns.add( columnIndex );
+    if ( m_fullRedraw )
+      return;
+    if ( m_columns.add( columnIndex ) )
+      m_redrawCount += REDRAW_COUNT_COLUMN;
     schedule();
+  }
+
+  /****************************************** redrawRow ******************************************/
+  public void redrawRow( int rowIndex )
+  {
+    // request redraw visible bit of row including header
+    if ( m_fullRedraw )
+      return;
+    if ( m_rows.add( rowIndex ) )
+      m_redrawCount += REDRAW_COUNT_ROW;
+    schedule();
+  }
+
+  /****************************************** schedule *******************************************/
+  private void schedule()
+  {
+    // schedule redrawing of what has been requested
+    if ( m_redrawIsRequested.compareAndSet( false, true ) )
+      Platform.runLater( () -> performRedraws() );
   }
 
   /*************************************** performRedraws ****************************************/
@@ -95,8 +128,12 @@ public class CanvasBase extends Canvas
   {
     // redraw parts of table that have been requested
     m_redrawIsRequested.set( false );
-    if ( m_fullRedraw )
-      redrawNow(); // full redraw requested so don't need to redraw anything else
+    if ( m_fullRedraw || m_redrawCount > REDRAW_COUNT_MAX )
+    {
+      // full redraw requested so don't need to redraw anything else
+      redrawNow();
+      m_redrawCount = 0;
+    }
     else
     {
       // redraw requested cells that aren't covered by requested columns & rows
@@ -120,22 +157,6 @@ public class CanvasBase extends Canvas
     m_columns.clear();
     m_rows.clear();
     m_cells.clear();
-  }
-
-  /****************************************** schedule *******************************************/
-  private void schedule()
-  {
-    // schedule redrawing of what has been requested
-    if ( m_redrawIsRequested.compareAndSet( false, true ) )
-      Platform.runLater( () -> performRedraws() );
-  }
-
-  /****************************************** redrawRow ******************************************/
-  public void redrawRow( int rowIndex )
-  {
-    // request redraw visible bit of row including header
-    m_rows.add( rowIndex );
-    schedule();
   }
 
   /****************************************** redrawNow ******************************************/
@@ -301,10 +322,7 @@ public class CanvasBase extends Canvas
   public void redrawOverlayNow()
   {
     // highlight focus cell with special border
-    int focusColumnPos = m_view.getFocusCell().getColumnPos();
-    int focusRowPos = m_view.getFocusCell().getRowPos();
-
-    if ( focusColumnPos >= FIRSTCELL && focusRowPos >= FIRSTCELL )
+    if ( m_view.getFocusCell().isVisible() )
     {
       GraphicsContext gc = m_overlay.getGraphicsContext2D();
       gc.clearRect( 0.0, 0.0, m_overlay.getWidth(), m_overlay.getHeight() );
@@ -313,6 +331,9 @@ public class CanvasBase extends Canvas
         gc.setStroke( Colors.OVERLAY_FOCUS );
       else
         gc.setStroke( Colors.OVERLAY_FOCUS.desaturate() );
+
+      int focusColumnPos = m_view.getFocusCell().getColumnPos();
+      int focusRowPos = m_view.getFocusCell().getRowPos();
 
       double x = m_view.getXStartFromColumnPos( focusColumnPos );
       double y = m_view.getYStartFromRowPos( focusRowPos );

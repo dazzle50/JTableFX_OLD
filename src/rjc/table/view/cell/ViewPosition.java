@@ -44,7 +44,7 @@ public class ViewPosition extends CellPosition
   {
     // move position right one visible column
     int newPos = m_columnsAxis.getNext( getColumnPos() );
-    if ( m_rowsAxis.isVisible( getRowPos() ) )
+    if ( isRowAfter() || m_rowsAxis.isVisible( getRowPos() ) )
       setColumnPos( newPos );
     else
       setPosition( newPos, m_rowsAxis.getNext( getRowPos() ) );
@@ -55,7 +55,7 @@ public class ViewPosition extends CellPosition
   {
     // move position to right-most visible column
     int newPos = m_columnsAxis.getLast();
-    if ( m_rowsAxis.isVisible( getRowPos() ) )
+    if ( isRowAfter() || m_rowsAxis.isVisible( getRowPos() ) )
       setColumnPos( newPos );
     else
       setPosition( newPos, m_rowsAxis.getNext( getRowPos() ) );
@@ -66,7 +66,7 @@ public class ViewPosition extends CellPosition
   {
     // move position left one visible column
     int newPos = m_columnsAxis.getPrevious( getColumnPos() );
-    if ( m_rowsAxis.isVisible( getRowPos() ) )
+    if ( isRowAfter() || m_rowsAxis.isVisible( getRowPos() ) )
       setColumnPos( newPos );
     else
       setPosition( newPos, m_rowsAxis.getNext( getRowPos() ) );
@@ -77,7 +77,7 @@ public class ViewPosition extends CellPosition
   {
     // move position to left-most visible column
     int newPos = m_columnsAxis.getFirst();
-    if ( m_rowsAxis.isVisible( getRowPos() ) )
+    if ( isRowAfter() || m_rowsAxis.isVisible( getRowPos() ) )
       setColumnPos( newPos );
     else
       setPosition( newPos, m_rowsAxis.getNext( getRowPos() ) );
@@ -88,7 +88,7 @@ public class ViewPosition extends CellPosition
   {
     // move position up one visible row
     int newPos = m_rowsAxis.getPrevious( getRowPos() );
-    if ( m_columnsAxis.isVisible( getColumnPos() ) )
+    if ( isColumnAfter() || m_columnsAxis.isVisible( getColumnPos() ) )
       setRowPos( newPos );
     else
       setPosition( m_columnsAxis.getNext( getColumnPos() ), newPos );
@@ -99,7 +99,7 @@ public class ViewPosition extends CellPosition
   {
     // move position to top-most visible row
     int newPos = m_rowsAxis.getFirst();
-    if ( m_columnsAxis.isVisible( getColumnPos() ) )
+    if ( isColumnAfter() || m_columnsAxis.isVisible( getColumnPos() ) )
       setRowPos( newPos );
     else
       setPosition( m_columnsAxis.getNext( getColumnPos() ), newPos );
@@ -110,7 +110,7 @@ public class ViewPosition extends CellPosition
   {
     // move position down one visible row
     int newPos = m_rowsAxis.getNext( getRowPos() );
-    if ( m_columnsAxis.isVisible( getColumnPos() ) )
+    if ( isColumnAfter() || m_columnsAxis.isVisible( getColumnPos() ) )
       setRowPos( newPos );
     else
       setPosition( m_columnsAxis.getNext( getColumnPos() ), newPos );
@@ -121,7 +121,7 @@ public class ViewPosition extends CellPosition
   {
     // move position to bottom visible row
     int newPos = m_rowsAxis.getLast();
-    if ( m_columnsAxis.isVisible( getColumnPos() ) )
+    if ( isColumnAfter() || m_columnsAxis.isVisible( getColumnPos() ) )
       setRowPos( newPos );
     else
       setPosition( m_columnsAxis.getNext( getColumnPos() ), newPos );

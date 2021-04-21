@@ -48,6 +48,7 @@ public class KeyPressed implements EventHandler<KeyEvent>
     m_shift = event.isShiftDown();
     m_ctrl = event.isControlDown();
     m_alt = event.isAltDown();
+    m_view.getStatus().clear();
 
     // handle control keys
     if ( m_ctrl && !m_alt )
@@ -140,11 +141,11 @@ public class KeyPressed implements EventHandler<KeyEvent>
           return;
 
         case DELETE: // delete key - delete selected cells content
-          Content.delete();
+          Content.delete( m_view );
           return;
 
         case INSERT: // insert key - insert row or column
-          Content.insert();
+          Content.insert( m_view );
           return;
 
         case F2: // F2 key - open cell editor with current focus cell contents

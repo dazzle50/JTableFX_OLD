@@ -92,11 +92,25 @@ public class CellPosition implements ISignal
     return m_columnPos;
   }
 
+  /*************************************** isColumnAfter *****************************************/
+  public boolean isColumnAfter()
+  {
+    // return true if column position is after
+    return m_columnPos == TableAxis.AFTER;
+  }
+
   /****************************************** getRowPos ******************************************/
   public int getRowPos()
   {
     // return row position
     return m_rowPos;
+  }
+
+  /***************************************** isRowAfter ******************************************/
+  public boolean isRowAfter()
+  {
+    // return true if row position is after
+    return m_rowPos == TableAxis.AFTER;
   }
 
   /****************************************** toString *******************************************/
