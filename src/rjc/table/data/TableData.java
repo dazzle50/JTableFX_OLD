@@ -18,6 +18,8 @@
 
 package rjc.table.data;
 
+import rjc.table.Status;
+
 /*************************************************************************************************/
 /*********************** Table data source (with default implementations) ************************/
 /*************************************************************************************************/
@@ -50,11 +52,11 @@ public class TableData extends TableBase
     return false;
   }
 
-  /****************************************** isValid ******************************************/
-  public boolean isValid( int columnIndex, int rowIndex, Object testValue )
+  /***************************************** checkValue ******************************************/
+  public Status checkValue( int columnIndex, int rowIndex, Object testValue )
   {
-    // returns true if test-value is would be allowed
-    return true;
+    // returns null if test-value would be allowed
+    return null;
   }
 
 }

@@ -109,7 +109,7 @@ public class CellEditorBase
     // if new value equals old value, or is not valid, exit with no command
     Object oldValue = data.getValue( columnIndex, rowIndex );
     Object newValue = getValue();
-    if ( Utils.equal( newValue, oldValue ) || !data.isValid( columnIndex, rowIndex, newValue ) )
+    if ( Utils.equal( newValue, oldValue ) || data.checkValue( columnIndex, rowIndex, newValue ) != null )
       return false;
 
     // push new command on undo-stack to update cell value

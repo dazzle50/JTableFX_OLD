@@ -129,4 +129,16 @@ public class AxisBase
     m_indexFromPosition.addAll( newPosition + offset, toBeMoved );
   }
 
+  /**************************************** orderHashcode ****************************************/
+  public int orderHashcode()
+  {
+    // make sure index from position mapping is complete to ensure consistent hash code
+    int max = getCount();
+    while ( m_indexFromPosition.size() <= max )
+      m_indexFromPosition.add( m_indexFromPosition.size() );
+
+    // returns the hash code for cell position mapping (to support confirming changes)
+    return m_indexFromPosition.hashCode();
+  }
+
 }

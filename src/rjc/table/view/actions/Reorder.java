@@ -24,6 +24,7 @@ import javafx.geometry.Orientation;
 import javafx.scene.shape.Line;
 import javafx.scene.shape.StrokeLineCap;
 import rjc.table.Colors;
+import rjc.table.Status.Level;
 import rjc.table.Utils;
 import rjc.table.undo.CommandReorder;
 import rjc.table.view.TableSelection.SelectedSet;
@@ -46,12 +47,6 @@ public class Reorder
   /******************************************** start ********************************************/
   public static void start( TableView view, Orientation orientation, int coordinate )
   {
-    // initialise line
-    m_line = new Line();
-    m_line.setStrokeLineCap( StrokeLineCap.BUTT );
-    m_line.setStrokeWidth( LINE_WIDTH );
-    m_line.setStroke( Colors.REORDER_LINE );
-
     // determine selected columns or rows to be moved
     if ( orientation == Orientation.HORIZONTAL )
       m_selected = view.getSelection().getSelectedColumns();
@@ -59,7 +54,19 @@ public class Reorder
       m_selected = view.getSelection().getSelectedRows();
 
     if ( m_selected.all )
-      throw new IllegalArgumentException( m_selected.toString() );
+    {
+      String msg = "All ";
+      msg += orientation == Orientation.HORIZONTAL ? "columns" : "rows";
+      msg += " selected - therefore cannot reorder";
+      view.getStatus().update( Level.NORMAL, msg );
+      return;
+    }
+
+    // initialise line
+    m_line = new Line();
+    m_line.setStrokeLineCap( StrokeLineCap.BUTT );
+    m_line.setStrokeWidth( LINE_WIDTH );
+    m_line.setStroke( Colors.REORDER_LINE );
 
     // prepare line length and reselect just the specified columns or rows 
     view.getSelection().clear();
@@ -92,6 +99,10 @@ public class Reorder
   /******************************************** drag *********************************************/
   public static void drag( int coordinate )
   {
+    // return without doing anything is reorder not started
+    if ( m_view == null )
+      return;
+
     // reorder columns or rows
     if ( m_orientation == Orientation.HORIZONTAL )
     {
@@ -153,14 +164,29 @@ public class Reorder
   /********************************************* end *********************************************/
   public static void end()
   {
+    // return without doing anything is reorder not started
+    if ( m_view == null )
+      return;
+
     // move selected columns or rows to new position via command
     m_view.remove( m_line );
     m_view.getSelection().clear();
     int start = m_pos - countBefore( m_selected.set, m_pos );
     int end = start + m_selected.set.size() - 1;
+    int beforeHashcode = m_orientation == Orientation.HORIZONTAL ? m_view.getColumnsAxis().orderHashcode()
+        : m_view.getRowsAxis().orderHashcode();
 
     CommandReorder command = new CommandReorder( m_view, m_orientation, m_selected.set, m_pos );
-    m_view.getUndoStack().push( command );
+    command.redo();
+
+    // check that move has resulted in changed order
+    int afterHashcode = m_orientation == Orientation.HORIZONTAL ? m_view.getColumnsAxis().orderHashcode()
+        : m_view.getRowsAxis().orderHashcode();
+    if ( beforeHashcode != afterHashcode )
+    {
+      // do not execute command again when adding to undo-stack
+      m_view.getUndoStack().pushNoExecute( command );
+    }
 
     if ( m_orientation == Orientation.HORIZONTAL )
     {

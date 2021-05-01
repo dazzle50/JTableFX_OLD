@@ -142,6 +142,10 @@ public class TableView extends TableParent
       redraw();
     } );
 
+    // react to losing & gaining focus and visibility
+    focusedProperty().addListener( ( observable, oldF, newF ) -> redraw() );
+    visibleProperty().addListener( ( observable, oldF, newF ) -> redraw() );
+
     // react to scroll bar position value changes
     m_horizontalScrollBar.valueProperty().addListener( ( observable, oldV, newV ) -> tableScrolled() );
     m_verticalScrollBar.valueProperty().addListener( ( observable, oldV, newV ) -> tableScrolled() );
@@ -473,7 +477,7 @@ public class TableView extends TableParent
     getMouseCell().checkXY();
     CellEditorBase.endEditing();
 
-    // if resize in progress, no need to do anything more
+    // if column/row resize in progress, no need to do anything more
     if ( Resize.inProgress() )
       return;
 

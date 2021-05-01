@@ -453,4 +453,19 @@ public class AxisSize extends AxisBase
     super.movePositions( positions, newPosition );
   }
 
+  /************************************** getVisibleIndexes **************************************/
+  public ArrayList<Integer> getVisibleIndexes( int position1, int position2 )
+  {
+    // return list of visible cell indexes between two positions inclusive
+    ArrayList<Integer> indexes = new ArrayList<>();
+    for ( int pos = position1; pos <= position2; pos++ )
+    {
+      int index = getIndexFromPosition( pos );
+      if ( getCellSize( index ) > 0 )
+        indexes.add( index );
+    }
+
+    return indexes;
+  }
+
 }

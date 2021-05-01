@@ -21,8 +21,12 @@ package rjc.table.view.actions;
 import javafx.scene.control.Alert;
 import javafx.scene.control.Alert.AlertType;
 import javafx.scene.control.ButtonType;
+import javafx.scene.input.Clipboard;
+import rjc.table.Status.Level;
 import rjc.table.Utils;
+import rjc.table.undo.CommandDelete;
 import rjc.table.view.TableView;
+import rjc.table.view.axis.TableAxis;
 
 /*************************************************************************************************/
 /************************** Functionality for multi-cell content actions *************************/
@@ -42,8 +46,39 @@ public class Content
   /******************************************* delete ********************************************/
   public static void delete( TableView view )
   {
-    // TODO Auto-generated method stub
-    Utils.trace( "TODO" );
+    // attempt to set all table-view selected cells to null
+    int selections = view.getSelection().getCount();
+    var command = new CommandDelete( view );
+    var data = view.getData();
+    int maxC = data.getColumnCount() - 1;
+    int maxR = data.getRowCount() - 1;
+
+    for ( int index = 0; index < selections; index++ )
+    {
+      // get selected area
+      var selected = view.getSelection().getSelected( index );
+      int c1 = Utils.clamp( selected.get( 0 ), TableAxis.FIRSTCELL, maxC );
+      int r1 = Utils.clamp( selected.get( 1 ), TableAxis.FIRSTCELL, maxR );
+      int c2 = Utils.clamp( selected.get( 2 ), TableAxis.FIRSTCELL, maxC );
+      int r2 = Utils.clamp( selected.get( 3 ), TableAxis.FIRSTCELL, maxR );
+
+      // generate list of selected visible indexes
+      var columnIndexes = view.getColumnsAxis().getVisibleIndexes( c1, c2 );
+      var rowIndexes = view.getRowsAxis().getVisibleIndexes( r1, r2 );
+
+      // for each visible selected cell if successfully deleted, add to command
+      for ( int row : rowIndexes )
+        for ( int col : columnIndexes )
+          command.add( col, row );
+    }
+
+    // if some cells successfully deleted then put command on undo-stack but with no redo
+    if ( command.getCount() > 0 )
+      view.getUndoStack().pushNoExecute( command );
+
+    // update status to show how many successfully deleted
+    view.getStatus().update( Level.NORMAL, command.text() );
+
   }
 
   /****************************************** fillDown *******************************************/
@@ -58,6 +93,10 @@ public class Content
   {
     // TODO Auto-generated method stub
     Utils.trace( "TODO" );
+
+    var contents = Clipboard.getSystemClipboard().getContentTypes();
+    Utils.trace( contents, Clipboard.getSystemClipboard().getString() );
+
   }
 
   /******************************************** copy *********************************************/

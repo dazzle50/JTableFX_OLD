@@ -18,8 +18,6 @@
 
 package rjc.table.view.actions;
 
-import java.util.ArrayList;
-
 import javafx.application.Platform;
 import javafx.scene.control.Alert;
 import javafx.scene.input.Clipboard;
@@ -64,25 +62,9 @@ public class CopyThread extends Thread
     int c2 = Utils.clamp( selected.get( 2 ), TableAxis.FIRSTCELL, maxC );
     int r2 = Utils.clamp( selected.get( 3 ), TableAxis.FIRSTCELL, maxR );
 
-    // generate list of selected visible column indexes
-    ArrayList<Integer> columnIndexes = new ArrayList<>();
-    TableAxis cols = m_view.getColumnsAxis();
-    for ( int col = c1; col <= c2; col++ )
-    {
-      int index = cols.getIndexFromPosition( col );
-      if ( cols.getCellSize( index ) > 0 )
-        columnIndexes.add( index );
-    }
-
-    // generate list of selected visible row indexes
-    ArrayList<Integer> rowIndexes = new ArrayList<>();
-    TableAxis rows = m_view.getRowsAxis();
-    for ( int row = r1; row <= r2; row++ )
-    {
-      int index = rows.getIndexFromPosition( row );
-      if ( rows.getCellSize( index ) > 0 )
-        rowIndexes.add( index );
-    }
+    // generate list of selected visible indexes
+    var columnIndexes = m_view.getColumnsAxis().getVisibleIndexes( c1, c2 );
+    var rowIndexes = m_view.getRowsAxis().getVisibleIndexes( r1, r2 );
 
     // calculate number of cells to be copied
     long cellsCount = (long) columnIndexes.size() * (long) rowIndexes.size();
@@ -130,7 +112,7 @@ public class CopyThread extends Thread
     content.putString( copyText.toString() );
     Platform.runLater( () -> Clipboard.getSystemClipboard().setContent( content ) );
     Platform.runLater( () -> m_alert.hide() );
-    m_view.getStatus().update( Level.NORMAL, "Copied " + cellsCount + " cells" );
+    m_view.getStatus().update( Level.NORMAL, "Copied " + cellsCount + " cell" + ( cellsCount == 1 ? "" : "s" ) );
   }
 
 }

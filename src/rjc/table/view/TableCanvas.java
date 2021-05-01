@@ -33,9 +33,8 @@ public class TableCanvas extends CanvasBase
     widthProperty().addListener( ( observable, oldW, newW ) -> widthChange( oldW.intValue(), newW.intValue() ) );
     heightProperty().addListener( ( observable, oldH, newH ) -> heightChange( oldH.intValue(), newH.intValue() ) );
 
-    // redraw table when focus changes & becomes visible
-    focusedProperty().addListener( ( observable, oldF, newF ) -> redraw() );
-    visibleProperty().addListener( ( observable, oldF, newF ) -> redraw() );
+    // ensure canvas visibility is same as parent table-view
+    visibleProperty().bind( tableView.visibleProperty() );
   }
 
   /***************************************** widthChange *****************************************/

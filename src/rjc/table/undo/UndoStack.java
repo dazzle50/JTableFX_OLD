@@ -79,7 +79,7 @@ public class UndoStack implements ISignal
   }
 
   /******************************************** push *********************************************/
-  public void push( IUndoCommand command )
+  private void push( IUndoCommand command, boolean redo )
   {
     // remove any commands from stack that haven't been actioned (i.e. above index)
     if ( m_stack.size() > m_index )
@@ -93,9 +93,24 @@ public class UndoStack implements ISignal
 
     // add new command to stack, do it, and update stack index
     m_stack.add( command );
-    command.redo();
+    if ( redo )
+      command.redo();
     m_index = m_stack.size();
     signal();
+  }
+
+  /******************************************** push *********************************************/
+  public void push( IUndoCommand command )
+  {
+    // add new command to stack, do it, and update stack index
+    push( command, true );
+  }
+
+  /*************************************** pushNoExecute *****************************************/
+  public void pushNoExecute( IUndoCommand command )
+  {
+    // add new command to stack and update stack index, but DO NOT execute command
+    push( command, false );
   }
 
   /******************************************** undo *********************************************/
