@@ -32,4 +32,11 @@ public interface IUndoCommand
 
   // short text string describing this command, e.g. "insert text"
   public String text();
+
+  // attempts to push command onto specified undo-stack and confirms if done
+  default public boolean push( UndoStack undostack )
+  {
+    // override method if check or redo wanted
+    return undostack.push( this, false );
+  }
 }

@@ -43,6 +43,7 @@ public class Reorder
   private static SelectedSet m_selected;    // columns or rows to be moved
   private static Orientation m_orientation; // orientation for the reordering
   private static int         m_pos;         // column or row axis position for reordering
+  private static int         m_coordinate;  // latest coordinate used when table scrolled
 
   /******************************************** start ********************************************/
   public static void start( TableView view, Orientation orientation, int coordinate )
@@ -99,11 +100,12 @@ public class Reorder
   /******************************************** drag *********************************************/
   public static void drag( int coordinate )
   {
-    // return without doing anything is reorder not started
+    // return without doing anything if reorder not started
     if ( m_view == null )
       return;
 
     // reorder columns or rows
+    m_coordinate = coordinate;
     if ( m_orientation == Orientation.HORIZONTAL )
     {
       // horizontal reordering so position line at nearest column edge
@@ -161,6 +163,18 @@ public class Reorder
 
   }
 
+  /***************************************** inProgress ******************************************/
+  public static boolean inProgress()
+  {
+    // if no reorder in progress return false
+    if ( m_view == null )
+      return false;
+
+    // return true as reorder in progress
+    drag( m_coordinate );
+    return true;
+  }
+
   /********************************************* end *********************************************/
   public static void end()
   {
@@ -183,10 +197,7 @@ public class Reorder
     int afterHashcode = m_orientation == Orientation.HORIZONTAL ? m_view.getColumnsAxis().orderHashcode()
         : m_view.getRowsAxis().orderHashcode();
     if ( beforeHashcode != afterHashcode )
-    {
-      // do not execute command again when adding to undo-stack
-      m_view.getUndoStack().pushNoExecute( command );
-    }
+      command.push( m_view.getUndoStack() );
 
     if ( m_orientation == Orientation.HORIZONTAL )
     {

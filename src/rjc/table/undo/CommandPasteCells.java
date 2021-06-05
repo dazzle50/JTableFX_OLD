@@ -18,91 +18,51 @@
 
 package rjc.table.undo;
 
-import java.util.HashMap;
-
-import rjc.table.data.TableData;
 import rjc.table.view.TableView;
 
 /*************************************************************************************************/
-/*************** UndoCommand for deleting (setting to null) TableData cell values ****************/
+/************* UndoCommand for settings multiple cell values at table-view position **************/
 /*************************************************************************************************/
 
-public class CommandDelete implements IUndoCommand
+public class CommandPasteCells implements IUndoCommand
 {
-  private TableData                m_data;        // table data model
-  private int                      m_columnCount; // used to hash column & row indexes
-  private HashMap<Integer, Object> m_oldValues;   // cell value before delete
-  private String                   m_text;        // text describing command
 
   /**************************************** constructor ******************************************/
-  public CommandDelete( TableView view )
+  public CommandPasteCells( TableView view, int columnPos, int rowPos, Object[] array )
   {
-    // initialise private variables
-    m_data = view.getData();
-    m_columnCount = m_data.getColumnCount();
-    m_oldValues = new HashMap<>();
+    // TODO Auto-generated constructor stub
   }
 
   /******************************************* redo **********************************************/
   @Override
   public void redo()
   {
-    // set value to null of selected cells 
-    m_oldValues.keySet().forEach( hash ->
-    {
-      int col = hash % m_columnCount;
-      int row = hash / m_columnCount;
-      m_data.setValue( col, row, null );
-      m_data.redrawCell( col, row );
-    } );
+    // TODO Auto-generated method stub
+
   }
 
   /******************************************* undo **********************************************/
   @Override
   public void undo()
   {
-    // return original value of selected cells
-    m_oldValues.forEach( ( hash, oldValue ) ->
-    {
-      int col = hash % m_columnCount;
-      int row = hash / m_columnCount;
-      m_data.setValue( col, row, oldValue );
-      m_data.redrawCell( col, row );
-    } );
+    // TODO Auto-generated method stub
+
   }
 
   /******************************************* text **********************************************/
   @Override
   public String text()
   {
-    // command description
-    if ( m_text == null )
-      m_text = "Deleted " + m_oldValues.size() + " cell" + ( m_oldValues.size() == 1 ? "" : "s" );
-
-    return m_text;
+    // TODO Auto-generated method stub
+    return null;
   }
 
   /******************************************** push *********************************************/
   @Override
   public boolean push( UndoStack undostack )
   {
-    // only push onto stack if some cells successfully deleted
-    if ( m_oldValues.size() < 1 )
-      return false;
+    // do not redo command when pushed onto undo-stack
     return undostack.push( this, false );
-  }
-
-  /********************************************* add *********************************************/
-  public void add( int columnIndex, int rowIndex )
-  {
-    // if can successfully set cell value to null, store old value in hash-map
-    int hash = rowIndex * m_columnCount + columnIndex;
-    Object oldValue = m_data.getValue( columnIndex, rowIndex );
-    if ( oldValue != null && m_data.setValue( columnIndex, rowIndex, null ) )
-    {
-      m_oldValues.put( hash, oldValue );
-      m_data.redrawCell( columnIndex, rowIndex );
-    }
   }
 
 }

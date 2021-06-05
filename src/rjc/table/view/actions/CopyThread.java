@@ -57,10 +57,10 @@ public class CopyThread extends Thread
     var selected = m_view.getSelection().getSelected( 0 );
     int maxC = m_view.getData().getColumnCount() - 1;
     int maxR = m_view.getData().getRowCount() - 1;
-    int c1 = Utils.clamp( selected.get( 0 ), TableAxis.FIRSTCELL, maxC );
-    int r1 = Utils.clamp( selected.get( 1 ), TableAxis.FIRSTCELL, maxR );
-    int c2 = Utils.clamp( selected.get( 2 ), TableAxis.FIRSTCELL, maxC );
-    int r2 = Utils.clamp( selected.get( 3 ), TableAxis.FIRSTCELL, maxR );
+    int c1 = Utils.clamp( selected[0], TableAxis.FIRSTCELL, maxC );
+    int r1 = Utils.clamp( selected[1], TableAxis.FIRSTCELL, maxR );
+    int c2 = Utils.clamp( selected[2], TableAxis.FIRSTCELL, maxC );
+    int r2 = Utils.clamp( selected[3], TableAxis.FIRSTCELL, maxR );
 
     // generate list of selected visible indexes
     var columnIndexes = m_view.getColumnsAxis().getVisibleIndexes( c1, c2 );
@@ -74,28 +74,38 @@ public class CopyThread extends Thread
       return;
     }
 
+    // storage for the copied data
+    var copyText = new StringBuilder();
+    var copyValues = new Object[columnIndexes.size()][rowIndexes.size()];
+
     // copy selected visible cells
     long updateNanos = System.nanoTime() + UPDATE_NANOS;
-    var copyText = new StringBuilder();
     var drawer = m_view.getCellDrawer();
     drawer.setIndex( m_view, 0, 0 );
-    for ( int row : rowIndexes )
+
+    for ( int rowNum = 0; rowNum < rowIndexes.size(); rowNum++ )
     {
-      for ( int col : columnIndexes )
+      int rowIndex = rowIndexes.get( rowNum );
+      for ( int colNum = 0; colNum < columnIndexes.size(); colNum++ )
       {
-        copyText.append( drawer.getText( col, row ) );
+        int columnIndex = columnIndexes.get( colNum );
+
+        // collect cell value and text
+        copyValues[colNum][rowNum] = m_view.getData().getValue( columnIndex, rowIndex );
+        copyText.append( drawer.getText( columnIndex, rowIndex ) );
         copyText.append( '\t' );
         m_cellsCopied++;
 
-        // periodically check if thread interrupted and update alert text
+        // check if thread interrupted
+        if ( isInterrupted() )
+        {
+          m_view.getStatus().update( Level.NORMAL, "Copy cancelled" );
+          return;
+        }
+
+        // periodically update alert text
         if ( System.nanoTime() > updateNanos )
         {
-          if ( isInterrupted() )
-          {
-            m_view.getStatus().update( Level.NORMAL, "Copy cancelled" );
-            return;
-          }
-
           Platform.runLater( () -> m_alert.setContentText(
               "Copied " + ( 100L * m_cellsCopied / cellsCount ) + "% (" + m_cellsCopied + " of " + cellsCount + ")" ) );
           updateNanos = System.nanoTime() + UPDATE_NANOS;
@@ -105,13 +115,20 @@ public class CopyThread extends Thread
       copyText.append( '\n' );
     }
     copyText.deleteCharAt( copyText.length() - 1 );
+    Platform.runLater( () -> m_alert.setContentText( "Finishing ..." ) );
 
     // put copied contents on system clipboard
-    Platform.runLater( () -> m_alert.setContentText( "Finishing ..." ) );
     var content = new ClipboardContent();
     content.putString( copyText.toString() );
-    Platform.runLater( () -> Clipboard.getSystemClipboard().setContent( content ) );
-    Platform.runLater( () -> m_alert.hide() );
+    content.put( Content.JTABLEFX, copyValues );
+
+    Platform.runLater( () ->
+    {
+      content.putImage( m_view.snapshot( c1, r1, c2, r2, false ) );
+      Clipboard.getSystemClipboard().setContent( content );
+      m_alert.hide();
+    } );
+
     m_view.getStatus().update( Level.NORMAL, "Copied " + cellsCount + " cell" + ( cellsCount == 1 ? "" : "s" ) );
   }
 

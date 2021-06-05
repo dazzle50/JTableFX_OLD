@@ -49,14 +49,19 @@ public class CellDraw extends CellStyle
     }
 
     gc.clip();
+    drawUnclipped();
 
+    // remove clip
+    gc.restore();
+  }
+
+  /**************************************** drawUnclipped ****************************************/
+  public void drawUnclipped()
+  {
     // draw table body or header cell
     drawBackground();
     drawContent();
     drawBorder();
-
-    // remove clip
-    gc.restore();
   }
 
   /*************************************** drawBackground ****************************************/

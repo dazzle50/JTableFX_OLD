@@ -113,8 +113,8 @@ public class CellEditorBase
       return false;
 
     // push new command on undo-stack to update cell value
-    m_cell.view.getUndoStack().push( new CommandSetValue( data, columnIndex, rowIndex, oldValue, newValue ) );
-    return true;
+    var command = new CommandSetValue( data, columnIndex, rowIndex, oldValue, newValue );
+    return command.push( m_cell.view.getUndoStack() );
   }
 
   /******************************************* getValue ******************************************/

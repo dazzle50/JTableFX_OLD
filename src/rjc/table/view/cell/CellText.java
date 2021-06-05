@@ -50,9 +50,9 @@ public class CellText
   }
 
   private ArrayList<Line> m_lines  = new ArrayList<Line>();
-  private Text            node     = new Text();
-  private Bounds          bounds   = null;
-  private int             lineHeight;
+  private Text            m_node   = new Text();
+  private Bounds          m_bounds = null;
+  private int             m_lineHeight;
 
   static final String     ELLIPSIS = "...";                // ellipsis to show text has been truncated
 
@@ -60,30 +60,30 @@ public class CellText
   public CellText( String cellText, Font font, Insets insets, Pos alignment, double width, double height )
   {
     // prepare Text node for measuring string boundaries
-    node.setFont( font );
+    m_node.setFont( font );
     width = width - insets.getLeft() - insets.getRight();
     height = height - insets.getTop() - insets.getBottom();
 
     // determine how text needs to be split into lines
     while ( cellText != null )
     {
-      node.setText( cellText );
-      bounds = node.getBoundsInLocal();
-      lineHeight = (int) ( bounds.getHeight() + 0.5 );
+      m_node.setText( cellText );
+      m_bounds = m_node.getBoundsInLocal();
+      m_lineHeight = (int) ( m_bounds.getHeight() + 0.5 );
 
       // if text fits width, add to lines and exit loop
-      if ( bounds.getWidth() <= width )
+      if ( m_bounds.getWidth() <= width )
       {
         // text fits in width
         Line line = new Line();
         line.txt = cellText;
-        line.w = bounds.getWidth();
+        line.w = m_bounds.getWidth();
         m_lines.add( line );
         break;
       }
 
       // if last line, truncate this line
-      if ( lineHeight * ( 2 + m_lines.size() ) > height )
+      if ( m_lineHeight * ( 2 + m_lines.size() ) > height )
       {
         truncateEllipsis( cellText, width );
         break;
@@ -94,7 +94,7 @@ public class CellText
     }
 
     // position the lines depending on the cell text alignment
-    if ( bounds != null )
+    if ( m_bounds != null )
     {
       int numberOfLines = m_lines.size();
       for ( int index = 0; index < numberOfLines; index++ )
@@ -115,16 +115,16 @@ public class CellText
 
         // vertical top
         if ( alignment.getVpos() == VPos.TOP )
-          line.y = insets.getTop() + index * lineHeight - bounds.getMinY() - bounds.getMaxY() - 1.0;
+          line.y = insets.getTop() + index * m_lineHeight - m_bounds.getMinY() - m_bounds.getMaxY() - 1.0;
 
         // vertical centre
         if ( alignment.getVpos() == VPos.CENTER )
-          line.y = insets.getTop() + index * lineHeight + ( height - numberOfLines * lineHeight ) / 2.0
-              - bounds.getMinY();
+          line.y = insets.getTop() + index * m_lineHeight + ( height - numberOfLines * m_lineHeight ) / 2.0
+              - m_bounds.getMinY();
 
         // vertical bottom
         if ( alignment.getVpos() == VPos.BOTTOM || alignment.getVpos() == VPos.BASELINE )
-          line.y = insets.getTop() + index * lineHeight + height - numberOfLines * lineHeight - bounds.getMinY();
+          line.y = insets.getTop() + index * m_lineHeight + height - numberOfLines * m_lineHeight - m_bounds.getMinY();
       }
     }
   }
@@ -134,7 +134,7 @@ public class CellText
   {
     // need to shorten text to fit maximum width (but preferably breaking at white space)
     int currentLen = cellText.length();
-    int testLen = (int) ( currentLen * maxWidth / bounds.getWidth() );
+    int testLen = (int) ( currentLen * maxWidth / m_bounds.getWidth() );
     double testWidth = getWidth( cellText, testLen );
 
     // determine max length that can be shown breaking at white space if possible
@@ -159,7 +159,7 @@ public class CellText
     }
 
     // if space not found before test length show as much of word as possible
-    int space = cellText.lastIndexOf( ' ', testLen + 1 );
+    int space = cellText.lastIndexOf( ' ', testLen );
     if ( space == -1 )
     {
       truncateEllipsis( cellText, maxWidth );
@@ -172,7 +172,7 @@ public class CellText
     // space found so break there instead
     Line line = new Line();
     line.w = getWidth( cellText, space );
-    line.txt = node.getText();
+    line.txt = m_node.getText();
     m_lines.add( line );
     return cellText.substring( space + 1 );
   }
@@ -181,8 +181,8 @@ public class CellText
   private double getWidth( String text, int length )
   {
     // return bounds width of substring of text
-    node.setText( text.substring( 0, length ) );
-    return node.getBoundsInLocal().getWidth();
+    m_node.setText( text.substring( 0, length ) );
+    return m_node.getBoundsInLocal().getWidth();
   }
 
   /************************************** truncateEllipsis ***************************************/
@@ -194,7 +194,7 @@ public class CellText
 
     // need to shorten text to fit maximum width (but still showing as much as possible)
     int currentLen = cellText.length();
-    int testLen = (int) ( currentLen * maxWidth / bounds.getWidth() );
+    int testLen = (int) ( currentLen * maxWidth / m_bounds.getWidth() );
     double testWidth = getWidthEllipsis( cellText, testLen );
 
     // determine max length that can be shown with ellipsis
@@ -225,12 +225,12 @@ public class CellText
 
       if ( testWidth < 0.0 )
       {
-        node.setText( ELLIPSIS );
-        testWidth = node.getBoundsInLocal().getWidth();
+        m_node.setText( ELLIPSIS );
+        testWidth = m_node.getBoundsInLocal().getWidth();
       }
 
       Line line = new Line();
-      line.txt = node.getText();
+      line.txt = m_node.getText();
       line.w = testWidth;
       m_lines.add( line );
     }
@@ -243,8 +243,8 @@ public class CellText
     if ( length <= 0 )
       return -1.0;
 
-    node.setText( text.substring( 0, length ) + ELLIPSIS );
-    return node.getBoundsInLocal().getWidth();
+    m_node.setText( text.substring( 0, length ) + ELLIPSIS );
+    return m_node.getBoundsInLocal().getWidth();
   }
 
   /****************************************** getText ********************************************/

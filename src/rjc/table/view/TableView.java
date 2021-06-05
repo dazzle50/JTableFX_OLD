@@ -19,12 +19,16 @@
 package rjc.table.view;
 
 import javafx.geometry.Orientation;
+import javafx.scene.SnapshotParameters;
+import javafx.scene.canvas.Canvas;
 import javafx.scene.control.ScrollBar;
+import javafx.scene.image.Image;
 import rjc.table.Status;
 import rjc.table.data.TableData;
 import rjc.table.signal.ObservableDouble;
 import rjc.table.undo.UndoStack;
 import rjc.table.view.TableScrollBar.Animation;
+import rjc.table.view.actions.Reorder;
 import rjc.table.view.actions.Resize;
 import rjc.table.view.axis.TableAxis;
 import rjc.table.view.cell.CellContext;
@@ -481,6 +485,10 @@ public class TableView extends TableParent
     if ( Resize.inProgress() )
       return;
 
+    // if column/row reorder in progress, no need to do anything more
+    if ( Reorder.inProgress() )
+      return;
+
     // if animating to start or end means drag is in progress, so update select cell position
     var animation = getHorizontalScrollBar().getAnimation();
     if ( animation == Animation.TO_START )
@@ -509,21 +517,47 @@ public class TableView extends TableParent
       rowPos = getRowsAxis().getPrevious( rowPos );
       getSelectCell().setRowPos( rowPos );
     }
+  }
 
-    /**
-    TODO
-    // if column or row reordering, ensure reorder mark placed correctly
-    if ( m_reorder.getOrientation() == Orientation.HORIZONTAL )
-      m_reorder.setPlacement( m_x );
-    if ( m_reorder.getOrientation() == Orientation.VERTICAL )
-      m_reorder.setPlacement( m_y );
-    
-    // if column or row resizing, update
-    if ( m_resize.getOrientation() == Orientation.HORIZONTAL )
-      m_resize.resize( m_x );
-    if ( m_resize.getOrientation() == Orientation.VERTICAL )
-      m_resize.resize( m_y );
-    **/
+  /****************************************** snapshot *******************************************/
+  public Image snapshot( int c1, int r1, int c2, int r2, boolean showSelection )
+  {
+    // returns snapshot of rectangle of cell positions c1,r1 to c2,r2
+    int x1 = getXStartFromColumnPos( c1 );
+    int y1 = getYStartFromRowPos( r1 );
+    int x2 = getXStartFromColumnPos( c2 + 1 );
+    int y2 = getYStartFromRowPos( r2 + 1 );
+
+    // check rectangle is not too large
+    long w = x2 - x1;
+    long h = y2 - y1;
+    if ( w > 99999L || h > 99999L || w * h > 99999999L )
+      return null;
+
+    var drawer = getCellDrawer();
+    var canvas = new Canvas();
+    canvas.setWidth( w );
+    canvas.setHeight( h );
+
+    boolean oldSelection = getSelection().getShow();
+    getSelection().setShow( showSelection );
+    for ( int colPos = c1; colPos <= c2; colPos++ )
+      for ( int rowPos = r1; rowPos <= r2; rowPos++ )
+      {
+        drawer.setPosition( this, colPos, rowPos );
+        drawer.x -= x1;
+        drawer.y -= y1;
+        drawer.gc = canvas.getGraphicsContext2D();
+        drawer.gc.save();
+        drawer.gc.beginPath();
+        drawer.gc.rect( drawer.x, drawer.y, drawer.w, drawer.h );
+        drawer.gc.clip();
+        drawer.drawUnclipped();
+        drawer.gc.restore();
+      }
+    getSelection().setShow( oldSelection );
+
+    return canvas.snapshot( new SnapshotParameters(), null );
   }
 
 }

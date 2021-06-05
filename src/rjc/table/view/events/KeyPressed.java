@@ -179,7 +179,7 @@ public class KeyPressed implements EventHandler<KeyEvent>
     {
       // create new command for zoom change
       CommandZoom zc = new CommandZoom( m_view, m_view.getZoom().get(), zoom );
-      m_view.getUndoStack().push( zc );
+      zc.push( m_view.getUndoStack() );
     }
   }
 

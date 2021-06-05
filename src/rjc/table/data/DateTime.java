@@ -18,16 +18,21 @@
 
 package rjc.table.data;
 
+import java.io.Serializable;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
 import java.time.format.DateTimeFormatter;
+
+import rjc.table.Utils;
 
 /*************************************************************************************************/
 /********************************* Date-time (with no timezone) **********************************/
 /*************************************************************************************************/
 
-public class DateTime implements Comparable<DateTime>
+public class DateTime implements Comparable<DateTime>, Serializable
 {
+  private static final long    serialVersionUID    = Utils.VERSION.hashCode();
+
   // range constrained by valid Date (approx 5,800,000 BC to 5,800,000 AD)
   private long                 m_milliseconds;                                                      // milliseconds from 00:00:00.000 start of epoch-day
 

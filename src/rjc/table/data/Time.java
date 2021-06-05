@@ -18,15 +18,20 @@
 
 package rjc.table.data;
 
+import java.io.Serializable;
 import java.time.LocalTime;
 import java.time.OffsetDateTime;
+
+import rjc.table.Utils;
 
 /*************************************************************************************************/
 /******************** Time of day from 00:00:00.000 to 24:00:00.000 inclusive ********************/
 /*************************************************************************************************/
 
-public class Time
+public class Time implements Serializable
 {
+  private static final long          serialVersionUID    = Utils.VERSION.hashCode();
+
   // milliseconds from 00:00:00.000 start of day
   private int                        m_milliseconds;
 

@@ -119,6 +119,13 @@ public class ChooseField extends XTextField
         return;
       }
 
+    // if index not found and value if null, then set index to zero 
+    if ( value == null )
+    {
+      setSelectedIndex( 0 );
+      return;
+    }
+
     // value not found in list so throw exception
     throw new InvalidParameterException( value == null ? "null" : value.toString() );
   }

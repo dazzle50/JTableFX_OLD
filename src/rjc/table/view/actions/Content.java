@@ -22,9 +22,11 @@ import javafx.scene.control.Alert;
 import javafx.scene.control.Alert.AlertType;
 import javafx.scene.control.ButtonType;
 import javafx.scene.input.Clipboard;
+import javafx.scene.input.DataFormat;
 import rjc.table.Status.Level;
 import rjc.table.Utils;
 import rjc.table.undo.CommandDelete;
+import rjc.table.undo.CommandPasteCells;
 import rjc.table.view.TableView;
 import rjc.table.view.axis.TableAxis;
 
@@ -34,7 +36,9 @@ import rjc.table.view.axis.TableAxis;
 
 public class Content
 {
-  final static private long WAIT_MILLISECONDS = 2000L; // 2 seconds
+  final static private long      WAIT_MILLISECONDS = 2000L;                                                // 2 seconds
+
+  final static public DataFormat JTABLEFX          = new DataFormat( "application/jtablefx-object-array" );
 
   /******************************************* insert ********************************************/
   public static void insert( TableView view )
@@ -57,10 +61,10 @@ public class Content
     {
       // get selected area
       var selected = view.getSelection().getSelected( index );
-      int c1 = Utils.clamp( selected.get( 0 ), TableAxis.FIRSTCELL, maxC );
-      int r1 = Utils.clamp( selected.get( 1 ), TableAxis.FIRSTCELL, maxR );
-      int c2 = Utils.clamp( selected.get( 2 ), TableAxis.FIRSTCELL, maxC );
-      int r2 = Utils.clamp( selected.get( 3 ), TableAxis.FIRSTCELL, maxR );
+      int c1 = Utils.clamp( selected[0], TableAxis.FIRSTCELL, maxC );
+      int r1 = Utils.clamp( selected[1], TableAxis.FIRSTCELL, maxR );
+      int c2 = Utils.clamp( selected[2], TableAxis.FIRSTCELL, maxC );
+      int r2 = Utils.clamp( selected[3], TableAxis.FIRSTCELL, maxR );
 
       // generate list of selected visible indexes
       var columnIndexes = view.getColumnsAxis().getVisibleIndexes( c1, c2 );
@@ -72,13 +76,9 @@ public class Content
           command.add( col, row );
     }
 
-    // if some cells successfully deleted then put command on undo-stack but with no redo
-    if ( command.getCount() > 0 )
-      view.getUndoStack().pushNoExecute( command );
-
-    // update status to show how many successfully deleted
+    // push command onto stack and update status
+    command.push( view.getUndoStack() );
     view.getStatus().update( Level.NORMAL, command.text() );
-
   }
 
   /****************************************** fillDown *******************************************/
@@ -91,12 +91,53 @@ public class Content
   /******************************************* paste *********************************************/
   public static void paste( TableView view )
   {
-    // TODO Auto-generated method stub
-    Utils.trace( "TODO" );
+    // attempt to paste system clipboard contents to table-view
+    var array = getClipboardArray();
+    if ( array != null )
+      pasteArray( view, array );
+    else
+      pasteString( view, Clipboard.getSystemClipboard().getString() );
+  }
 
-    var contents = Clipboard.getSystemClipboard().getContentTypes();
-    Utils.trace( contents, Clipboard.getSystemClipboard().getString() );
+  /***************************************** pasteString *****************************************/
+  private static void pasteString( TableView view, String string )
+  {
+    // TODO Auto-generated method stub ......................................................
+    Utils.trace( "Contains String !!!", string );
 
+  }
+
+  /***************************************** pasteArray ******************************************/
+  private static void pasteArray( TableView view, Object[] array )
+  {
+    // TODO Auto-generated method stub ......................................................
+    Utils.trace( "Contains JTABLEFX !!!", array );
+    for ( int col = 0; col < array.length; col++ )
+      Utils.trace( "Column " + col, array[col] );
+
+    // paste cell values to view at focus position via undo command 
+    int columnPos = view.getFocusCell().getColumnPos();
+    int rowPos = view.getFocusCell().getRowPos();
+    var command = new CommandPasteCells( view, columnPos, rowPos, array );
+
+    // push command onto stack and update status
+    command.push( view.getUndoStack() );
+    view.getStatus().update( Level.NORMAL, command.text() );
+  }
+
+  /************************************** getClipboardArray **************************************/
+  private static Object[] getClipboardArray()
+  {
+    // returns JTABLEFX array if present on system clipboard, otherwise null
+    var contents = Clipboard.getSystemClipboard().getContent( JTABLEFX );
+    if ( contents == null || !contents.getClass().isArray() )
+      return null;
+
+    Object[] array = (Object[]) contents;
+    if ( array.length < 1 || !array[0].getClass().isArray() || ( (Object[]) array[0] ).length < 1 )
+      return null;
+
+    return array;
   }
 
   /******************************************** copy *********************************************/
@@ -110,6 +151,7 @@ public class Content
     {
       Alert alert = new Alert( AlertType.WARNING );
       alert.setTitle( "Copy" );
+      alert.initOwner( view.getScene().getWindow() );
       alert.setHeaderText( "This action won't work on multiple selections." );
       alert.showAndWait();
       return;

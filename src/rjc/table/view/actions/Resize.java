@@ -120,7 +120,7 @@ public class Resize
   public static void end()
   {
     // end resizing, push resize command onto undo-stack
-    m_view.getUndoStack().push( m_command );
+    m_command.push( m_view.getUndoStack() );
     m_view = null;
     m_command = null;
   }

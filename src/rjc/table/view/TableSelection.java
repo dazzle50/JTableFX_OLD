@@ -81,8 +81,9 @@ public class TableSelection implements ISignal
   final static private int    FIRSTCELL = TableAxis.FIRSTCELL;
   final static private int    AFTER     = TableAxis.AFTER;
 
-  private ArrayList<Selected> m_selected;
+  private boolean             m_show    = true;               // if false all 'is' and 'has' methods return false
   private TableView           m_view;
+  private ArrayList<Selected> m_selected;
 
   /***************************************** constructor *****************************************/
   public TableSelection( TableView view )
@@ -101,6 +102,20 @@ public class TableSelection implements ISignal
       m_selected.clear();
       signal( m_selected.size() ); // signal selection model has been cleared
     }
+  }
+
+  /******************************************* getShow *******************************************/
+  public boolean getShow()
+  {
+    // get show status
+    return m_show;
+  }
+
+  /******************************************* setShow *******************************************/
+  public void setShow( boolean show )
+  {
+    // set show flag - if false all 'is' and 'has' methods will return false
+    m_show = show;
   }
 
   /****************************************** getCount *******************************************/
@@ -123,14 +138,14 @@ public class TableSelection implements ISignal
   }
 
   /***************************************** getSelected *****************************************/
-  public ArrayList<Integer> getSelected( int num )
+  public int[] getSelected( int num )
   {
-    // returns a list of 4 integers representing selected area
-    ArrayList<Integer> list = new ArrayList<Integer>( 4 );
-    list.add( m_selected.get( num ).c1 );
-    list.add( m_selected.get( num ).r1 );
-    list.add( m_selected.get( num ).c2 );
-    list.add( m_selected.get( num ).r2 );
+    // returns array of 4 integers representing selected area
+    int[] list = new int[4];
+    list[0] = m_selected.get( num ).c1;
+    list[1] = m_selected.get( num ).r1;
+    list[2] = m_selected.get( num ).c2;
+    list[3] = m_selected.get( num ).r2;
     return list;
   }
 
@@ -138,9 +153,10 @@ public class TableSelection implements ISignal
   public boolean isCellSelected( int columnPos, int rowPos )
   {
     // return true if specified cell is in a selected area
-    for ( Selected area : m_selected )
-      if ( area.isCellSelected( columnPos, rowPos ) )
-        return true;
+    if ( m_show )
+      for ( Selected area : m_selected )
+        if ( area.isCellSelected( columnPos, rowPos ) )
+          return true;
 
     return false;
   }
@@ -149,9 +165,10 @@ public class TableSelection implements ISignal
   public boolean hasRowSelection( int rowPos )
   {
     // return true if specified row has any selection
-    for ( Selected area : m_selected )
-      if ( rowPos >= area.r1 && rowPos <= area.r2 )
-        return true;
+    if ( m_show )
+      for ( Selected area : m_selected )
+        if ( rowPos >= area.r1 && rowPos <= area.r2 )
+          return true;
 
     return false;
   }
@@ -160,9 +177,10 @@ public class TableSelection implements ISignal
   public boolean hasColumnSelection( int columnPos )
   {
     // return true if specified column has any selection
-    for ( Selected area : m_selected )
-      if ( columnPos >= area.c1 && columnPos <= area.c2 )
-        return true;
+    if ( m_show )
+      for ( Selected area : m_selected )
+        if ( columnPos >= area.c1 && columnPos <= area.c2 )
+          return true;
 
     return false;
   }
@@ -170,6 +188,10 @@ public class TableSelection implements ISignal
   /************************************** isColumnSelected ***************************************/
   public boolean isColumnSelected( int columnPos )
   {
+    // if show disabled return false
+    if ( !m_show )
+      return false;
+
     // return true if all visible cells in specified column are selected
     TableAxis axis = m_view.getRowsAxis();
     int top = axis.getFirst();
@@ -259,6 +281,10 @@ public class TableSelection implements ISignal
   /**************************************** isRowSelected ****************************************/
   public boolean isRowSelected( int rowPos )
   {
+    // if show disabled return false
+    if ( !m_show )
+      return false;
+
     // return true if all visible cells in specified row are selected
     TableAxis axis = m_view.getColumnsAxis();
 

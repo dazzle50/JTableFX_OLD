@@ -18,27 +18,32 @@
 
 package rjc.table.data;
 
+import java.io.Serializable;
 import java.time.DayOfWeek;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
+
+import rjc.table.Utils;
 
 /*************************************************************************************************/
 /************************************ Date (with no timezone) ************************************/
 /*************************************************************************************************/
 
-public class Date
+public class Date implements Serializable
 {
-  private int                 m_epochday;                               // simple count of days where day 0 is 01-Jan-1970
+  private static final long   serialVersionUID = Utils.VERSION.hashCode();
+
+  private int                 m_epochday;                                      // simple count of days where day 0 is 01-Jan-1970
 
   // min int=-2^31 gives minimum date of approx 5,800,000 BC
-  public static final Date    MIN_VALUE = new Date( Integer.MIN_VALUE );
+  public static final Date    MIN_VALUE        = new Date( Integer.MIN_VALUE );
 
   // max int=2^31-1 gives maximum date of approx 5,800,000 AD
-  public static final Date    MAX_VALUE = new Date( Integer.MAX_VALUE );
+  public static final Date    MAX_VALUE        = new Date( Integer.MAX_VALUE );
 
-  private static final char   QUOTE     = '\'';
-  private static final char   CHARB     = 'B';
-  private static final String CODE      = "#@B!";
+  private static final char   QUOTE            = '\'';
+  private static final char   CHARB            = 'B';
+  private static final String CODE             = "#@B!";
 
   /**************************************** constructor ******************************************/
   public Date( int epochday )
