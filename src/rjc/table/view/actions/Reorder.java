@@ -197,7 +197,7 @@ public class Reorder
     int afterHashcode = m_orientation == Orientation.HORIZONTAL ? m_view.getColumnsAxis().orderHashcode()
         : m_view.getRowsAxis().orderHashcode();
     if ( beforeHashcode != afterHashcode )
-      command.push( m_view.getUndoStack() );
+      m_view.getUndoStack().push( command );
 
     if ( m_orientation == Orientation.HORIZONTAL )
     {

@@ -25,10 +25,11 @@ import javafx.scene.input.Clipboard;
 import javafx.scene.input.DataFormat;
 import rjc.table.Status.Level;
 import rjc.table.Utils;
-import rjc.table.undo.CommandDelete;
 import rjc.table.undo.CommandPasteCells;
+import rjc.table.undo.CommandSetNull;
 import rjc.table.view.TableView;
 import rjc.table.view.axis.TableAxis;
+import rjc.table.view.cell.CellContext;
 
 /*************************************************************************************************/
 /************************** Functionality for multi-cell content actions *************************/
@@ -52,7 +53,7 @@ public class Content
   {
     // attempt to set all table-view selected cells to null
     int selections = view.getSelection().getCount();
-    var command = new CommandDelete( view );
+    var command = new CommandSetNull( view );
     var data = view.getData();
     int maxC = data.getColumnCount() - 1;
     int maxR = data.getRowCount() - 1;
@@ -70,14 +71,15 @@ public class Content
       var columnIndexes = view.getColumnsAxis().getVisibleIndexes( c1, c2 );
       var rowIndexes = view.getRowsAxis().getVisibleIndexes( r1, r2 );
 
-      // for each visible selected cell if successfully deleted, add to command
+      // for each visible selected cell if cell has editor and successfully deleted, add to command
       for ( int row : rowIndexes )
         for ( int col : columnIndexes )
-          command.add( col, row );
+          if ( view.getCellEditor( new CellContext( view, col, row ) ) != null )
+            command.add( col, row );
     }
 
     // push command onto stack and update status
-    command.push( view.getUndoStack() );
+    view.getUndoStack().push( command );
     view.getStatus().update( Level.NORMAL, command.text() );
   }
 
@@ -92,36 +94,16 @@ public class Content
   public static void paste( TableView view )
   {
     // attempt to paste system clipboard contents to table-view
+    var string = Clipboard.getSystemClipboard().getString();
     var array = getClipboardArray();
-    if ( array != null )
-      pasteArray( view, array );
-    else
-      pasteString( view, Clipboard.getSystemClipboard().getString() );
-  }
-
-  /***************************************** pasteString *****************************************/
-  private static void pasteString( TableView view, String string )
-  {
-    // TODO Auto-generated method stub ......................................................
-    Utils.trace( "Contains String !!!", string );
-
-  }
-
-  /***************************************** pasteArray ******************************************/
-  private static void pasteArray( TableView view, Object[] array )
-  {
-    // TODO Auto-generated method stub ......................................................
-    Utils.trace( "Contains JTABLEFX !!!", array );
-    for ( int col = 0; col < array.length; col++ )
-      Utils.trace( "Column " + col, array[col] );
 
     // paste cell values to view at focus position via undo command 
     int columnPos = view.getFocusCell().getColumnPos();
     int rowPos = view.getFocusCell().getRowPos();
-    var command = new CommandPasteCells( view, columnPos, rowPos, array );
+    var command = new CommandPasteCells( view, columnPos, rowPos, array, string );
 
     // push command onto stack and update status
-    command.push( view.getUndoStack() );
+    view.getUndoStack().push( command );
     view.getStatus().update( Level.NORMAL, command.text() );
   }
 

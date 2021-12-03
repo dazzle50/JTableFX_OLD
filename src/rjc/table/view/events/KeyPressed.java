@@ -167,19 +167,19 @@ public class KeyPressed implements EventHandler<KeyEvent>
   {
     // check if can merge with previous undo command 
     var command = m_view.getUndoStack().getUndoCommand();
-    if ( command instanceof CommandZoom && ( (CommandZoom) command ).isThisView( m_view ) )
+    if ( command instanceof CommandZoom && ( (CommandZoom) command ).getView() == m_view )
     {
       // merge with previous zoom command
       CommandZoom zc = (CommandZoom) command;
-      zc.setNewZoom( zoom );
+      zc.setZoom( zoom );
       zc.redo();
-      m_view.getUndoStack().triggerListeners();
+      m_view.getUndoStack().signal();
     }
     else
     {
       // create new command for zoom change
       CommandZoom zc = new CommandZoom( m_view, m_view.getZoom().get(), zoom );
-      zc.push( m_view.getUndoStack() );
+      m_view.getUndoStack().push( zc );
     }
   }
 

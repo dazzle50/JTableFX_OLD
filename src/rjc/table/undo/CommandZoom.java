@@ -40,8 +40,8 @@ public class CommandZoom implements IUndoCommand
     m_newZoom = newZoom;
   }
 
-  /***************************************** setNewZoom ******************************************/
-  public void setNewZoom( double zoom )
+  /******************************************* setZoom *******************************************/
+  public void setZoom( double zoom )
   {
     // update command new zoom
     if ( m_newZoom != zoom )
@@ -51,11 +51,11 @@ public class CommandZoom implements IUndoCommand
     }
   }
 
-  /***************************************** isThisView ******************************************/
-  public boolean isThisView( TableView view )
+  /******************************************* getView *******************************************/
+  public TableView getView()
   {
-    // return true if same view
-    return view == m_view;
+    // return table view
+    return m_view;
   }
 
   /******************************************* redo **********************************************/

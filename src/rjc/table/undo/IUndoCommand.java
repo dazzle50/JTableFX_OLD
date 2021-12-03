@@ -30,13 +30,12 @@ public interface IUndoCommand
   // reverts the command
   public void undo();
 
-  // short text string describing this command, e.g. "insert text"
+  // returns short text string describing this command, e.g. "insert text"
   public String text();
 
-  // attempts to push command onto specified undo-stack and confirms if done
-  default public boolean push( UndoStack undostack )
+  // returns true if command valid and ready to be pushed onto undo-stack
+  default public boolean isValid()
   {
-    // override method if check or redo wanted
-    return undostack.push( this, false );
+    return true;
   }
 }

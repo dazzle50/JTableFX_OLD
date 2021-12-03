@@ -52,7 +52,7 @@ public class UndoStack implements ISignal
   /****************************************** setClean *******************************************/
   public void setClean()
   {
-    // declare current index position as being clean
+    // declare current index position as being clean (for example after file saved)
     m_cleanIndex = m_index;
     signal();
   }
@@ -79,8 +79,12 @@ public class UndoStack implements ISignal
   }
 
   /******************************************** push *********************************************/
-  public boolean push( IUndoCommand command, boolean redo )
+  public boolean push( IUndoCommand command )
   {
+    // if command not valid, then return false and don't push on stack
+    if ( !command.isValid() )
+      return false;
+
     // remove any commands from stack that haven't been actioned (i.e. above index)
     if ( m_stack.size() > m_index )
     {
@@ -93,8 +97,6 @@ public class UndoStack implements ISignal
 
     // add new command to stack, do it, and update stack index
     m_stack.add( command );
-    if ( redo )
-      command.redo();
     m_index = m_stack.size();
     signal();
 
@@ -124,13 +126,6 @@ public class UndoStack implements ISignal
       m_index++;
       signal();
     }
-  }
-
-  /*************************************** triggerListeners **************************************/
-  public void triggerListeners()
-  {
-    // public method to notify all the listeners
-    signal();
   }
 
   /**************************************** getUndoCommand ***************************************/

@@ -18,8 +18,6 @@
 
 package rjc.table.demo.edit;
 
-import rjc.table.Status;
-import rjc.table.Status.Level;
 import rjc.table.data.Date;
 import rjc.table.data.DateTime;
 import rjc.table.data.TableData;
@@ -138,60 +136,51 @@ public class EditData extends TableData
     }
   }
 
-  /***************************************** checkValue ******************************************/
-  @Override
-  public Status checkValue( int columnIndex, int rowIndex, Object testValue )
-  {
-    // check for where null not allowed
-    if ( testValue == null && ( columnIndex == SECTION_INTEGER || columnIndex == SECTION_DOUBLE ) )
-      return new Status( Level.ERROR, "Null not allowed" );
-
-    // check for correct data types
-    if ( columnIndex == SECTION_INTEGER && testValue instanceof Integer == false )
-      return new Status( Level.ERROR, "Only integer values allowed" );
-    if ( columnIndex == SECTION_DOUBLE && testValue instanceof Double == false )
-      return new Status( Level.ERROR, "Only double values allowed" );
-
-    return null;
-  }
-
   /****************************************** setValue *******************************************/
   @Override
   public boolean setValue( int columnIndex, int rowIndex, Object newValue )
   {
-    // check new value is allowed
-    if ( checkValue( columnIndex, rowIndex, newValue ) != null )
-      return false;
-
     // returns true if cell value successfully set for specified cell index
-    switch ( columnIndex )
+    try
     {
-      case SECTION_TEXT:
-        m_text[rowIndex] = (String) newValue;
-        break;
-      case SECTION_INTEGER:
-        m_integer[rowIndex] = (int) newValue;
-        break;
-      case SECTION_DOUBLE:
-        m_double[rowIndex] = (double) newValue;
-        break;
-      case SECTION_DATE:
-        m_date[rowIndex] = (Date) newValue;
-        break;
-      case SECTION_TIME:
-        m_time[rowIndex] = (Time) newValue;
-        break;
-      case SECTION_DATETIME:
-        m_datetime[rowIndex] = (DateTime) newValue;
-        break;
-      case SECTION_CHOOSE:
-        m_fruit[rowIndex] = (Fruit) newValue;
-        break;
-      default:
-        throw new IllegalArgumentException( "Column index = " + columnIndex );
-    }
+      switch ( columnIndex )
+      {
+        case SECTION_READONLY:
+          m_readonly[rowIndex] = (String) newValue;
+          break;
+        case SECTION_TEXT:
+          m_text[rowIndex] = (String) newValue;
+          break;
+        case SECTION_INTEGER:
+          m_integer[rowIndex] = (int) newValue;
+          break;
+        case SECTION_DOUBLE:
+          m_double[rowIndex] = (double) newValue;
+          break;
+        case SECTION_DATE:
+          m_date[rowIndex] = (Date) newValue;
+          break;
+        case SECTION_TIME:
+          m_time[rowIndex] = (Time) newValue;
+          break;
+        case SECTION_DATETIME:
+          m_datetime[rowIndex] = (DateTime) newValue;
+          break;
+        case SECTION_CHOOSE:
+          m_fruit[rowIndex] = (Fruit) newValue;
+          break;
+        default:
+          throw new IllegalArgumentException( "Column index = " + columnIndex );
+      }
 
-    return true;
+      // setting value was successful so return true
+      return true;
+    }
+    catch ( Exception exception )
+    {
+      // exception raised, so return false
+      return false;
+    }
   }
 
 }

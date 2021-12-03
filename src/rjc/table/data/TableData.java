@@ -18,8 +18,6 @@
 
 package rjc.table.data;
 
-import rjc.table.Status;
-
 /*************************************************************************************************/
 /*********************** Table data source (with default implementations) ************************/
 /*************************************************************************************************/
@@ -50,13 +48,6 @@ public class TableData extends TableBase
   {
     // returns true if cell value successfully set for specified cell index
     return false;
-  }
-
-  /***************************************** checkValue ******************************************/
-  public Status checkValue( int columnIndex, int rowIndex, Object testValue )
-  {
-    // returns null if test-value would be allowed
-    return null;
   }
 
 }

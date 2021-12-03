@@ -119,17 +119,6 @@ public class Utils
     return txt.trim().replaceAll( "(\\s+)", " " );
   }
 
-  /******************************************* equal *********************************************/
-  public static boolean equal( Object obj1, Object obj2 )
-  {
-    // returns true if obj1 equals obj2 even if both are null
-    if ( obj1 == obj2 )
-      return true;
-    if ( obj1 != null )
-      return obj1.equals( obj2 );
-    return obj2.equals( obj1 );
-  }
-
   /******************************************** clamp ********************************************/
   public static int clamp( int val, int min, int max )
   {

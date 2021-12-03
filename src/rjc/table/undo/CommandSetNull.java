@@ -24,20 +24,20 @@ import rjc.table.data.TableData;
 import rjc.table.view.TableView;
 
 /*************************************************************************************************/
-/*************** UndoCommand for deleting (setting to null) TableData cell values ****************/
+/************ UndoCommand setting to null (deleting) multiple TableData cell values **************/
 /*************************************************************************************************/
 
-public class CommandDelete implements IUndoCommand
+public class CommandSetNull implements IUndoCommand
 {
   private TableData                m_data;        // table data model
   private int                      m_columnCount; // used to hash column & row indexes
-  private HashMap<Integer, Object> m_oldValues;   // cell value before delete
+  private HashMap<Integer, Object> m_oldValues;   // cells location and old value before setting to null
   private String                   m_text;        // text describing command
 
   /**************************************** constructor ******************************************/
-  public CommandDelete( TableView view )
+  public CommandSetNull( TableView view )
   {
-    // initialise private variables
+    // initialise private variables - after creating command use add() method populate old-values hash-map
     m_data = view.getData();
     m_columnCount = m_data.getColumnCount();
     m_oldValues = new HashMap<>();
@@ -61,7 +61,7 @@ public class CommandDelete implements IUndoCommand
   @Override
   public void undo()
   {
-    // return original value of selected cells
+    // set deleted cells back to their original values
     m_oldValues.forEach( ( hash, oldValue ) ->
     {
       int col = hash % m_columnCount;
@@ -78,30 +78,28 @@ public class CommandDelete implements IUndoCommand
     // command description
     if ( m_text == null )
       m_text = "Deleted " + m_oldValues.size() + " cell" + ( m_oldValues.size() == 1 ? "" : "s" );
-
     return m_text;
   }
 
-  /******************************************** push *********************************************/
+  /******************************************* isValid *******************************************/
   @Override
-  public boolean push( UndoStack undostack )
+  public boolean isValid()
   {
-    // only push onto stack if some cells successfully deleted
-    if ( m_oldValues.size() < 1 )
-      return false;
-    return undostack.push( this, false );
+    // command is only ready and valid when old-values hash-map is not empty
+    return !m_oldValues.isEmpty();
   }
 
   /********************************************* add *********************************************/
   public void add( int columnIndex, int rowIndex )
   {
     // if can successfully set cell value to null, store old value in hash-map
-    int hash = rowIndex * m_columnCount + columnIndex;
     Object oldValue = m_data.getValue( columnIndex, rowIndex );
     if ( oldValue != null && m_data.setValue( columnIndex, rowIndex, null ) )
     {
+      int hash = rowIndex * m_columnCount + columnIndex;
       m_oldValues.put( hash, oldValue );
       m_data.redrawCell( columnIndex, rowIndex );
+      m_text = null;
     }
   }
 

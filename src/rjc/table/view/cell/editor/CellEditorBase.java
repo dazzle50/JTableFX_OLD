@@ -21,7 +21,6 @@ package rjc.table.view.cell.editor;
 import javafx.scene.control.Control;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
-import rjc.table.Utils;
 import rjc.table.control.XTextField;
 import rjc.table.data.TableData;
 import rjc.table.undo.CommandSetValue;
@@ -106,15 +105,9 @@ public class CellEditorBase
     int columnIndex = m_cell.columnIndex;
     int rowIndex = m_cell.rowIndex;
 
-    // if new value equals old value, or is not valid, exit with no command
-    Object oldValue = data.getValue( columnIndex, rowIndex );
-    Object newValue = getValue();
-    if ( Utils.equal( newValue, oldValue ) || data.checkValue( columnIndex, rowIndex, newValue ) != null )
-      return false;
-
     // push new command on undo-stack to update cell value
-    var command = new CommandSetValue( data, columnIndex, rowIndex, oldValue, newValue );
-    return command.push( m_cell.view.getUndoStack() );
+    var command = new CommandSetValue( data, columnIndex, rowIndex, getValue() );
+    return m_cell.view.getUndoStack().push( command );
   }
 
   /******************************************* getValue ******************************************/
