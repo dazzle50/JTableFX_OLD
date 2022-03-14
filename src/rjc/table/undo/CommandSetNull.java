@@ -1,5 +1,5 @@
 /**************************************************************************
- *  Copyright (C) 2021 by Richard Crook                                   *
+ *  Copyright (C) 2022 by Richard Crook                                   *
  *  https://github.com/dazzle50/JTableFX                                  *
  *                                                                        *
  *  This program is free software: you can redistribute it and/or modify  *
@@ -47,7 +47,7 @@ public class CommandSetNull implements IUndoCommand
   @Override
   public void redo()
   {
-    // set value to null of selected cells 
+    // set value to null of selected cells
     m_oldValues.keySet().forEach( hash ->
     {
       int col = hash % m_columnCount;

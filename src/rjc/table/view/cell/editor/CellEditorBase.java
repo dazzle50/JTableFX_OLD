@@ -1,5 +1,5 @@
 /**************************************************************************
- *  Copyright (C) 2021 by Richard Crook                                   *
+ *  Copyright (C) 2022 by Richard Crook                                   *
  *  https://github.com/dazzle50/JTableFX                                  *
  *                                                                        *
  *  This program is free software: you can redistribute it and/or modify  *
@@ -58,7 +58,7 @@ public class CellEditorBase
     m_control.setMaxSize( cell.w + 1, cell.h + 1 );
     m_control.setMinSize( cell.w + 1, cell.h + 1 );
 
-    // if control derived from XTextField 
+    // if control derived from XTextField
     TableView view = cell.view;
     if ( m_control instanceof XTextField )
     {

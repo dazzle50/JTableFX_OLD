@@ -1,5 +1,5 @@
 /**************************************************************************
- *  Copyright (C) 2021 by Richard Crook                                   *
+ *  Copyright (C) 2022 by Richard Crook                                   *
  *  https://github.com/dazzle50/JTableFX                                  *
  *                                                                        *
  *  This program is free software: you can redistribute it and/or modify  *
@@ -104,7 +104,7 @@ public class AxisSize extends AxisBase
   /**************************************** getBodyPixels ****************************************/
   public int getBodyPixels()
   {
-    // return axis total body size in pixels (excludes header) 
+    // return axis total body size in pixels (excludes header)
     if ( m_bodyPixelsCache.get() == INVALID )
     {
       // cached size is invalid, so re-calculate size of table body cells

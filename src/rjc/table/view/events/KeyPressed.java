@@ -1,5 +1,5 @@
 /**************************************************************************
- *  Copyright (C) 2021 by Richard Crook                                   *
+ *  Copyright (C) 2022 by Richard Crook                                   *
  *  https://github.com/dazzle50/JTableFX                                  *
  *                                                                        *
  *  This program is free software: you can redistribute it and/or modify  *
@@ -165,7 +165,7 @@ public class KeyPressed implements EventHandler<KeyEvent>
   /***************************************** commandZoom *****************************************/
   public void commandZoom( double zoom )
   {
-    // check if can merge with previous undo command 
+    // check if can merge with previous undo command
     var command = m_view.getUndoStack().getUndoCommand();
     if ( command instanceof CommandZoom && ( (CommandZoom) command ).getView() == m_view )
     {

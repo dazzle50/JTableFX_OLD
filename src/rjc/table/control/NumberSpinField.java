@@ -1,5 +1,5 @@
 /**************************************************************************
- *  Copyright (C) 2021 by Richard Crook                                   *
+ *  Copyright (C) 2022 by Richard Crook                                   *
  *  https://github.com/dazzle50/JTableFX                                  *
  *                                                                        *
  *  This program is free software: you can redistribute it and/or modify  *
@@ -59,7 +59,7 @@ public class NumberSpinField extends SpinField implements ISignal
           && m_numberFormat.getMinimumIntegerDigits() == 1 )
         super.setValue( text.substring( 1 ) );
 
-      // emit signal when month changes 
+      // emit signal when month changes
       signal( getDouble() );
     } );
   }
@@ -68,7 +68,7 @@ public class NumberSpinField extends SpinField implements ISignal
   @Override
   public void setValue( Object value )
   {
-    // if no number formating available or string, set field text as specified 
+    // if no number formating available or string, set field text as specified
     if ( m_numberFormat == null || value instanceof String )
       super.setValue( value );
     else

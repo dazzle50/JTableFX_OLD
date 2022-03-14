@@ -1,5 +1,5 @@
 /**************************************************************************
- *  Copyright (C) 2021 by Richard Crook                                   *
+ *  Copyright (C) 2022 by Richard Crook                                   *
  *  https://github.com/dazzle50/JTableFX                                  *
  *                                                                        *
  *  This program is free software: you can redistribute it and/or modify  *
@@ -69,7 +69,7 @@ public class Reorder
     m_line.setStrokeWidth( LINE_WIDTH );
     m_line.setStroke( Colors.REORDER_LINE );
 
-    // prepare line length and reselect just the specified columns or rows 
+    // prepare line length and reselect just the specified columns or rows
     view.getSelection().clear();
     if ( orientation == Orientation.HORIZONTAL )
     {

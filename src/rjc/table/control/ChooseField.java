@@ -1,5 +1,5 @@
 /**************************************************************************
- *  Copyright (C) 2021 by Richard Crook                                   *
+ *  Copyright (C) 2022 by Richard Crook                                   *
  *  https://github.com/dazzle50/JTableFX                                  *
  *                                                                        *
  *  This program is free software: you can redistribute it and/or modify  *
@@ -52,7 +52,7 @@ public class ChooseField extends XTextField
     // default to first choice
     setText( getText( 0 ) );
 
-    // configure the button  
+    // configure the button
     setEditable( false );
     setButtonType( ButtonType.DOWN );
 
@@ -119,7 +119,7 @@ public class ChooseField extends XTextField
         return;
       }
 
-    // if index not found and value if null, then set index to zero 
+    // if index not found and value if null, then set index to zero
     if ( value == null )
     {
       setSelectedIndex( 0 );

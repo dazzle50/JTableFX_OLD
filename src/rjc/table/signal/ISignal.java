@@ -1,5 +1,5 @@
 /**************************************************************************
- *  Copyright (C) 2021 by Richard Crook                                   *
+ *  Copyright (C) 2022 by Richard Crook                                   *
  *  https://github.com/dazzle50/JTableFX                                  *
  *                                                                        *
  *  This program is free software: you can redistribute it and/or modify  *
@@ -95,21 +95,21 @@ public interface ISignal
   /******************************************* signal ********************************************/
   default void signal( Object... objects )
   {
-    // default implementation for sending immediate signal to listeners 
+    // default implementation for sending immediate signal to listeners
     Helper.signal( this, objects );
   }
 
   /***************************************** signalLater *****************************************/
   default void signalLater( Object... objects )
   {
-    // default implementation for sending delayed signal to listeners 
+    // default implementation for sending delayed signal to listeners
     Helper.signalLater( this, objects );
   }
 
   /***************************************** addListener *****************************************/
   default void addListener( IListener lambda )
   {
-    // default implementation for adding a listener to a signal sender 
+    // default implementation for adding a listener to a signal sender
     Helper.addListener( this, lambda );
   }
 

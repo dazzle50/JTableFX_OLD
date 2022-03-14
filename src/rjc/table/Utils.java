@@ -1,5 +1,5 @@
 /**************************************************************************
- *  Copyright (C) 2021 by Richard Crook                                   *
+ *  Copyright (C) 2022 by Richard Crook                                   *
  *  https://github.com/dazzle50/JTableFX                                  *
  *                                                                        *
  *  This program is free software: you can redistribute it and/or modify  *
@@ -104,7 +104,7 @@ public class Utils
   /************************************* stackElementString **************************************/
   public static String stackElementString( StackTraceElement element )
   {
-    // cannot simply use stack[i].toString() because need extra space before bracket for Eclipse hyperlink to work 
+    // cannot simply use stack[i].toString() because need extra space before bracket for Eclipse hyperlink to work
     return element.getClassName() + "." + element.getMethodName()
         + ( element.isNativeMethod() ? " (Native Method)"
             : ( element.getFileName() != null && element.getLineNumber() >= 0

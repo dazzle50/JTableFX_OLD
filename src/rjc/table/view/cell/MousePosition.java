@@ -1,5 +1,5 @@
 /**************************************************************************
- *  Copyright (C) 2021 by Richard Crook                                   *
+ *  Copyright (C) 2022 by Richard Crook                                   *
  *  https://github.com/dazzle50/JTableFX                                  *
  *                                                                        *
  *  This program is free software: you can redistribute it and/or modify  *
@@ -180,7 +180,7 @@ public class MousePosition extends CellPosition
         return;
       }
 
-      // otherwise, set cursor to down-arrow for selecting 
+      // otherwise, set cursor to down-arrow for selecting
       m_view.setCursor( Cursors.DOWNARROW );
       return;
     }
@@ -203,7 +203,7 @@ public class MousePosition extends CellPosition
         return;
       }
 
-      // otherwise, set cursor to right-arrow for selecting 
+      // otherwise, set cursor to right-arrow for selecting
       m_view.setCursor( Cursors.RIGHTARROW );
       return;
     }

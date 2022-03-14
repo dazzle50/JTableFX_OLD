@@ -1,5 +1,5 @@
 /**************************************************************************
- *  Copyright (C) 2021 by Richard Crook                                   *
+ *  Copyright (C) 2022 by Richard Crook                                   *
  *  https://github.com/dazzle50/JTableFX                                  *
  *                                                                        *
  *  This program is free software: you can redistribute it and/or modify  *
@@ -43,7 +43,7 @@ public class CanvasBase extends Canvas
   private HashSet<Integer> m_columns;                                // requested column indexes
   private HashSet<Integer> m_rows;                                   // requested row indexes
   private HashSet<Long>    m_cells;                                  // long = (long) column << 32 | row & 0xFFFFFFFFL
-  private int              m_redrawCount;                            // count to ensure canvas cleared periodically  
+  private int              m_redrawCount;                            // count to ensure canvas cleared periodically
 
   // column & row index starts at 0 for table body, index of -1 is for axis header
   final static public int  INVALID             = TableAxis.INVALID;

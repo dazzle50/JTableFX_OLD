@@ -1,5 +1,5 @@
 /**************************************************************************
- *  Copyright (C) 2021 by Richard Crook                                   *
+ *  Copyright (C) 2022 by Richard Crook                                   *
  *  https://github.com/dazzle50/JTableFX                                  *
  *                                                                        *
  *  This program is free software: you can redistribute it and/or modify  *
@@ -97,7 +97,7 @@ public class Content
     var string = Clipboard.getSystemClipboard().getString();
     var array = getClipboardArray();
 
-    // paste cell values to view at focus position via undo command 
+    // paste cell values to view at focus position via undo command
     int columnPos = view.getFocusCell().getColumnPos();
     int rowPos = view.getFocusCell().getRowPos();
     var command = new CommandPasteCells( view, columnPos, rowPos, array, string );

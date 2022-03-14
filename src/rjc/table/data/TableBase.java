@@ -1,5 +1,5 @@
 /**************************************************************************
- *  Copyright (C) 2021 by Richard Crook                                   *
+ *  Copyright (C) 2022 by Richard Crook                                   *
  *  https://github.com/dazzle50/JTableFX                                  *
  *                                                                        *
  *  This program is free software: you can redistribute it and/or modify  *
@@ -34,7 +34,7 @@ import rjc.table.view.TableView;
 
 public class TableBase implements ISignal
 {
-  //observable integers for table body column & row counts
+  // observable integers for table body column & row counts
   private ObservableInteger    m_columnCount = new ObservableInteger( 3 );
   private ObservableInteger    m_rowCount    = new ObservableInteger( 10 );
 

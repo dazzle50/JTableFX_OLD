@@ -1,5 +1,5 @@
 /**************************************************************************
- *  Copyright (C) 2021 by Richard Crook                                   *
+ *  Copyright (C) 2022 by Richard Crook                                   *
  *  https://github.com/dazzle50/JTableFX                                  *
  *                                                                        *
  *  This program is free software: you can redistribute it and/or modify  *
@@ -133,7 +133,7 @@ public class TableScrollBar extends ScrollBar
     if ( position < TableAxis.FIRSTCELL || position >= m_axis.getCount() )
       return false;
 
-    // check if position start is beyond canvas 
+    // check if position start is beyond canvas
     double max = getOrientation() == Orientation.HORIZONTAL ? getWidth() : getHeight();
     if ( isVisible() && m_axis.getStartFromPosition( position, (int) getValue() ) > max )
       return false;
