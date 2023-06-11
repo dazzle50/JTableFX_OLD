@@ -20,7 +20,7 @@ package rjc.table.demo;
 
 import javafx.scene.control.Tab;
 import rjc.table.data.TableData;
-import rjc.table.view.TableParent;
+import rjc.table.view.TableView;
 
 /*************************************************************************************************/
 /*************************** Demonstrates a very large table and view ****************************/
@@ -33,10 +33,17 @@ public class DemoTableEditable extends Tab
   /**************************************** constructor ******************************************/
   public DemoTableEditable()
   {
+    // create
+    m_data = new TableData();
+    TableView view = new TableView( m_data );
+
+    // make view only visible when tab is selected
+    view.visibleProperty().bind( selectedProperty() );
+
     // configure the tab
     setText( "Edit" );
     setClosable( false );
-    setContent( new TableParent() );
+    setContent( view );
   }
 
 }

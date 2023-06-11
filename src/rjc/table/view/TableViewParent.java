@@ -25,7 +25,7 @@ import javafx.scene.Parent;
 /****************************** JavaFX parent node for table views *******************************/
 /*************************************************************************************************/
 
-public class TableParent extends Parent
+public class TableViewParent extends Parent
 {
   private int m_height; // table node height
   private int m_width;  // table node width

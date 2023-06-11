@@ -18,12 +18,12 @@
 
 package rjc.table.view.axis;
 
-import java.lang.reflect.Array;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 
 import rjc.table.Utils;
+import rjc.table.signal.IListener;
 import rjc.table.signal.ObservableDouble.ReadOnlyDouble;
 import rjc.table.signal.ObservableInteger;
 import rjc.table.signal.ObservableInteger.ReadOnlyInteger;
@@ -32,7 +32,7 @@ import rjc.table.signal.ObservableInteger.ReadOnlyInteger;
 /***************** Base class for table X or Y axis with index to pixel mapping ******************/
 /*************************************************************************************************/
 
-public class AxisBase
+public class AxisBase implements IListener
 {
   // axis index starts at 0 for table body, index of -1 is for axis header
   final static public int             INVALID               = -2;
@@ -64,14 +64,27 @@ public class AxisBase
     if ( countProperty == null || countProperty.get() < 0 )
       throw new IllegalArgumentException( "Bad body cell count = " + countProperty );
 
-    // if axis count changes
+    // listen to axis count changes
     m_countProperty = countProperty;
-    m_countProperty.addListener( signal ->
+    m_countProperty.addListener( this );
+  }
+
+  /******************************************** slot *********************************************/
+  @Override
+  public void slot( Object... objects )
+  {
+    // listen to signals sent to axis
+    var sender = objects[0];
+
+    if ( sender == m_countProperty )
     {
-      // set cached axis size to invalid and remove any exceptions beyond count
+      Utils.trace( "TODO count changed" );
+
+      // set cached axis size to invalid
       m_totalPixelsCache.set( INVALID );
 
-      int old_count = (int) Array.get( signal, 1 );
+      // remove any exceptions beyond count
+      int old_count = (int) objects[1];
       int new_count = m_countProperty.get();
       if ( new_count < old_count )
         for ( int key : m_sizeExceptions.keySet() )
@@ -81,7 +94,16 @@ public class AxisBase
       // truncate cell start cache if new size smaller
       if ( new_count < m_cellStartPixelCache.size() )
         m_cellStartPixelCache.subList( new_count, m_cellStartPixelCache.size() ).clear();
-    } );
+    }
+
+    else if ( sender == m_zoomProperty )
+    {
+      Utils.trace( "TODO zoom changed" );
+
+      // zoom value has changed so clear the pixel caches
+      m_cellStartPixelCache.clear();
+      m_totalPixelsCache.set( INVALID );
+    }
   }
 
   /****************************************** getCount *******************************************/
@@ -91,25 +113,25 @@ public class AxisBase
     return m_countProperty.get();
   }
 
-  /*************************************** getDefaultSize ****************************************/
-  public int getDefaultSize()
+  /************************************** getDefaultPixels ***************************************/
+  public int getDefaultPixels()
   {
-    // return default cell size
-    return m_defaultSize;
+    // return default cell size in pixels
+    return zoom( m_defaultSize );
   }
 
-  /*************************************** getMinimumSize ****************************************/
-  public int getMinimumSize()
+  /************************************** getMinimumPixels ***************************************/
+  public int getMinimumPixels()
   {
-    // return minimum cell size
-    return m_minimumSize;
+    // return minimum cell size in pixels
+    return zoom( m_minimumSize );
   }
 
-  /**************************************** getHeaderSize ****************************************/
-  public int getHeaderSize()
+  /*************************************** getHeaderPixels ***************************************/
+  public int getHeaderPixels()
   {
-    // return header cell size
-    return m_headerSize;
+    // return header cell size in pixels
+    return zoom( m_headerSize );
   }
 
   /*************************************** setDefaultSize ****************************************/
@@ -136,21 +158,18 @@ public class AxisBase
   /*************************************** setZoomProperty ***************************************/
   public void setZoomProperty( ReadOnlyDouble zoomProperty )
   {
-    // set zoom property
-    if ( zoomProperty == null )
-    {
-    }
-    else
-    {
+    // remove listening from old zoom property
+    if ( m_zoomProperty != null )
+      m_zoomProperty.removeListener( this );
 
-      // if zoom changes
-      m_zoomProperty.addListener( x ->
-      {
-        // clear cell start cache and axis size cache
-        m_cellStartPixelCache.clear();
-        m_totalPixelsCache.set( INVALID );
-      } );
-    }
+    // add listening to new zoom property
+    if ( zoomProperty != null )
+      zoomProperty.addListener( this );
+
+    // adopt new zoom
+    m_zoomProperty = zoomProperty;
+    m_cellStartPixelCache.clear();
+    m_totalPixelsCache.set( INVALID );
   }
 
   /******************************************** zoom *********************************************/

@@ -24,7 +24,8 @@ package rjc.table.signal;
 
 public class ObservableInteger implements ISignal
 {
-  private int m_value; // stored integer value
+  private int             m_value;    // stored integer value
+  private ReadOnlyInteger m_readonly; // read-only version of this observable
 
   public class ReadOnlyInteger implements ISignal // provides read-only access
   {
@@ -87,7 +88,9 @@ public class ObservableInteger implements ISignal
   public ReadOnlyInteger getReadOnly()
   {
     // return read-only version of integer
-    return new ReadOnlyInteger( this );
+    if ( m_readonly == null )
+      m_readonly = new ReadOnlyInteger( this );
+    return m_readonly;
   }
 
   /****************************************** toString *******************************************/

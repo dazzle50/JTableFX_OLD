@@ -69,15 +69,15 @@ public class TableBase implements ISignal
     m_rowCount.set( rowCount );
   }
 
-  /*********************************** getColumnCountProperty ************************************/
-  final public ReadOnlyInteger getColumnCountProperty()
+  /************************************* columnCountProperty *************************************/
+  final public ReadOnlyInteger columnCountProperty()
   {
     // return read-only property for column count
     return m_columnCount.getReadOnly();
   }
 
-  /************************************ getRowCountProperty **************************************/
-  final public ReadOnlyInteger getRowCountProperty()
+  /************************************** rowCountProperty ***************************************/
+  final public ReadOnlyInteger rowCountProperty()
   {
     // return read-only property for row count
     return m_rowCount.getReadOnly();

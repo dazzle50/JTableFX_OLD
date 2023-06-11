@@ -24,7 +24,8 @@ package rjc.table.signal;
 
 public class ObservableDouble implements ISignal
 {
-  private double m_value; // stored double value
+  private double         m_value;    // stored double value
+  private ReadOnlyDouble m_readonly; // read-only version of this observable
 
   public class ReadOnlyDouble implements ISignal // provides read-only access
   {
@@ -67,14 +68,14 @@ public class ObservableDouble implements ISignal
   /********************************************* get *********************************************/
   public double get()
   {
-    // return value of integer
+    // return value of double
     return m_value;
   }
 
   /********************************************* set *********************************************/
   public void set( double new_value )
   {
-    // set value of integer, and signal if change
+    // set value of double, and signal if change
     double old_value = m_value;
     if ( new_value != m_value )
     {
@@ -86,8 +87,10 @@ public class ObservableDouble implements ISignal
   /***************************************** getReadOnly *****************************************/
   public ReadOnlyDouble getReadOnly()
   {
-    // return read-only version of integer
-    return new ReadOnlyDouble( this );
+    // return read-only version of double
+    if ( m_readonly == null )
+      m_readonly = new ReadOnlyDouble( this );
+    return m_readonly;
   }
 
   /****************************************** toString *******************************************/

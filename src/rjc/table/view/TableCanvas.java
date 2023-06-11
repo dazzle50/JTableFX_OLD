@@ -24,11 +24,13 @@ import rjc.table.Utils;
 /************** Canvas showing the table headers & body cells + BLANK excess space ***************/
 /*************************************************************************************************/
 
-public class TableCanvas extends CanvasBase
+public class TableCanvas extends TableCanvasBase
 {
   /**************************************** constructor ******************************************/
   public TableCanvas( TableView tableView )
   {
+    super( tableView );
+
     // when canvas size changes draw new areas
     widthProperty().addListener( ( observable, oldW, newW ) -> widthChange( oldW.intValue(), newW.intValue() ) );
     heightProperty().addListener( ( observable, oldH, newH ) -> heightChange( oldH.intValue(), newH.intValue() ) );
@@ -49,6 +51,15 @@ public class TableCanvas extends CanvasBase
   {
     // only need to draw if new height is larger than old height
     Utils.trace( oldH, newH );
+  }
+
+  /******************************************* resize ********************************************/
+  @Override
+  public void resize( double width, double height )
+  {
+    // resize the canvas and overlay
+    setWidth( width );
+    setHeight( height );
   }
 
 }
