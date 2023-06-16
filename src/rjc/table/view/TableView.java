@@ -21,7 +21,9 @@ package rjc.table.view;
 import javafx.geometry.Orientation;
 import rjc.table.data.TableData;
 import rjc.table.signal.ObservableDouble;
+import rjc.table.undo.UndoStack;
 import rjc.table.view.axis.TableAxis;
+import rjc.table.view.cells.CellSelection;
 
 /*************************************************************************************************/
 /********************************** Base class for table views ***********************************/
@@ -35,9 +37,12 @@ public class TableView extends TableViewParent
   private TableScrollBar   m_verticalScrollBar;
   private TableScrollBar   m_horizontalScrollBar;
 
-  private ObservableDouble m_zoom;
+  private ObservableDouble m_zoom;               // zoom factor for table view
   private TableAxis        m_columnsAxis;        // columns (horizontal) axis
   private TableAxis        m_rowsAxis;           // rows (vertical) axis
+
+  private CellSelection    m_selection;
+  private UndoStack        m_undostack;
 
   /**************************************** constructor ******************************************/
   public TableView( TableData data )
@@ -79,9 +84,9 @@ public class TableView extends TableViewParent
   public void layoutDisplay()
   {
     // determine which scroll-bars should be visible
-    int tableH = m_rowsAxis.getAxisPixels();
-    int tableW = m_columnsAxis.getAxisPixels();
-    int scrollbarSize = (int) m_verticalScrollBar.getWidth();
+    int tableH = getTableHeight();
+    int tableW = getTableWidth();
+    int scrollbarSize = (int) getVerticalScrollBar().getWidth();
 
     boolean isVSBvisible = getHeight() < tableH;
     int visibleWidth = isVSBvisible ? getWidth() - scrollbarSize : getWidth();
@@ -91,7 +96,7 @@ public class TableView extends TableViewParent
     visibleWidth = isVSBvisible ? getWidth() - scrollbarSize : getWidth();
 
     // update vertical scroll bar
-    var sb = m_verticalScrollBar;
+    var sb = getVerticalScrollBar();
     sb.setVisible( isVSBvisible );
     if ( isVSBvisible )
     {
@@ -101,7 +106,7 @@ public class TableView extends TableViewParent
       double max = tableH - visibleHeight;
       sb.setMax( max );
       sb.setVisibleAmount( max * visibleHeight / tableH );
-      sb.setBlockIncrement( visibleHeight - m_rowsAxis.getHeaderPixels() );
+      sb.setBlockIncrement( visibleHeight - getRowsAxis().getHeaderPixels() );
 
       if ( sb.getValue() > max )
         sb.setValue( max );
@@ -113,7 +118,7 @@ public class TableView extends TableViewParent
     }
 
     // update horizontal scroll bar
-    sb = m_horizontalScrollBar;
+    sb = getHorizontalScrollBar();
     sb.setVisible( isHSBvisible );
     if ( isHSBvisible )
     {
@@ -123,7 +128,7 @@ public class TableView extends TableViewParent
       double max = tableW - visibleWidth;
       sb.setMax( max );
       sb.setVisibleAmount( max * visibleWidth / tableW );
-      sb.setBlockIncrement( visibleWidth - m_columnsAxis.getHeaderPixels() );
+      sb.setBlockIncrement( visibleWidth - getColumnsAxis().getHeaderPixels() );
 
       if ( sb.getValue() > max )
         sb.setValue( max );
@@ -134,7 +139,127 @@ public class TableView extends TableViewParent
       sb.setMax( 0.0 );
     }
 
-    // update canvas & overlay size (table + blank excess space)
+    // update canvas size (table + blank excess space)
     m_canvas.resize( visibleWidth, visibleHeight );
   }
+
+  /****************************************** getData ********************************************/
+  public TableData getData()
+  {
+    // return data model for table-view
+    return m_data;
+  }
+
+  /***************************************** getCanvas *******************************************/
+  public TableCanvas getCanvas()
+  {
+    // return canvas (shows table headers & body cells + BLANK excess space) for table-view
+    return m_canvas;
+  }
+
+  /*********************************** getHorizontalScrollBar ************************************/
+  public TableScrollBar getHorizontalScrollBar()
+  {
+    // return horizontal scroll bar (will not be visible if not needed) for table-view
+    return m_horizontalScrollBar;
+  }
+
+  /************************************ getVerticalScrollBar *************************************/
+  public TableScrollBar getVerticalScrollBar()
+  {
+    // return vertical scroll bar (will not be visible if not needed) for table-view
+    return m_verticalScrollBar;
+  }
+
+  /*************************************** getColumnsAxis ****************************************/
+  public TableAxis getColumnsAxis()
+  {
+    // return horizontal axis for column widths and mapping of index to position for table-view
+    return m_columnsAxis;
+  }
+
+  /**************************************** getRowsAxis ******************************************/
+  public TableAxis getRowsAxis()
+  {
+    // return vertical axis for row heights and mapping of index to position for table-view
+    return m_rowsAxis;
+  }
+
+  /*************************************** getTableHeight ****************************************/
+  public int getTableHeight()
+  {
+    // return height in pixels of all whole table including header (with zoom but no scrolling) - often larger than canvas
+    return getRowsAxis().getTotalPixels();
+  }
+
+  /**************************************** getTableWidth ****************************************/
+  public int getTableWidth()
+  {
+    // return width in pixels of all whole table including header (with zoom but no scrolling) - often larger than canvas
+    return getColumnsAxis().getTotalPixels();
+  }
+
+  /*************************************** getHeaderHeight ***************************************/
+  public int getHeaderHeight()
+  {
+    // return header height in pixels (taking zoom into account)
+    return getRowsAxis().getHeaderPixels();
+  }
+
+  /*************************************** getHeaderWidth ****************************************/
+  public int getHeaderWidth()
+  {
+    // return header width in pixels (taking zoom into account)
+    return getColumnsAxis().getHeaderPixels();
+  }
+
+  /****************************************** getZoom ********************************************/
+  public ObservableDouble getZoom()
+  {
+    // return observable zoom factor (1.0 is normal 100% size) for table-view
+    return m_zoom;
+  }
+
+  /**************************************** getSelection *****************************************/
+  public CellSelection getSelection()
+  {
+    // return selection model for table-view
+    return m_selection;
+  }
+
+  /***************************************** getUndoStack ****************************************/
+  public UndoStack getUndoStack()
+  {
+    // return undo-stack for table-view (create if necessary)
+    return m_undostack;
+  }
+
+  /****************************************** getStartX ******************************************/
+  public int getStartX( int columnIndex )
+  {
+    // return x coordinate of cell start for specified column position
+    return getColumnsAxis().getStartPixel( columnIndex, (int) getHorizontalScrollBar().getValue() );
+  }
+
+  /****************************************** getStartY ******************************************/
+  public int getStartY( int rowIndex )
+  {
+    // return y coordinate of cell start for specified row position
+    return getRowsAxis().getStartPixel( rowIndex, (int) getVerticalScrollBar().getValue() );
+  }
+
+  /************************************** getColumnIndex *****************************************/
+  public int getColumnIndex( int xCoordinate )
+  {
+    // return column position at specified x coordinate
+    return getColumnsAxis().getIndexFromCoordinate( xCoordinate, (int) getHorizontalScrollBar().getValue() );
+  }
+
+  /**************************************** getRowIndex ******************************************/
+  public int getRowIndex( int yCoordinate )
+  {
+    // return row position at specified y coordinate
+    return getRowsAxis().getIndexFromCoordinate( yCoordinate, (int) getVerticalScrollBar().getValue() );
+  }
+
 }

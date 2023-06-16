@@ -44,6 +44,26 @@ public class TableCanvas extends TableCanvasBase
   {
     // only need to draw if new width is larger than old width
     Utils.trace( oldW, newW );
+
+    if ( newW > oldW && isVisible() && oldW < m_view.getTableWidth() && getHeight() > 0.0 )
+    {
+      // clear background (+0.5 needed so anti-aliasing doesn't impact previous column)
+      getGraphicsContext2D().clearRect( oldW + 0.5, 0.0, newW, getHeight() );
+
+      // calculate which columns need to be redrawn
+      int minColumnPos = m_view.getColumnIndex( oldW );
+      if ( minColumnPos <= HEADER )
+        minColumnPos = m_view.getColumnIndex( m_view.getHeaderWidth() );
+      int maxColumnPos = m_view.getColumnIndex( newW );
+      redrawColumnsNow( minColumnPos, maxColumnPos );
+
+      // check if row header needs to be redrawn
+      if ( oldW < m_view.getHeaderWidth() )
+        redrawColumnNow( HEADER );
+
+      // draw table overlay
+      redrawOverlayNow();
+    }
   }
 
   /**************************************** heightChange *****************************************/
@@ -51,6 +71,27 @@ public class TableCanvas extends TableCanvasBase
   {
     // only need to draw if new height is larger than old height
     Utils.trace( oldH, newH );
+
+    // only need to draw if new height is larger than old height
+    if ( newH > oldH && isVisible() && oldH < m_view.getTableHeight() && getWidth() > 0.0 )
+    {
+      // clear background
+      getGraphicsContext2D().clearRect( 0.0, oldH + 0.5, getWidth(), newH );
+
+      // calculate which rows need to be redrawn, and redraw them
+      int minRowPos = m_view.getRowIndex( oldH );
+      if ( minRowPos <= HEADER )
+        minRowPos = m_view.getRowIndex( m_view.getHeaderHeight() );
+      int maxRowPos = m_view.getRowIndex( newH );
+      redrawRowsNow( minRowPos, maxRowPos );
+
+      // check if column header needs to be redrawn
+      if ( oldH < m_view.getHeaderHeight() )
+        redrawRowNow( HEADER );
+
+      // draw table overlay
+      redrawOverlayNow();
+    }
   }
 
   /******************************************* resize ********************************************/
