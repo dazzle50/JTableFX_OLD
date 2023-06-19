@@ -26,6 +26,7 @@ import javafx.scene.canvas.Canvas;
 import javafx.scene.text.FontSmoothingType;
 import rjc.table.Utils;
 import rjc.table.view.axis.TableAxis;
+import rjc.table.view.cell.CellDrawer;
 
 /*************************************************************************************************/
 /************************ Base canvas for table-views with redraw methods ************************/
@@ -170,35 +171,106 @@ public class TableCanvasBase extends Canvas
   public void redrawCellNow( int columnIndex, int rowIndex )
   {
     // redraw table body or header cell
-    Utils.trace( "TODO" );
+    Utils.trace( "TODO", columnIndex, rowIndex );
   }
 
   /*************************************** redrawColumnNow ***************************************/
   public void redrawColumnNow( int columnIndex )
   {
     // redraw visible bit of column including header
-    Utils.trace( "TODO" );
+    Utils.trace( "TODO", columnIndex );
   }
 
   /**************************************** redrawRowNow *****************************************/
   public void redrawRowNow( int rowIndex )
   {
     // redraw visible bit of row including header
-    Utils.trace( "TODO" );
+    Utils.trace( "TODO", rowIndex, isVisible() );
+
+    // #######################################################
+
+    // redraw visible bit of row including header
+    if ( isVisible() && rowIndex >= HEADER )
+    {
+      CellDrawer cell = m_view.getCellDrawer();
+      cell.view = m_view;
+      cell.gc = m_view.getCanvas().getGraphicsContext2D();
+      cell.rowIndex = rowIndex;
+
+      // calculate which columns are visible
+      int minColumn = m_view.getColumnIndex( m_view.getHeaderWidth() );
+      int maxColumn = m_view.getColumnIndex( (int) m_view.getCanvas().getWidth() );
+      cell.y = m_view.getStartY( cell.rowIndex );
+      cell.h = m_view.getRowsAxis().getIndexPixels( rowIndex );
+
+      // redraw all body cells between min and max column positions inclusive
+      int max = m_view.getData().getColumnCount() - 1;
+      if ( minColumn <= max && maxColumn >= FIRSTCELL )
+      {
+        if ( minColumn < FIRSTCELL )
+          minColumn = FIRSTCELL;
+        if ( maxColumn > max )
+          maxColumn = max;
+
+        cell.x = m_view.getStartX( minColumn );
+        for ( cell.columnIndex = minColumn; cell.columnIndex <= maxColumn; cell.columnIndex++ )
+        {
+          cell.w = m_view.getStartX( cell.columnIndex + 1 ) - cell.x;
+          if ( cell.w > 0.0 )
+          {
+            cell.draw();
+            cell.x += cell.w;
+          }
+        }
+      }
+
+      // redraw row header
+      cell.columnIndex = HEADER;
+      cell.columnIndex = HEADER;
+      cell.x = 0.0;
+      cell.w = m_view.getHeaderWidth();
+      cell.draw();
+    }
+    // #######################################################
+
   }
 
   /************************************* redrawColumnsNow ****************************************/
-  public void redrawColumnsNow( int minColumnPos, int maxColumnPos )
+  public void redrawColumnsNow( int minColumn, int maxColumn )
   {
     // redraw all table body columns between min and max column positions inclusive
-    Utils.trace( "TODO" );
+    Utils.trace( "TODO", minColumn, maxColumn );
+
+    int max = m_view.getData().getColumnCount() - 1;
+    if ( minColumn <= max && maxColumn >= FIRSTCELL )
+    {
+      if ( minColumn < FIRSTCELL )
+        minColumn = FIRSTCELL;
+      if ( maxColumn > max )
+        maxColumn = max;
+
+      for ( int index = minColumn; index <= maxColumn; index++ )
+        redrawColumnNow( index );
+    }
   }
 
   /*************************************** redrawRowsNow *****************************************/
-  public void redrawRowsNow( int minRowPos, int maxRowPos )
+  public void redrawRowsNow( int minRow, int maxRow )
   {
     // redraw all table body rows between min and max row positions inclusive
-    Utils.trace( "TODO" );
+    Utils.trace( "TODO", minRow, maxRow );
+
+    int max = m_view.getData().getRowCount() - 1;
+    if ( minRow <= max && maxRow >= FIRSTCELL )
+    {
+      if ( minRow < FIRSTCELL )
+        minRow = FIRSTCELL;
+      if ( maxRow > max )
+        maxRow = max;
+
+      for ( int index = minRow; index <= maxRow; index++ )
+        redrawRowNow( index );
+    }
   }
 
   /************************************** redrawOverlayNow ***************************************/

@@ -16,9 +16,20 @@
  *  along with this program.  If not, see http://www.gnu.org/licenses/    *
  **************************************************************************/
 
-package rjc.table.view.cells;
+package rjc.table.view.cell;
+
+/*************************************************************************************************/
+/*********************************** Table view area selection ***********************************/
+/*************************************************************************************************/
 
 public class CellSelection
 {
+
+  /*************************************** isCellSelected ****************************************/
+  public boolean isCellSelected( int columnIndex, int rowIndex )
+  {
+    // TODO Auto-generated method stub
+    return false;
+  }
 
 }

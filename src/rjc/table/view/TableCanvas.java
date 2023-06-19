@@ -43,7 +43,7 @@ public class TableCanvas extends TableCanvasBase
   public void widthChange( int oldW, int newW )
   {
     // only need to draw if new width is larger than old width
-    Utils.trace( oldW, newW );
+    Utils.trace( oldW, newW, isVisible(), m_view.getTableWidth(), getHeight() );
 
     if ( newW > oldW && isVisible() && oldW < m_view.getTableWidth() && getHeight() > 0.0 )
     {
@@ -70,7 +70,7 @@ public class TableCanvas extends TableCanvasBase
   public void heightChange( int oldH, int newH )
   {
     // only need to draw if new height is larger than old height
-    Utils.trace( oldH, newH );
+    Utils.trace( oldH, newH, isVisible(), m_view.getTableHeight(), getWidth() );
 
     // only need to draw if new height is larger than old height
     if ( newH > oldH && isVisible() && oldH < m_view.getTableHeight() && getWidth() > 0.0 )

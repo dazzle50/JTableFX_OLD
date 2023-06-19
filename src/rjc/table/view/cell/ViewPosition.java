@@ -16,9 +16,9 @@
  *  along with this program.  If not, see http://www.gnu.org/licenses/    *
  **************************************************************************/
 
-package rjc.table.view.cells;
+package rjc.table.view.cell;
 
-public class CellDrawer
+public class ViewPosition
 {
 
 }

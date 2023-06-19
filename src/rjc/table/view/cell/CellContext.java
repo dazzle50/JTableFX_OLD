@@ -16,57 +16,53 @@
  *  along with this program.  If not, see http://www.gnu.org/licenses/    *
  **************************************************************************/
 
-package rjc.table.signal;
+package rjc.table.view.cell;
 
-import rjc.table.view.axis.TableAxis;
+import javafx.scene.canvas.GraphicsContext;
+import rjc.table.view.TableView;
 
 /*************************************************************************************************/
-/********************* Observable position (column, row) & read-only position ********************/
+/************************************ Table cell view context ************************************/
 /*************************************************************************************************/
 
-public class ObservablePosition implements ISignal
+public class CellContext
 {
-  private int m_column = TableAxis.INVALID;
-  private int m_row    = TableAxis.INVALID;
+  public int             columnIndex; // cell column index
+  public int             rowIndex;    // cell row index
+
+  public TableView       view;        // table view
+  public GraphicsContext gc;          // graphics context drawing
+  public double          x;           // start x coordinate of cell on canvas
+  public double          y;           // start y coordinate of cell on canvas
+  public double          w;           // width of cell on canvas
+  public double          h;           // height of cell on canvas
 
   /**************************************** constructor ******************************************/
-  public ObservablePosition()
+  public CellContext()
   {
-    // construct
+    // create empty table cell context
   }
 
   /**************************************** constructor ******************************************/
-  public ObservablePosition( int column, int row )
+  public CellContext( TableView view, int columnIndex, int rowIndex )
   {
-    // construct and set position
-    m_column = column;
-    m_row = row;
+    // create new table cell context
+    setIndex( view, columnIndex, rowIndex );
   }
 
-  /***************************************** setPosition *****************************************/
-  public void setPosition( int column, int row )
+  /****************************************** setIndex *******************************************/
+  public void setIndex( TableView view, int columnIndex, int rowIndex )
   {
-    // if position is change, fire listeners
-    if ( column != m_column || row != m_row )
-    {
-      m_column = column;
-      m_row = row;
-      signal();
-    }
-  }
+    // set cell context for cell index
+    this.view = view;
+    this.columnIndex = columnIndex;
+    this.rowIndex = rowIndex;
 
-  /****************************************** getColumn ******************************************/
-  public int getColumn()
-  {
-    // return column position
-    return m_column;
-  }
-
-  /******************************************* getRow ********************************************/
-  public int getRow()
-  {
-    // return row position
-    return m_row;
+    gc = view.getCanvas().getGraphicsContext2D();
+    x = view.getStartX( columnIndex );
+    y = view.getStartY( rowIndex );
+    w = view.getColumnsAxis().getIndexPixels( columnIndex );
+    h = view.getRowsAxis().getIndexPixels( rowIndex );
   }
 
 }

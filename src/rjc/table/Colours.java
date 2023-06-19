@@ -16,57 +16,32 @@
  *  along with this program.  If not, see http://www.gnu.org/licenses/    *
  **************************************************************************/
 
-package rjc.table.signal;
+package rjc.table;
 
-import rjc.table.view.axis.TableAxis;
+import javafx.scene.paint.Color;
 
 /*************************************************************************************************/
-/********************* Observable position (column, row) & read-only position ********************/
+/************************** Miscellaneous utility public static colours **************************/
 /*************************************************************************************************/
 
-public class ObservablePosition implements ISignal
+public class Colours
 {
-  private int m_column = TableAxis.INVALID;
-  private int m_row    = TableAxis.INVALID;
+  // general gui colours
+  public static final Color OVERLAY_FOCUS        = Color.rgb( 3, 158, 211 );  // light blue
 
-  /**************************************** constructor ******************************************/
-  public ObservablePosition()
-  {
-    // construct
-  }
+  public static final Color CELL_BORDER          = Color.gray( 0.8 );
+  public static final Color CELL_DEFAULT_FILL    = Color.WHITE;
+  public static final Color CELL_SELECTED_FILL   = Color.rgb( 51, 153, 255 ); // mid blue
 
-  /**************************************** constructor ******************************************/
-  public ObservablePosition( int column, int row )
-  {
-    // construct and set position
-    m_column = column;
-    m_row = row;
-  }
+  public static final Color HEADER_FOCUS         = Color.LIGHTYELLOW;
+  public static final Color HEADER_DEFAULT_FILL  = Color.gray( 0.95 );
+  public static final Color HEADER_SELECTED_FILL = Color.gray( 0.85 );
 
-  /***************************************** setPosition *****************************************/
-  public void setPosition( int column, int row )
-  {
-    // if position is change, fire listeners
-    if ( column != m_column || row != m_row )
-    {
-      m_column = column;
-      m_row = row;
-      signal();
-    }
-  }
+  public static final Color TEXT_DEFAULT         = Color.BLACK;
+  public static final Color TEXT_SELECTED        = Color.WHITE;
 
-  /****************************************** getColumn ******************************************/
-  public int getColumn()
-  {
-    // return column position
-    return m_column;
-  }
+  public static final Color BUTTON_ARROW         = Color.BLACK;
+  public static final Color BUTTON_BACKGROUND    = Color.gray( 0.85 );
 
-  /******************************************* getRow ********************************************/
-  public int getRow()
-  {
-    // return row position
-    return m_row;
-  }
-
+  public static final Color REORDER_LINE         = Color.RED;
 }

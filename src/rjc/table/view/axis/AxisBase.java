@@ -240,7 +240,7 @@ public class AxisBase implements IListener
   public int getStartPixel( int index, int scroll )
   {
     // check index is valid
-    if ( index < HEADER || index >= getCount() )
+    if ( index < HEADER || index > getCount() )
       throw new IndexOutOfBoundsException( "position=" + index + " but count=" + getCount() );
 
     // if header, return zero

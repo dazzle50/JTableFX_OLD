@@ -23,7 +23,10 @@ import rjc.table.data.TableData;
 import rjc.table.signal.ObservableDouble;
 import rjc.table.undo.UndoStack;
 import rjc.table.view.axis.TableAxis;
-import rjc.table.view.cells.CellSelection;
+import rjc.table.view.cell.CellDrawer;
+import rjc.table.view.cell.CellSelection;
+import rjc.table.view.cell.MousePosition;
+import rjc.table.view.cell.ViewPosition;
 
 /*************************************************************************************************/
 /********************************** Base class for table views ***********************************/
@@ -41,8 +44,13 @@ public class TableView extends TableViewParent
   private TableAxis        m_columnsAxis;        // columns (horizontal) axis
   private TableAxis        m_rowsAxis;           // rows (vertical) axis
 
+  private CellDrawer       m_drawer;
   private CellSelection    m_selection;
   private UndoStack        m_undostack;
+
+  protected ViewPosition   m_focusCell;
+  protected ViewPosition   m_selectCell;
+  protected MousePosition  m_mouseCell;
 
   /**************************************** constructor ******************************************/
   public TableView( TableData data )
@@ -155,6 +163,15 @@ public class TableView extends TableViewParent
   {
     // return canvas (shows table headers & body cells + BLANK excess space) for table-view
     return m_canvas;
+  }
+
+  /*************************************** getCellDrawer *****************************************/
+  public CellDrawer getCellDrawer()
+  {
+    // return class responsible for drawing the cells on canvas
+    if ( m_drawer == null )
+      m_drawer = new CellDrawer();
+    return m_drawer;
   }
 
   /*********************************** getHorizontalScrollBar ************************************/
