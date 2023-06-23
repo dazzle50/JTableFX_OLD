@@ -39,7 +39,7 @@ public interface ISignal
       // send signal objects to each listener registered with specified signal sender
       var list = m_listeners.get( signaller );
       if ( list != null )
-        list.forEach( ( listener ) -> listener.slot( objects ) );
+        list.forEach( ( listener ) -> listener.slot( signaller, objects ) );
     }
 
     /**************************************** signalLater ****************************************/
@@ -48,11 +48,11 @@ public interface ISignal
       // send signal objects using Platform.runLater to each listener registered with specified signal sender
       var list = m_listeners.get( signaller );
       if ( list != null )
-        list.forEach( ( listener ) -> Platform.runLater( () -> listener.slot( objects ) ) );
+        list.forEach( ( listener ) -> Platform.runLater( () -> listener.slot( signaller, objects ) ) );
     }
 
     /*************************************** addListener *****************************************/
-    private static void addListener( ISignal signaller, IListener lambda )
+    private static void addListener( ISignal signaller, IListener listener )
     {
       // register listener for specified signal sender
       var list = m_listeners.get( signaller );
@@ -61,16 +61,16 @@ public interface ISignal
         list = new ArrayList<>();
         m_listeners.put( signaller, list );
       }
-      list.add( lambda );
+      list.add( listener );
     }
 
     /************************************** removeListener ***************************************/
-    private static void removeListener( ISignal signaller, IListener lambda )
+    private static void removeListener( ISignal signaller, IListener listener )
     {
       // unregister listener for specified signal sender, no-action if not present
       var list = m_listeners.get( signaller );
       if ( list != null )
-        list.remove( lambda );
+        list.remove( listener );
     }
 
     /************************************ removeAllListeners *************************************/
@@ -105,17 +105,17 @@ public interface ISignal
   }
 
   /***************************************** addListener *****************************************/
-  default void addListener( IListener lambda )
+  default void addListener( IListener listener )
   {
     // default implementation for adding a listener to a signal sender
-    SignalHelper.addListener( this, lambda );
+    SignalHelper.addListener( this, listener );
   }
 
   /*************************************** removeListener ****************************************/
-  default void removeListener( IListener lambda )
+  default void removeListener( IListener listener )
   {
     // default implementation for removing a listener from a signal sender
-    SignalHelper.removeListener( this, lambda );
+    SignalHelper.removeListener( this, listener );
   }
 
   /************************************* removeAllListeners **************************************/

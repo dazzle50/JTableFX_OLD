@@ -35,7 +35,7 @@ public class ObservableDouble implements ISignal
     {
       // construct and propagate any signals
       m_observable = observable;
-      m_observable.addListener( x -> signal( this, x[1] ) );
+      m_observable.addListener( ( writable, oldValue ) -> signal( oldValue ) );
     }
 
     public double get()
@@ -73,14 +73,14 @@ public class ObservableDouble implements ISignal
   }
 
   /********************************************* set *********************************************/
-  public void set( double new_value )
+  public void set( double newValue )
   {
     // set value of double, and signal if change
-    double old_value = m_value;
-    if ( new_value != m_value )
+    if ( newValue != m_value )
     {
-      m_value = new_value;
-      signal( this, old_value );
+      double oldValue = m_value;
+      m_value = newValue;
+      signal( oldValue );
     }
   }
 

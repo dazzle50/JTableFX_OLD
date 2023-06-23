@@ -21,18 +21,20 @@ package rjc.table.signal;
 import rjc.table.view.axis.TableAxis;
 
 /*************************************************************************************************/
-/********************* Observable position (column, row) & read-only position ********************/
+/************************* Observable position (column index, row index) *************************/
 /*************************************************************************************************/
 
 public class ObservablePosition implements ISignal
 {
-  private int m_column = TableAxis.INVALID;
-  private int m_row    = TableAxis.INVALID;
+  private int m_column;
+  private int m_row;
 
   /**************************************** constructor ******************************************/
   public ObservablePosition()
   {
     // construct
+    m_column = TableAxis.INVALID;
+    m_row = TableAxis.INVALID;
   }
 
   /**************************************** constructor ******************************************/
@@ -67,6 +69,15 @@ public class ObservablePosition implements ISignal
   {
     // return row position
     return m_row;
+  }
+
+  /****************************************** toString *******************************************/
+  @Override
+  public String toString()
+  {
+    // return as string
+    return getClass().getSimpleName() + "@" + Integer.toHexString( System.identityHashCode( this ) ) + "[" + m_column
+        + "," + m_row + "]";
   }
 
 }

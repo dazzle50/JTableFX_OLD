@@ -170,7 +170,7 @@ public class TableView extends TableViewParent
   {
     // return class responsible for drawing the cells on canvas
     if ( m_drawer == null )
-      m_drawer = new CellDrawer();
+      m_drawer = new CellDrawer( this );
     return m_drawer;
   }
 

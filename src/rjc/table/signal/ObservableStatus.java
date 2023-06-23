@@ -16,15 +16,13 @@
  *  along with this program.  If not, see http://www.gnu.org/licenses/    *
  **************************************************************************/
 
-package rjc.table;
-
-import rjc.table.signal.ISignal;
+package rjc.table.signal;
 
 /*************************************************************************************************/
-/******************* Generic status with severity and associated text message ********************/
+/****************** Observable status with severity and associated text message ******************/
 /*************************************************************************************************/
 
-public class Status implements ISignal
+public class ObservableStatus implements ISignal
 {
   private Level  m_severity; // severity of status
   private String m_msg;      // text message for status
@@ -39,7 +37,7 @@ public class Status implements ISignal
   private static final String STYLE_ERROR   = "-fx-text-fill: red;";
 
   /**************************************** constructor ******************************************/
-  public Status()
+  public ObservableStatus()
   {
     // create empty status
     m_severity = Level.NORMAL;
@@ -47,7 +45,7 @@ public class Status implements ISignal
   }
 
   /**************************************** constructor ******************************************/
-  public Status( Level severity, String msg )
+  public ObservableStatus( Level severity, String msg )
   {
     // create specified status
     m_severity = severity;

@@ -24,7 +24,7 @@ import javafx.scene.paint.Paint;
 import javafx.scene.text.Font;
 import javafx.scene.text.FontPosture;
 import javafx.scene.text.FontWeight;
-import rjc.table.Colours;
+import rjc.table.view.Colours;
 import rjc.table.view.axis.TableAxis;
 
 /*************************************************************************************************/

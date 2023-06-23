@@ -19,10 +19,19 @@
 package rjc.table.view.cell;
 
 import rjc.table.Utils;
+import rjc.table.view.TableView;
 import rjc.table.view.axis.TableAxis;
 
 public class CellDrawer extends CellStyle
 {
+
+  /**************************************** constructor ******************************************/
+  public CellDrawer( TableView tableView )
+  {
+    // prepare the cell drawer
+    view = tableView;
+    gc = view.getCanvas().getGraphicsContext2D();
+  }
 
   /******************************************** draw *********************************************/
   public void draw()

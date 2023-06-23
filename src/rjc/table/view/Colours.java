@@ -16,7 +16,7 @@
  *  along with this program.  If not, see http://www.gnu.org/licenses/    *
  **************************************************************************/
 
-package rjc.table;
+package rjc.table.view;
 
 import javafx.scene.paint.Color;
 

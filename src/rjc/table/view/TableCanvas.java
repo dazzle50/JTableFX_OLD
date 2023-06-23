@@ -18,13 +18,11 @@
 
 package rjc.table.view;
 
-import rjc.table.Utils;
-
 /*************************************************************************************************/
 /************** Canvas showing the table headers & body cells + BLANK excess space ***************/
 /*************************************************************************************************/
 
-public class TableCanvas extends TableCanvasBase
+public class TableCanvas extends TableCanvasDraw
 {
   /**************************************** constructor ******************************************/
   public TableCanvas( TableView tableView )
@@ -40,25 +38,23 @@ public class TableCanvas extends TableCanvasBase
   }
 
   /***************************************** widthChange *****************************************/
-  public void widthChange( int oldW, int newW )
+  public void widthChange( int oldWidth, int newWidth )
   {
     // only need to draw if new width is larger than old width
-    Utils.trace( oldW, newW, isVisible(), m_view.getTableWidth(), getHeight() );
-
-    if ( newW > oldW && isVisible() && oldW < m_view.getTableWidth() && getHeight() > 0.0 )
+    if ( newWidth > oldWidth && isVisible() && oldWidth < m_view.getTableWidth() && getHeight() > 0.0 )
     {
       // clear background (+0.5 needed so anti-aliasing doesn't impact previous column)
-      getGraphicsContext2D().clearRect( oldW + 0.5, 0.0, newW, getHeight() );
+      getGraphicsContext2D().clearRect( oldWidth + 0.5, 0.0, newWidth, getHeight() );
 
       // calculate which columns need to be redrawn
-      int minColumnPos = m_view.getColumnIndex( oldW );
-      if ( minColumnPos <= HEADER )
-        minColumnPos = m_view.getColumnIndex( m_view.getHeaderWidth() );
-      int maxColumnPos = m_view.getColumnIndex( newW );
-      redrawColumnsNow( minColumnPos, maxColumnPos );
+      int minColumn = m_view.getColumnIndex( oldWidth );
+      if ( minColumn <= HEADER )
+        minColumn = m_view.getColumnIndex( m_view.getHeaderWidth() );
+      int maxColumn = m_view.getColumnIndex( newWidth );
+      redrawColumnsNow( minColumn, maxColumn );
 
       // check if row header needs to be redrawn
-      if ( oldW < m_view.getHeaderWidth() )
+      if ( oldWidth < m_view.getHeaderWidth() )
         redrawColumnNow( HEADER );
 
       // draw table overlay
@@ -67,26 +63,23 @@ public class TableCanvas extends TableCanvasBase
   }
 
   /**************************************** heightChange *****************************************/
-  public void heightChange( int oldH, int newH )
+  public void heightChange( int oldHeight, int newHeight )
   {
     // only need to draw if new height is larger than old height
-    Utils.trace( oldH, newH, isVisible(), m_view.getTableHeight(), getWidth() );
-
-    // only need to draw if new height is larger than old height
-    if ( newH > oldH && isVisible() && oldH < m_view.getTableHeight() && getWidth() > 0.0 )
+    if ( newHeight > oldHeight && isVisible() && oldHeight < m_view.getTableHeight() && getWidth() > 0.0 )
     {
       // clear background
-      getGraphicsContext2D().clearRect( 0.0, oldH + 0.5, getWidth(), newH );
+      getGraphicsContext2D().clearRect( 0.0, oldHeight + 0.5, getWidth(), newHeight );
 
       // calculate which rows need to be redrawn, and redraw them
-      int minRowPos = m_view.getRowIndex( oldH );
-      if ( minRowPos <= HEADER )
-        minRowPos = m_view.getRowIndex( m_view.getHeaderHeight() );
-      int maxRowPos = m_view.getRowIndex( newH );
-      redrawRowsNow( minRowPos, maxRowPos );
+      int minRow = m_view.getRowIndex( oldHeight );
+      if ( minRow <= HEADER )
+        minRow = m_view.getRowIndex( m_view.getHeaderHeight() );
+      int maxRow = m_view.getRowIndex( newHeight );
+      redrawRowsNow( minRow, maxRow );
 
       // check if column header needs to be redrawn
-      if ( oldH < m_view.getHeaderHeight() )
+      if ( oldHeight < m_view.getHeaderHeight() )
         redrawRowNow( HEADER );
 
       // draw table overlay

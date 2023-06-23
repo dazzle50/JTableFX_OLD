@@ -35,7 +35,7 @@ public class ObservableInteger implements ISignal
     {
       // construct and propagate any signals
       m_observable = observable;
-      m_observable.addListener( x -> signal( this, x[1] ) );
+      m_observable.addListener( ( writable, oldValue ) -> signal( oldValue ) );
     }
 
     public int get()
@@ -73,14 +73,14 @@ public class ObservableInteger implements ISignal
   }
 
   /********************************************* set *********************************************/
-  public void set( int new_value )
+  public void set( int newValue )
   {
     // set value of integer, and signal (this, old value) if change
-    int old_value = m_value;
-    if ( new_value != m_value )
+    if ( newValue != m_value )
     {
-      m_value = new_value;
-      signal( this, old_value );
+      int oldValue = m_value;
+      m_value = newValue;
+      signal( oldValue );
     }
   }
 

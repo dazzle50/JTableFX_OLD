@@ -26,6 +26,6 @@ package rjc.table.signal;
 public interface IListener
 {
   /******************************************** slot *********************************************/
-  public void slot( Object... objects ); // first object is signaller, other objects are optional
+  public void slot( ISignal sender, Object... msg ); // message is array of objects
 
 }

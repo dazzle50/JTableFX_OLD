@@ -27,9 +27,9 @@ import javafx.scene.control.TabPane;
 import javafx.scene.control.TextField;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.Priority;
-import rjc.table.Status;
-import rjc.table.Status.Level;
 import rjc.table.Utils;
+import rjc.table.signal.ObservableStatus;
+import rjc.table.signal.ObservableStatus.Level;
 
 /*************************************************************************************************/
 /****************************** Contents of demo application window ******************************/
@@ -37,7 +37,7 @@ import rjc.table.Utils;
 
 public class DemoContents extends GridPane
 {
-  private Status m_status = new Status(); // status associated with status bar
+  private ObservableStatus m_status = new ObservableStatus(); // status associated with status bar
 
   /**************************************** constructor ******************************************/
   public DemoContents()
@@ -94,7 +94,7 @@ public class DemoContents extends GridPane
     statusBar.setEditable( false );
 
     // display status changes on status-bar using runLater so can handle signals from other threads
-    m_status.addListener( x ->
+    m_status.addListener( ( sender, msg ) ->
     {
       Platform.runLater( () ->
       {

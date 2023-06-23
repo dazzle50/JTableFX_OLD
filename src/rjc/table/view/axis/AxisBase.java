@@ -24,6 +24,7 @@ import java.util.Map;
 
 import rjc.table.Utils;
 import rjc.table.signal.IListener;
+import rjc.table.signal.ISignal;
 import rjc.table.signal.ObservableDouble.ReadOnlyDouble;
 import rjc.table.signal.ObservableInteger;
 import rjc.table.signal.ObservableInteger.ReadOnlyInteger;
@@ -73,35 +74,29 @@ public class AxisBase implements IListener
 
   /******************************************** slot *********************************************/
   @Override
-  public void slot( Object... objects )
+  public void slot( ISignal sender, Object... msg )
   {
     // listen to signals sent to axis
-    var sender = objects[0];
-
     if ( sender == m_countProperty )
     {
-      Utils.trace( "TODO count changed" );
-
       // set cached axis size to invalid
       m_totalPixelsCache.set( INVALID );
 
       // remove any exceptions beyond count
-      int old_count = (int) objects[1];
-      int new_count = m_countProperty.get();
-      if ( new_count < old_count )
+      int oldCount = (int) msg[0];
+      int newCount = m_countProperty.get();
+      if ( newCount < oldCount )
         for ( int key : m_sizeExceptions.keySet() )
-          if ( key >= new_count )
+          if ( key >= newCount )
             m_sizeExceptions.remove( key );
 
       // truncate cell start cache if new size smaller
-      if ( new_count < m_startPixelCache.size() )
-        m_startPixelCache.subList( new_count, m_startPixelCache.size() ).clear();
+      if ( newCount < m_startPixelCache.size() )
+        m_startPixelCache.subList( newCount, m_startPixelCache.size() ).clear();
     }
 
     else if ( sender == m_zoomProperty )
     {
-      Utils.trace( "TODO zoom changed" );
-
       // zoom value has changed so clear the pixel caches
       m_startPixelCache.clear();
       m_totalPixelsCache.set( INVALID );
