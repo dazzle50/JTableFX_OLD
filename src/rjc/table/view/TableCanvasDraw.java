@@ -272,8 +272,6 @@ public class TableCanvasDraw extends Canvas
   public void redrawColumnsNow( int minColumn, int maxColumn )
   {
     // redraw all table body columns between min and max column positions inclusive
-    Utils.trace( "TODO", minColumn, maxColumn );
-
     int max = m_view.getData().getColumnCount() - 1;
     if ( minColumn <= max && maxColumn >= FIRSTCELL )
     {
@@ -291,8 +289,6 @@ public class TableCanvasDraw extends Canvas
   public void redrawRowsNow( int minRow, int maxRow )
   {
     // redraw all table body rows between min and max row positions inclusive
-    Utils.trace( "TODO", minRow, maxRow );
-
     int max = m_view.getData().getRowCount() - 1;
     if ( minRow <= max && maxRow >= FIRSTCELL )
     {

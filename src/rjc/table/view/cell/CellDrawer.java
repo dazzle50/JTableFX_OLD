@@ -18,7 +18,9 @@
 
 package rjc.table.view.cell;
 
-import rjc.table.Utils;
+import javafx.geometry.Insets;
+import javafx.geometry.Pos;
+import javafx.scene.text.Font;
 import rjc.table.view.TableView;
 import rjc.table.view.axis.TableAxis;
 
@@ -95,7 +97,15 @@ public class CellDrawer extends CellStyle
   protected void drawText( String cellText )
   {
     // get text inserts, font, alignment, and convert string into text lines
-    Utils.trace( "TODO", cellText );
+    Insets insets = getZoomTextInsets();
+    Font font = getZoomFont();
+    Pos alignment = getTextAlignment();
+    TextFormatter formattedText = new TextFormatter( cellText, font, insets, alignment, w, h );
+
+    // draw the text lines in cell
+    gc.setFont( font );
+    gc.setFill( getTextPaint() );
+    formattedText.getLines().forEach( line -> gc.fillText( line.txt, x + line.x, y + line.y ) );
   }
 
 }

@@ -18,12 +18,70 @@
 
 package rjc.table.data;
 
+import rjc.table.signal.ISignal;
+import rjc.table.signal.ObservableInteger;
+import rjc.table.signal.ObservableInteger.ReadOnlyInteger;
+
 /*************************************************************************************************/
-/*********************** Table data source (with default implementations) ************************/
+/************** Table data source, column & row counts, signals to announce changes **************/
 /*************************************************************************************************/
 
-public class TableData extends TableBase
+public class TableData implements ISignal
 {
+  // observable integers for table body column & row counts
+  private ObservableInteger m_columnCount = new ObservableInteger( 3 );
+  private ObservableInteger m_rowCount    = new ObservableInteger( 10 );
+
+  public enum Signal
+  {
+    CELL_VALUE_CHANGED, ROW_VALUES_CHANGED, COLUMN_VALUES_CHANGED, TABLE_VALUES_CHANGED
+  }
+
+  // column & row index starts at 0 for table body, index of -1 is for header
+  final static public int HEADER = -1;
+
+  /*************************************** getColumnCount ****************************************/
+  final public int getColumnCount()
+  {
+    // return number of columns in table body
+    return m_columnCount.get();
+  }
+
+  /*************************************** setColumnCount ****************************************/
+  final public void setColumnCount( int columnCount )
+  {
+    // set number of columns in table body
+    m_columnCount.set( columnCount );
+  }
+
+  /**************************************** getRowCount ******************************************/
+  final public int getRowCount()
+  {
+    // return number of rows in table body
+    return m_rowCount.get();
+  }
+
+  /**************************************** setRowCount ******************************************/
+  final public void setRowCount( int rowCount )
+  {
+    // set number of rows in table body
+    m_rowCount.set( rowCount );
+  }
+
+  /************************************* columnCountProperty *************************************/
+  final public ReadOnlyInteger columnCountProperty()
+  {
+    // return read-only property for column count
+    return m_columnCount.getReadOnly();
+  }
+
+  /************************************** rowCountProperty ***************************************/
+  final public ReadOnlyInteger rowCountProperty()
+  {
+    // return read-only property for row count
+    return m_rowCount.getReadOnly();
+  }
+
   /****************************************** getValue *******************************************/
   public Object getValue( int columnIndex, int rowIndex )
   {
@@ -50,4 +108,40 @@ public class TableData extends TableBase
     return false;
   }
 
+  /************************************** signalCellChanged **************************************/
+  final public void signalCellChanged( int column, int row )
+  {
+    // signal that a table cell value has changed (usually to trigger cell redraw)
+    signal( Signal.CELL_VALUE_CHANGED, column, row );
+  }
+
+  /************************************* signalColumnChanged *************************************/
+  final public void signalColumnChanged( int column )
+  {
+    // signal that table column values have changed (usually to trigger column redraw)
+    signal( Signal.COLUMN_VALUES_CHANGED, column );
+  }
+
+  /*************************************** signalRowChanged **************************************/
+  final public void signalRowChanged( int row )
+  {
+    // signal that table row values have changed (usually to trigger row redraw)
+    signal( Signal.ROW_VALUES_CHANGED, row );
+  }
+
+  /************************************** signalTableChanged *************************************/
+  final public void signalTableChanged()
+  {
+    // signal that table values have changed (usually to trigger table redraw)
+    signal( Signal.TABLE_VALUES_CHANGED );
+  }
+
+  /****************************************** toString *******************************************/
+  @Override
+  public String toString()
+  {
+    // return as string
+    return getClass().getSimpleName() + "@" + Integer.toHexString( System.identityHashCode( this ) ) + "[m_columnCount="
+        + m_columnCount + " m_rowCount=" + m_rowCount + "]";
+  }
 }

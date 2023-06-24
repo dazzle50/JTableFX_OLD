@@ -60,11 +60,18 @@ public class TableView extends TableViewParent
       throw new NullPointerException( "TableData must not be null" );
     m_data = data;
 
-    // construct the table-view
-    m_zoom = new ObservableDouble( 1.0 );
+    // construct the table-axis
     m_columnsAxis = new TableAxis( m_data.columnCountProperty() );
     m_rowsAxis = new TableAxis( m_data.rowCountProperty() );
+    m_rowsAxis.setDefaultSize( 20 );
+    m_rowsAxis.setHeaderSize( 20 );
 
+    // handle zoom
+    m_zoom = new ObservableDouble( 1.0 );
+    m_columnsAxis.setZoomProperty( m_zoom.getReadOnly() );
+    m_rowsAxis.setZoomProperty( m_zoom.getReadOnly() );
+
+    // assemble the table-view components
     m_canvas = new TableCanvas( this );
     m_horizontalScrollBar = new TableScrollBar( m_columnsAxis, Orientation.HORIZONTAL );
     m_verticalScrollBar = new TableScrollBar( m_rowsAxis, Orientation.VERTICAL );
