@@ -16,17 +16,36 @@
  *  along with this program.  If not, see http://www.gnu.org/licenses/    *
  **************************************************************************/
 
-package rjc.table.view.cell;
+package rjc.table.view.events;
 
-import rjc.table.signal.ObservablePosition;
+import javafx.event.EventHandler;
+import javafx.scene.input.KeyEvent;
+import rjc.table.Utils;
 import rjc.table.view.TableView;
 
-public class ViewPosition extends ObservablePosition
-{
+/*************************************************************************************************/
+/************************ Handles keyboard pressed events for table-view *************************/
+/*************************************************************************************************/
 
-  public ViewPosition( TableView tableView )
+public class KeyPressed implements EventHandler<KeyEvent>
+{
+  private TableView m_view;
+  private boolean   m_shift;
+  private boolean   m_ctrl;
+  private boolean   m_alt;
+
+  /******************************************* handle ********************************************/
+  @Override
+  public void handle( KeyEvent event )
   {
-    // TODO Auto-generated constructor stub
+    // user has pressed a keyboard key
+    event.consume();
+    m_view = (TableView) event.getSource();
+    m_shift = event.isShiftDown();
+    m_ctrl = event.isControlDown();
+    m_alt = event.isAltDown();
+
+    Utils.trace( event.getCode(), event );
   }
 
 }

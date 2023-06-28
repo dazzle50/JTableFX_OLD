@@ -16,17 +16,25 @@
  *  along with this program.  If not, see http://www.gnu.org/licenses/    *
  **************************************************************************/
 
-package rjc.table.view.cell;
+package rjc.table.view.events;
 
-import rjc.table.signal.ObservablePosition;
-import rjc.table.view.TableView;
+import javafx.event.EventHandler;
+import javafx.scene.input.ScrollEvent;
+import rjc.table.Utils;
 
-public class ViewPosition extends ObservablePosition
+/*************************************************************************************************/
+/************************** Handles mouse scroll events from table-view **************************/
+/*************************************************************************************************/
+
+public class MouseScroll implements EventHandler<ScrollEvent>
 {
 
-  public ViewPosition( TableView tableView )
+  /******************************************* handle ********************************************/
+  @Override
+  public void handle( ScrollEvent event )
   {
-    // TODO Auto-generated constructor stub
+    // scroll up or down depending on mouse wheel scroll event
+    Utils.trace( event );
   }
 
 }

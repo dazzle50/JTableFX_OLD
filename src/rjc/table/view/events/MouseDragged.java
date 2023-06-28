@@ -16,17 +16,39 @@
  *  along with this program.  If not, see http://www.gnu.org/licenses/    *
  **************************************************************************/
 
-package rjc.table.view.cell;
+package rjc.table.view.events;
 
-import rjc.table.signal.ObservablePosition;
+import javafx.event.EventHandler;
+import javafx.scene.input.MouseButton;
+import javafx.scene.input.MouseEvent;
+import rjc.table.Utils;
 import rjc.table.view.TableView;
 
-public class ViewPosition extends ObservablePosition
+/*************************************************************************************************/
+/************* Handles mouse drag (move with button pressed) events from table-view **************/
+/*************************************************************************************************/
+
+public class MouseDragged implements EventHandler<MouseEvent>
 {
+  TableView m_view;
+  int       m_x;
+  int       m_y;
 
-  public ViewPosition( TableView tableView )
+  /******************************************* handle ********************************************/
+  @Override
+  public void handle( MouseEvent event )
   {
-    // TODO Auto-generated constructor stub
-  }
+    // exit immediately if not dragging with primary mouse button
+    event.consume();
+    if ( event.getButton() != MouseButton.PRIMARY )
+      return;
 
+    // handle mouse drag events (movement with button pressed)
+    m_x = (int) event.getX();
+    m_y = (int) event.getY();
+    m_view = (TableView) event.getSource();
+    m_view.requestFocus();
+
+    Utils.trace( event );
+  }
 }

@@ -19,6 +19,7 @@
 package rjc.table.view;
 
 import javafx.geometry.Orientation;
+import rjc.table.Utils;
 import rjc.table.data.TableData;
 import rjc.table.signal.ObservableDouble;
 import rjc.table.undo.UndoStack;
@@ -27,6 +28,17 @@ import rjc.table.view.cell.CellDrawer;
 import rjc.table.view.cell.CellSelection;
 import rjc.table.view.cell.MousePosition;
 import rjc.table.view.cell.ViewPosition;
+import rjc.table.view.events.ContextMenu;
+import rjc.table.view.events.KeyPressed;
+import rjc.table.view.events.KeyTyped;
+import rjc.table.view.events.MouseClicked;
+import rjc.table.view.events.MouseDragged;
+import rjc.table.view.events.MouseEntered;
+import rjc.table.view.events.MouseExited;
+import rjc.table.view.events.MouseMoved;
+import rjc.table.view.events.MousePressed;
+import rjc.table.view.events.MouseReleased;
+import rjc.table.view.events.MouseScroll;
 
 /*************************************************************************************************/
 /********************************** Base class for table views ***********************************/
@@ -76,6 +88,48 @@ public class TableView extends TableViewParent
     m_horizontalScrollBar = new TableScrollBar( m_columnsAxis, Orientation.HORIZONTAL );
     m_verticalScrollBar = new TableScrollBar( m_rowsAxis, Orientation.VERTICAL );
     getChildren().addAll( m_canvas, m_horizontalScrollBar, m_verticalScrollBar );
+
+    // add event handlers
+    addEventHandlers();
+  }
+
+  /************************************** addEventHandlers ***************************************/
+  protected void addEventHandlers()
+  {
+    // create the observable positions for focus, select and mouse
+    m_focusCell = new ViewPosition( this );
+    m_selectCell = new ViewPosition( this );
+    m_mouseCell = new MousePosition( this );
+
+    // react to mouse events
+    setOnMouseMoved( new MouseMoved() );
+    setOnMouseClicked( new MouseClicked() );
+    setOnMousePressed( new MousePressed() );
+    setOnMouseReleased( new MouseReleased() );
+    setOnMouseExited( new MouseExited() );
+    setOnMouseEntered( new MouseEntered() );
+    setOnMouseDragged( new MouseDragged() );
+    setOnScroll( new MouseScroll() );
+    setOnContextMenuRequested( new ContextMenu() );
+
+    // react to keyboard events
+    setOnKeyPressed( new KeyPressed() );
+    setOnKeyTyped( new KeyTyped() );
+
+    // react to focus & select cell movement
+    m_focusCell.addListener( ( sender, msg ) -> Utils.trace( "TODO" ) );
+    m_selectCell.addListener( ( sender, msg ) -> Utils.trace( "TODO" ) );
+
+    // react to zoom values changes
+    m_zoom.addListener( ( sender, msg ) -> Utils.trace( "TODO" ) );
+
+    // react to losing & gaining focus and visibility
+    focusedProperty().addListener( ( observable, oldFocus, newFocus ) -> redraw() );
+    visibleProperty().addListener( ( observable, oldVisibility, newVisibility ) -> redraw() );
+
+    // react to scroll bar position value changes
+    m_horizontalScrollBar.valueProperty().addListener( ( observable, oldValue, newValue ) -> tableScrolled() );
+    m_verticalScrollBar.valueProperty().addListener( ( observable, oldValue, newValue ) -> tableScrolled() );
   }
 
   /******************************************* resize ********************************************/
@@ -158,6 +212,13 @@ public class TableView extends TableViewParent
     m_canvas.resize( visibleWidth, visibleHeight );
   }
 
+  /**************************************** tableScrolled ****************************************/
+  private void tableScrolled()
+  {
+    // handle any actions needed due to the table scrolled
+    redraw();
+  }
+
   /****************************************** getData ********************************************/
   public TableData getData()
   {
@@ -170,6 +231,27 @@ public class TableView extends TableViewParent
   {
     // return canvas (shows table headers & body cells + BLANK excess space) for table-view
     return m_canvas;
+  }
+
+  /**************************************** getFocusCell *****************************************/
+  public ViewPosition getFocusCell()
+  {
+    // return observable focus cell position on table-view
+    return m_focusCell;
+  }
+
+  /**************************************** getSelectCell ****************************************/
+  public ViewPosition getSelectCell()
+  {
+    // return observable select cell position on table-view
+    return m_selectCell;
+  }
+
+  /**************************************** getMouseCell *****************************************/
+  public MousePosition getMouseCell()
+  {
+    // return observable mouse cell position on table-view
+    return m_mouseCell;
   }
 
   /*************************************** getCellDrawer *****************************************/
@@ -258,32 +340,59 @@ public class TableView extends TableViewParent
     return m_undostack;
   }
 
-  /****************************************** getStartX ******************************************/
-  public int getStartX( int columnIndex )
+  /*************************************** getColumnStartX ***************************************/
+  public int getColumnStartX( int columnIndex )
   {
     // return x coordinate of cell start for specified column position
     return getColumnsAxis().getStartPixel( columnIndex, (int) getHorizontalScrollBar().getValue() );
   }
 
-  /****************************************** getStartY ******************************************/
-  public int getStartY( int rowIndex )
+  /**************************************** getRowStartY *****************************************/
+  public int getRowStartY( int rowIndex )
   {
     // return y coordinate of cell start for specified row position
     return getRowsAxis().getStartPixel( rowIndex, (int) getVerticalScrollBar().getValue() );
   }
 
-  /************************************** getColumnIndex *****************************************/
+  /*************************************** getColumnIndex ****************************************/
   public int getColumnIndex( int xCoordinate )
   {
     // return column position at specified x coordinate
     return getColumnsAxis().getIndexFromCoordinate( xCoordinate, (int) getHorizontalScrollBar().getValue() );
   }
 
-  /**************************************** getRowIndex ******************************************/
+  /***************************************** getRowIndex *****************************************/
   public int getRowIndex( int yCoordinate )
   {
     // return row position at specified y coordinate
     return getRowsAxis().getIndexFromCoordinate( yCoordinate, (int) getVerticalScrollBar().getValue() );
   }
 
+  /******************************************* redraw ********************************************/
+  public void redraw()
+  {
+    // request redraw of full visible table (headers and body)
+    getCanvas().redraw();
+  }
+
+  /***************************************** redrawCell ******************************************/
+  public void redrawCell( int columnIndex, int rowIndex )
+  {
+    // request redraw of specified table body or header cell
+    getCanvas().redrawCell( columnIndex, rowIndex );
+  }
+
+  /**************************************** redrawColumn *****************************************/
+  public void redrawColumn( int columnIndex )
+  {
+    // request redraw of visible part of column including header
+    getCanvas().redrawColumn( columnIndex );
+  }
+
+  /****************************************** redrawRow ******************************************/
+  public void redrawRow( int rowIndex )
+  {
+    // request redraw of visible part of row including header
+    getCanvas().redrawRow( rowIndex );
+  }
 }

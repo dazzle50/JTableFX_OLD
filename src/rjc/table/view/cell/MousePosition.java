@@ -98,8 +98,8 @@ public class MousePosition extends ObservablePosition
       else
       {
         columnPos = m_view.getColumnIndex( m_x );
-        m_cellXstart = Math.max( m_view.getStartX( columnPos ), header );
-        m_cellXend = m_view.getStartX( columnPos + 1 );
+        m_cellXstart = Math.max( m_view.getColumnStartX( columnPos ), header );
+        m_cellXend = m_view.getColumnStartX( columnPos + 1 );
       }
     }
 
@@ -131,8 +131,8 @@ public class MousePosition extends ObservablePosition
       else
       {
         rowPos = m_view.getRowIndex( m_y );
-        m_cellYstart = Math.max( m_view.getStartY( rowPos ), header );
-        m_cellYend = m_view.getStartY( rowPos + 1 );
+        m_cellYstart = Math.max( m_view.getRowStartY( rowPos ), header );
+        m_cellYend = m_view.getRowStartY( rowPos + 1 );
       }
     }
 

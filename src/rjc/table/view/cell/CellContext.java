@@ -59,8 +59,8 @@ public class CellContext
     this.rowIndex = rowIndex;
 
     gc = view.getCanvas().getGraphicsContext2D();
-    x = view.getStartX( columnIndex );
-    y = view.getStartY( rowIndex );
+    x = view.getColumnStartX( columnIndex );
+    y = view.getRowStartY( rowIndex );
     w = view.getColumnsAxis().getIndexPixels( columnIndex );
     h = view.getRowsAxis().getIndexPixels( rowIndex );
   }

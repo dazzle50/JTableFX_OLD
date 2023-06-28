@@ -16,17 +16,29 @@
  *  along with this program.  If not, see http://www.gnu.org/licenses/    *
  **************************************************************************/
 
-package rjc.table.view.cell;
+package rjc.table.view.events;
 
-import rjc.table.signal.ObservablePosition;
+import javafx.event.EventHandler;
+import javafx.scene.input.MouseEvent;
+import rjc.table.Utils;
 import rjc.table.view.TableView;
 
-public class ViewPosition extends ObservablePosition
+/*************************************************************************************************/
+/************************* Handles mouse clicked events from table-view **************************/
+/*************************************************************************************************/
+
+public class MouseClicked implements EventHandler<MouseEvent>
 {
 
-  public ViewPosition( TableView tableView )
+  /******************************************* handle ********************************************/
+  @Override
+  public void handle( MouseEvent event )
   {
-    // TODO Auto-generated constructor stub
+    // user has clicked the table
+    event.consume();
+    TableView view = (TableView) event.getSource();
+
+    Utils.trace( event );
   }
 
 }
