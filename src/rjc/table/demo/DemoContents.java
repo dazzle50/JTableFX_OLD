@@ -72,15 +72,15 @@ public class DemoContents extends GridPane
   /******************************************* getTabs *******************************************/
   private Node getTabs()
   {
-    // create demo tab pane
+    // when selected tab changes, request focus for the newly selected tab contents
     TabPane tabs = new TabPane();
+    tabs.getSelectionModel().selectedItemProperty().addListener(
+        ( observable, oldTab, newTab ) -> Platform.runLater( () -> ( newTab.getContent() ).requestFocus() ) );
+
+    // create demo tab pane
     tabs.getTabs().add( new DemoTableDefault() );
     tabs.getTabs().add( new DemoTableLarge() );
     tabs.getTabs().add( new DemoTableEditable() );
-
-    // when selected tab changes, request focus for the newly selected tab contents
-    tabs.getSelectionModel().selectedItemProperty().addListener(
-        ( observable, oldTab, newTab ) -> Platform.runLater( () -> ( newTab.getContent() ).requestFocus() ) );
 
     return tabs;
   }

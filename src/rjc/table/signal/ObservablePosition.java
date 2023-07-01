@@ -57,6 +57,13 @@ public class ObservablePosition implements ISignal
     }
   }
 
+  /***************************************** setPosition *****************************************/
+  public void setPosition( ObservablePosition position )
+  {
+    // set position to same as other observable-position
+    setPosition( position.getColumn(), position.getRow() );
+  }
+
   /****************************************** getColumn ******************************************/
   public int getColumn()
   {

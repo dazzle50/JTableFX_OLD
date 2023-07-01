@@ -21,12 +21,101 @@ package rjc.table.view.cell;
 import rjc.table.signal.ObservablePosition;
 import rjc.table.view.TableView;
 
+/*************************************************************************************************/
+/****************************** Observable table-view cell position ******************************/
+/*************************************************************************************************/
+
 public class ViewPosition extends ObservablePosition
 {
+  private TableView m_view; // associated table view
 
-  public ViewPosition( TableView tableView )
+  /**************************************** constructor ******************************************/
+  public ViewPosition( TableView view )
   {
-    // TODO Auto-generated constructor stub
+    // construct
+    super();
+    m_view = view;
+  }
+
+  /***************************************** moveVisible *****************************************/
+  public void moveVisible()
+  {
+    // move position to bottom visible row
+    int column = m_view.getColumnsAxis().getVisible( getColumn() );
+    int row = m_view.getRowsAxis().getVisible( getRow() );
+    setPosition( column, row );
+  }
+
+  /***************************************** moveRight *******************************************/
+  public void moveRight()
+  {
+    // move position right one visible column
+    int column = m_view.getColumnsAxis().getNextVisible( getColumn() );
+    int row = m_view.getRowsAxis().getVisible( getRow() );
+    setPosition( column, row );
+  }
+
+  /*************************************** moveRightEdge *****************************************/
+  public void moveRightEdge()
+  {
+    // move position to right-most visible column
+    int column = m_view.getColumnsAxis().getLastVisible();
+    int row = m_view.getRowsAxis().getVisible( getRow() );
+    setPosition( column, row );
+  }
+
+  /***************************************** moveLeft ********************************************/
+  public void moveLeft()
+  {
+    // move position left one visible column
+    int column = m_view.getColumnsAxis().getPreviousVisible( getColumn() );
+    int row = m_view.getRowsAxis().getVisible( getRow() );
+    setPosition( column, row );
+  }
+
+  /**************************************** moveLeftEdge *****************************************/
+  public void moveLeftEdge()
+  {
+    // move position to left-most visible column
+    int column = m_view.getColumnsAxis().getFirstVisible();
+    int row = m_view.getRowsAxis().getVisible( getRow() );
+    setPosition( column, row );
+  }
+
+  /******************************************* moveUp ********************************************/
+  public void moveUp()
+  {
+    // move position up one visible row
+    int column = m_view.getColumnsAxis().getVisible( getColumn() );
+    int row = m_view.getRowsAxis().getPreviousVisible( getRow() );
+    setPosition( column, row );
+  }
+
+  /****************************************** moveTop ********************************************/
+  public void moveTop()
+  {
+    // move position to top-most visible row
+    int column = m_view.getColumnsAxis().getVisible( getColumn() );
+    int row = m_view.getRowsAxis().getFirstVisible();
+    setPosition( column, row );
+  }
+
+  /****************************************** moveDown *******************************************/
+  public void moveDown()
+  {
+    // move position down one visible row
+    int column = m_view.getColumnsAxis().getVisible( getColumn() );
+    int row = m_view.getRowsAxis().getNextVisible( getRow() );
+    setPosition( column, row );
+  }
+
+  /**************************************** moveBottom *******************************************/
+  public void moveBottom()
+  {
+    // move position to bottom visible row
+    int column = m_view.getColumnsAxis().getVisible( getColumn() );
+    int row = m_view.getRowsAxis().getLastVisible();
+    setPosition( column, row );
   }
 
 }

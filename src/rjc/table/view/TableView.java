@@ -117,8 +117,8 @@ public class TableView extends TableViewParent
     setOnKeyTyped( new KeyTyped() );
 
     // react to focus & select cell movement
-    m_focusCell.addListener( ( sender, msg ) -> Utils.trace( "TODO" ) );
-    m_selectCell.addListener( ( sender, msg ) -> Utils.trace( "TODO" ) );
+    m_focusCell.addListener( ( sender, msg ) -> Utils.trace( "TODO focus ", m_focusCell ) );
+    m_selectCell.addListener( ( sender, msg ) -> Utils.trace( "TODO select", m_selectCell ) );
 
     // react to zoom values changes
     m_zoom.addListener( ( sender, msg ) -> Utils.trace( "TODO" ) );
