@@ -32,4 +32,10 @@ public class CellSelection
     return false;
   }
 
+  /******************************************* update ********************************************/
+  public void update()
+  {
+    // update last selected area if one
+  }
+
 }

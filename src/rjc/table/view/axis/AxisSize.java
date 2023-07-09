@@ -200,11 +200,18 @@ public class AxisSize extends AxisBase implements IListener
     return (int) ( size * m_zoomProperty.get() );
   }
 
+  /****************************************** isHidden *******************************************/
+  public boolean isHidden( int index )
+  {
+    // overload this function if row/column hiding is wanted
+    return false;
+  }
+
   /*************************************** isIndexVisible ****************************************/
   public boolean isIndexVisible( int index )
   {
-    // overload this function if row/column hiding is wanted
-    return true;
+    // return true if cell is visible body cell
+    return index >= FIRSTCELL && index < getCount() && !isHidden( index );
   }
 
   /*************************************** getTotalPixels ****************************************/
@@ -219,7 +226,7 @@ public class AxisSize extends AxisBase implements IListener
       int pixels = getHeaderPixels();
       for ( var exception : m_sizeExceptions.entrySet() )
       {
-        if ( isIndexVisible( exception.getKey() ) )
+        if ( !isHidden( exception.getKey() ) )
           pixels += zoom( exception.getValue() );
       }
 
@@ -241,7 +248,7 @@ public class AxisSize extends AxisBase implements IListener
   {
     // return header size if that was requested
     if ( index == HEADER )
-      return m_headerSize;
+      return zoom( m_headerSize );
 
     // if index is hidden return zero
     if ( !isIndexVisible( index ) )

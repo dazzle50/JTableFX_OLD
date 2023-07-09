@@ -24,10 +24,13 @@ package rjc.table.view;
 
 public class TableCanvas extends TableCanvasDraw
 {
+  private TableView m_view;
+
   /**************************************** constructor ******************************************/
   public TableCanvas( TableView tableView )
   {
     super( tableView );
+    m_view = tableView;
 
     // when canvas size changes draw new areas
     widthProperty().addListener( ( observable, oldW, newW ) -> widthChange( oldW.intValue(), newW.intValue() ) );
@@ -94,6 +97,8 @@ public class TableCanvas extends TableCanvasDraw
     // resize the canvas and overlay
     setWidth( width );
     setHeight( height );
+    getOverlay().setWidth( width );
+    getOverlay().setHeight( height );
   }
 
 }

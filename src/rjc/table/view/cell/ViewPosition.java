@@ -37,10 +37,17 @@ public class ViewPosition extends ObservablePosition
     m_view = view;
   }
 
+  /****************************************** isVisible ******************************************/
+  public boolean isVisible()
+  {
+    // return true if position is visible
+    return m_view.getColumnsAxis().isIndexVisible( getColumn() ) && m_view.getRowsAxis().isIndexVisible( getRow() );
+  }
+
   /***************************************** moveVisible *****************************************/
   public void moveVisible()
   {
-    // move position to bottom visible row
+    // if position is not visible, move to a visible
     int column = m_view.getColumnsAxis().getVisible( getColumn() );
     int row = m_view.getRowsAxis().getVisible( getRow() );
     setPosition( column, row );
@@ -117,5 +124,4 @@ public class ViewPosition extends ObservablePosition
     int row = m_view.getRowsAxis().getLastVisible();
     setPosition( column, row );
   }
-
 }

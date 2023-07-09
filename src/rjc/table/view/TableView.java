@@ -22,6 +22,7 @@ import javafx.geometry.Orientation;
 import rjc.table.Utils;
 import rjc.table.data.TableData;
 import rjc.table.signal.ObservableDouble;
+import rjc.table.signal.ObservablePosition;
 import rjc.table.undo.UndoStack;
 import rjc.table.view.axis.TableAxis;
 import rjc.table.view.cell.CellDrawer;
@@ -87,7 +88,7 @@ public class TableView extends TableViewParent
     m_canvas = new TableCanvas( this );
     m_horizontalScrollBar = new TableScrollBar( m_columnsAxis, Orientation.HORIZONTAL );
     m_verticalScrollBar = new TableScrollBar( m_rowsAxis, Orientation.VERTICAL );
-    getChildren().addAll( m_canvas, m_horizontalScrollBar, m_verticalScrollBar );
+    getChildren().addAll( m_canvas, m_canvas.getOverlay(), m_horizontalScrollBar, m_verticalScrollBar );
 
     // add event handlers
     addEventHandlers();
@@ -97,8 +98,23 @@ public class TableView extends TableViewParent
   protected void addEventHandlers()
   {
     // create the observable positions for focus, select and mouse
+    m_selection = new CellSelection();
     m_focusCell = new ViewPosition( this );
+    m_focusCell.addListener( ( sender, msg ) ->
+    {
+      getSelection().update();
+      redraw();
+      scrollTo( m_focusCell );
+    } );
+
     m_selectCell = new ViewPosition( this );
+    m_selectCell.addListener( ( sender, msg ) ->
+    {
+      getSelection().update();
+      redraw();
+      scrollTo( m_selectCell );
+    } );
+
     m_mouseCell = new MousePosition( this );
 
     // react to mouse events
@@ -115,10 +131,6 @@ public class TableView extends TableViewParent
     // react to keyboard events
     setOnKeyPressed( new KeyPressed() );
     setOnKeyTyped( new KeyTyped() );
-
-    // react to focus & select cell movement
-    m_focusCell.addListener( ( sender, msg ) -> Utils.trace( "TODO focus ", m_focusCell ) );
-    m_selectCell.addListener( ( sender, msg ) -> Utils.trace( "TODO select", m_selectCell ) );
 
     // react to zoom values changes
     m_zoom.addListener( ( sender, msg ) -> Utils.trace( "TODO" ) );
@@ -394,5 +406,18 @@ public class TableView extends TableViewParent
   {
     // request redraw of visible part of row including header
     getCanvas().redrawRow( rowIndex );
+  }
+
+  /****************************************** scrollTo *******************************************/
+  private void scrollTo( ObservablePosition position )
+  {
+    // scroll view if necessary to show specified position
+    int column = position.getColumn();
+    if ( column >= TableAxis.FIRSTCELL && column < getColumnsAxis().getCount() )
+      getHorizontalScrollBar().scrollToShowIndex( column );
+
+    int row = position.getRow();
+    if ( row >= TableAxis.FIRSTCELL && row < getRowsAxis().getCount() )
+      getVerticalScrollBar().scrollToShowIndex( row );
   }
 }

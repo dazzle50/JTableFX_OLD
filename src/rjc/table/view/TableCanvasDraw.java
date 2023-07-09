@@ -23,6 +23,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 
 import javafx.application.Platform;
 import javafx.scene.canvas.Canvas;
+import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.text.FontSmoothingType;
 import rjc.table.view.axis.TableAxis;
 import rjc.table.view.cell.CellDrawer;
@@ -33,8 +34,8 @@ import rjc.table.view.cell.CellDrawer;
 
 public class TableCanvasDraw extends Canvas
 {
-  protected TableView      m_view;
-  protected Canvas         m_overlay;
+  private TableView        m_view;
+  private Canvas           m_overlay;
 
   private AtomicBoolean    m_redrawIsRequested;                      // flag if redraw has been scheduled
   private boolean          m_fullRedraw;                             // full view redraw (headers & body)
@@ -306,6 +307,44 @@ public class TableCanvasDraw extends Canvas
   public void redrawOverlayNow()
   {
     // highlight focus cell with special border
+    if ( m_view.getFocusCell().isVisible() )
+    {
+      GraphicsContext gc = m_overlay.getGraphicsContext2D();
+      gc.clearRect( 0.0, 0.0, m_overlay.getWidth(), m_overlay.getHeight() );
+
+      if ( isFocused() )
+        gc.setStroke( Colours.OVERLAY_FOCUS );
+      else
+        gc.setStroke( Colours.OVERLAY_FOCUS.desaturate() );
+
+      int focusColumnPos = m_view.getFocusCell().getColumn();
+      int focusRowPos = m_view.getFocusCell().getRow();
+
+      double x = m_view.getColumnStartX( focusColumnPos );
+      double y = m_view.getRowStartY( focusRowPos );
+      double w = m_view.getColumnStartX( focusColumnPos + 1 ) - x;
+      double h = m_view.getRowStartY( focusRowPos + 1 ) - y;
+
+      // clip drawing to table body
+      gc.save();
+      gc.beginPath();
+      gc.rect( m_view.getHeaderWidth() - 1, m_view.getHeaderHeight() - 1, getWidth(), getHeight() );
+      gc.clip();
+
+      // draw special border
+      gc.strokeRect( x - 0.5, y - 0.5, w, h );
+      gc.strokeRect( x + 0.5, y + 0.5, w - 2, h - 2 );
+
+      // remove clip
+      gc.restore();
+    }
+  }
+
+  /***************************************** getOverlay ******************************************/
+  public Canvas getOverlay()
+  {
+    // return the table canvas overlay
+    return m_overlay;
   }
 
 }
