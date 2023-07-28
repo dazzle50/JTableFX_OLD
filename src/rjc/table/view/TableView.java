@@ -76,8 +76,7 @@ public class TableView extends TableViewParent
     // construct the table-axis
     m_columnsAxis = new TableAxis( m_data.columnCountProperty() );
     m_rowsAxis = new TableAxis( m_data.rowCountProperty() );
-    m_rowsAxis.setDefaultSize( 20 );
-    m_rowsAxis.setHeaderSize( 20 );
+    reset();
 
     // handle zoom
     m_zoom = new ObservableDouble( 1.0 );
@@ -142,6 +141,10 @@ public class TableView extends TableViewParent
     // react to scroll bar position value changes
     m_horizontalScrollBar.valueProperty().addListener( ( observable, oldValue, newValue ) -> tableScrolled() );
     m_verticalScrollBar.valueProperty().addListener( ( observable, oldValue, newValue ) -> tableScrolled() );
+
+    // set mouse position cell to invalid if mouse is over scroll-bar
+    m_horizontalScrollBar.setOnMouseEntered( ( event ) -> m_mouseCell.setInvalid() );
+    m_verticalScrollBar.setOnMouseEntered( ( event ) -> m_mouseCell.setInvalid() );
   }
 
   /******************************************* resize ********************************************/
@@ -159,6 +162,16 @@ public class TableView extends TableViewParent
       super.resize( width, height );
       layoutDisplay();
     }
+  }
+
+  /******************************************** reset ********************************************/
+  public void reset()
+  {
+    // reset table view to default settings
+    getColumnsAxis().reset();
+    getRowsAxis().reset();
+    getRowsAxis().setDefaultSize( 20 );
+    getRowsAxis().setHeaderSize( 20 );
   }
 
   /**************************************** layoutDisplay ****************************************/
@@ -229,6 +242,7 @@ public class TableView extends TableViewParent
   {
     // handle any actions needed due to the table scrolled
     redraw();
+    getMouseCell().checkXY();
   }
 
   /****************************************** getData ********************************************/

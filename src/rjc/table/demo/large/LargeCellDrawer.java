@@ -16,31 +16,52 @@
  *  along with this program.  If not, see http://www.gnu.org/licenses/    *
  **************************************************************************/
 
-package rjc.table.view.events;
+package rjc.table.demo.large;
 
-import javafx.event.EventHandler;
-import javafx.scene.input.MouseEvent;
+import javafx.scene.paint.Color;
+import javafx.scene.paint.Paint;
+import rjc.table.view.Colours;
 import rjc.table.view.TableView;
+import rjc.table.view.cell.CellDrawer;
 
 /*************************************************************************************************/
-/************************** Handles mouse move events from table-view ****************************/
+/******************************** Example customised cell drawer *********************************/
 /*************************************************************************************************/
 
-public class MouseMoved implements EventHandler<MouseEvent>
+public class LargeCellDrawer extends CellDrawer
 {
 
-  /******************************************* handle ********************************************/
-  @Override
-  public void handle( MouseEvent event )
+  /**************************************** constructor ******************************************/
+  public LargeCellDrawer( TableView view )
   {
-    // handle mouse movement events (no buttons pressed)
-    event.consume();
-    int x = (int) event.getX();
-    int y = (int) event.getY();
-    TableView view = (TableView) event.getSource();
-
-    // update mouse cell position and cursor
-    view.getMouseCell().setXY( x, y, true );
+    // cell drawer
+    super( view );
   }
+
+  /************************************* getBackgroundPaint **************************************/
+  @Override
+  protected Paint getBackgroundPaint()
+  {
+    // get default background paint
+    Paint paint = super.getBackgroundPaint();
+
+    // if default background shade different colour if mouse pointer on row/column
+    if ( paint == Colours.CELL_DEFAULT_FILL )
+    {
+      int col = view.getMouseCell().getColumn();
+      int row = view.getMouseCell().getRow();
+
+      // highlight cell green where mouse is positioned
+      if ( columnIndex == col && rowIndex == row )
+        return Color.PALEGREEN;
+
+      // highlight row and column pale green where mouse is positioned
+      if ( columnIndex == col || rowIndex == row )
+        return Color.PALEGREEN.desaturate().desaturate().desaturate().desaturate();
+    }
+
+    // otherwise default
+    return paint;
+  };
 
 }

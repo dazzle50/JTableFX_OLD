@@ -16,31 +16,47 @@
  *  along with this program.  If not, see http://www.gnu.org/licenses/    *
  **************************************************************************/
 
-package rjc.table.view.events;
+package rjc.table.demo.large;
 
-import javafx.event.EventHandler;
-import javafx.scene.input.MouseEvent;
+import rjc.table.data.TableData;
 import rjc.table.view.TableView;
+import rjc.table.view.cell.CellDrawer;
 
 /*************************************************************************************************/
-/************************** Handles mouse move events from table-view ****************************/
+/********************** Example customised table view for extra large table **********************/
 /*************************************************************************************************/
 
-public class MouseMoved implements EventHandler<MouseEvent>
+public class LargeView extends TableView
 {
+  private CellDrawer m_drawer;
 
-  /******************************************* handle ********************************************/
-  @Override
-  public void handle( MouseEvent event )
+  /**************************************** constructor ******************************************/
+  public LargeView( TableData data )
   {
-    // handle mouse movement events (no buttons pressed)
-    event.consume();
-    int x = (int) event.getX();
-    int y = (int) event.getY();
-    TableView view = (TableView) event.getSource();
+    // construct customised table view
+    super( data );
 
-    // update mouse cell position and cursor
-    view.getMouseCell().setXY( x, y, true );
+    // when mouse moved to new cell, redraw table to move shading
+    getMouseCell().addListener( ( mousePosition, oldPos ) -> redraw() );
+  }
+
+  /**************************************** getCellDrawer ****************************************/
+  @Override
+  public CellDrawer getCellDrawer()
+  {
+    // return class responsible for drawing the cells on canvas
+    if ( m_drawer == null )
+      m_drawer = new LargeCellDrawer( this );
+    return m_drawer;
+  }
+
+  /******************************************** reset ********************************************/
+  @Override
+  public void reset()
+  {
+    // reset table view to default settings with wider header
+    super.reset();
+    getColumnsAxis().setHeaderSize( 60 );
   }
 
 }

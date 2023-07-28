@@ -144,12 +144,20 @@ public class CellStyle extends CellContext
     // return header cell background
     if ( rowIndex == TableAxis.HEADER )
     {
-      return Colours.HEADER_DEFAULT_FILL;
+      if ( columnIndex == view.getFocusCell().getColumn() )
+        return Colours.HEADER_FOCUS;
+      else
+        return view.getSelection().hasColumnSelection( columnIndex ) ? Colours.HEADER_SELECTED_FILL
+            : Colours.HEADER_DEFAULT_FILL;
     }
 
     if ( columnIndex == TableAxis.HEADER )
     {
-      return Colours.HEADER_DEFAULT_FILL;
+      if ( rowIndex == view.getFocusCell().getRow() )
+        return Colours.HEADER_FOCUS;
+      else
+        return view.getSelection().hasRowSelection( rowIndex ) ? Colours.HEADER_SELECTED_FILL
+            : Colours.HEADER_DEFAULT_FILL;
     }
 
     throw new IllegalArgumentException( "Not header " + columnIndex + " " + rowIndex );

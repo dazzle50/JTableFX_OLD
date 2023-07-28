@@ -35,9 +35,9 @@ import rjc.table.signal.ObservableInteger.ReadOnlyInteger;
 public class AxisSize extends AxisBase implements IListener
 {
   // variables defining default & minimum cell size (width or height) equals pixels if zoom is 1.0
-  private int                         m_defaultSize      = 100;
-  private int                         m_minimumSize      = 20;
-  private int                         m_headerSize       = 50;
+  private int                         m_defaultSize;
+  private int                         m_minimumSize;
+  private int                         m_headerSize;
   private ReadOnlyDouble              m_zoomProperty;
 
   // exceptions to default size
@@ -85,6 +85,18 @@ public class AxisSize extends AxisBase implements IListener
       m_startPixelCache.clear();
       m_totalPixelsCache.set( INVALID );
     }
+  }
+
+  /******************************************** reset ********************************************/
+  public void reset()
+  {
+    // clear all axis position to index re-ordering
+    m_defaultSize = 100;
+    m_minimumSize = 20;
+    m_headerSize = 50;
+    m_sizeExceptions.clear();
+    m_startPixelCache.clear();
+    m_totalPixelsCache.set( INVALID );
   }
 
   /************************************** getDefaultPixels ***************************************/
@@ -264,7 +276,7 @@ public class AxisSize extends AxisBase implements IListener
   {
     // check index is valid
     if ( index < HEADER || index > getCount() )
-      throw new IndexOutOfBoundsException( "position=" + index + " but count=" + getCount() );
+      throw new IndexOutOfBoundsException( "index=" + index + " but count=" + getCount() );
 
     // if header, return zero
     if ( index == HEADER )

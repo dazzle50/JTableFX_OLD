@@ -18,7 +18,6 @@
 
 package rjc.table.view.cell;
 
-import rjc.table.Utils;
 import rjc.table.signal.ObservablePosition;
 import rjc.table.view.TableView;
 import rjc.table.view.axis.TableAxis;
@@ -71,7 +70,7 @@ public class MousePosition extends ObservablePosition
     m_y = y;
 
     // check if mouse moved outside current column
-    int columnPos = getColumn();
+    int columnIndex = getColumn();
     int width = Math.min( (int) m_view.getCanvas().getWidth(), m_view.getTableWidth() );
     int header = m_view.getHeaderWidth();
 
@@ -81,30 +80,30 @@ public class MousePosition extends ObservablePosition
       {
         m_cellXstart = Integer.MIN_VALUE;
         m_cellXend = 0;
-        columnPos = BEFORE;
+        columnIndex = BEFORE;
       }
       else if ( m_x < header )
       {
         m_cellXstart = 0;
         m_cellXend = header;
-        columnPos = HEADER;
+        columnIndex = HEADER;
       }
       else if ( m_x >= width )
       {
         m_cellXstart = width;
         m_cellXend = Integer.MAX_VALUE;
-        columnPos = AFTER;
+        columnIndex = AFTER;
       }
       else
       {
-        columnPos = m_view.getColumnIndex( m_x );
-        m_cellXstart = Math.max( m_view.getColumnStartX( columnPos ), header );
-        m_cellXend = m_view.getColumnStartX( columnPos + 1 );
+        columnIndex = m_view.getColumnIndex( m_x );
+        m_cellXstart = Math.max( m_view.getColumnStartX( columnIndex ), header );
+        m_cellXend = m_view.getColumnStartX( columnIndex + 1 );
       }
     }
 
     // check if mouse moved outside current row
-    int rowPos = getRow();
+    int rowIndex = getRow();
     int height = Math.min( (int) m_view.getCanvas().getHeight(), m_view.getTableHeight() );
     header = m_view.getHeaderHeight();
 
@@ -114,30 +113,30 @@ public class MousePosition extends ObservablePosition
       {
         m_cellYstart = Integer.MIN_VALUE;
         m_cellYend = 0;
-        rowPos = BEFORE;
+        rowIndex = BEFORE;
       }
       else if ( m_y < header )
       {
         m_cellYstart = 0;
         m_cellYend = header;
-        rowPos = HEADER;
+        rowIndex = HEADER;
       }
       else if ( m_y >= height )
       {
         m_cellYstart = height;
         m_cellYend = Integer.MAX_VALUE;
-        rowPos = AFTER;
+        rowIndex = AFTER;
       }
       else
       {
-        rowPos = m_view.getRowIndex( m_y );
-        m_cellYstart = Math.max( m_view.getRowStartY( rowPos ), header );
-        m_cellYend = m_view.getRowStartY( rowPos + 1 );
+        rowIndex = m_view.getRowIndex( m_y );
+        m_cellYstart = Math.max( m_view.getRowStartY( rowIndex ), header );
+        m_cellYend = m_view.getRowStartY( rowIndex + 1 );
       }
     }
 
     // set mouse updated position
-    super.setPosition( columnPos, rowPos );
+    super.setPosition( columnIndex, rowIndex );
 
     // update the mouse cursor if requested
     if ( updateCursor )
@@ -146,15 +145,25 @@ public class MousePosition extends ObservablePosition
 
   /***************************************** setPosition *****************************************/
   @Override
-  public void setPosition( int columnPos, int rowPos )
+  public void setPosition( int columnIndex, int rowIndex )
   {
-    throw new UnsupportedOperationException( "Use setXY() instead" );
+    // don't allow direct setting position
+    throw new UnsupportedOperationException( "Use setXY() or setInvalid() instead" );
+  }
+
+  /***************************************** setInvalid ******************************************/
+  public void setInvalid()
+  {
+    // set position index to invalid
+    m_cellXend = INVALID;
+    m_cellYend = INVALID;
+    super.setPosition( INVALID, INVALID );
   }
 
   /****************************************** setCursor ******************************************/
   private void setCursor()
   {
-    Utils.trace( "TODO" );
+    // TODO
   }
 
 }

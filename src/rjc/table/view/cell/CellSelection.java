@@ -38,4 +38,18 @@ public class CellSelection
     // update last selected area if one
   }
 
+  /************************************* hasColumnSelection **************************************/
+  public boolean hasColumnSelection( int columnIndex )
+  {
+    // TODO Auto-generated method stub
+    return false;
+  }
+
+  /*************************************** hasRowSelection ***************************************/
+  public boolean hasRowSelection( int rowIndex )
+  {
+    // TODO Auto-generated method stub
+    return false;
+  }
+
 }

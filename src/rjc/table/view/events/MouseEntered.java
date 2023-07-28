@@ -20,7 +20,6 @@ package rjc.table.view.events;
 
 import javafx.event.EventHandler;
 import javafx.scene.input.MouseEvent;
-import rjc.table.Utils;
 
 /*************************************************************************************************/
 /************************* Handles mouse entered events from table-view **************************/
@@ -34,8 +33,6 @@ public class MouseEntered implements EventHandler<MouseEvent>
   public void handle( MouseEvent event )
   {
     // mouse pointer has entered the table-view
-
-    Utils.trace( event );
   }
 
 }

@@ -16,11 +16,10 @@
  *  along with this program.  If not, see http://www.gnu.org/licenses/    *
  **************************************************************************/
 
-package rjc.table.demo;
+package rjc.table.demo.large;
 
 import javafx.scene.control.Tab;
 import rjc.table.data.TableData;
-import rjc.table.view.TableView;
 
 /*************************************************************************************************/
 /*************************** Demonstrates a very large table and view ****************************/
@@ -35,7 +34,10 @@ public class DemoTableLarge extends Tab
   {
     // create
     m_data = new TableData();
-    TableView view = new TableView( m_data );
+    m_data.setColumnCount( 1_000_000 );
+    m_data.setRowCount( 1_000_000 );
+
+    LargeView view = new LargeView( m_data );
 
     // make view only visible when tab is selected
     view.visibleProperty().bind( selectedProperty() );
