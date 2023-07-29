@@ -23,9 +23,11 @@ import javafx.animation.KeyValue;
 import javafx.animation.Timeline;
 import javafx.geometry.Orientation;
 import javafx.scene.control.ScrollBar;
+import javafx.scene.input.MouseEvent;
 import javafx.util.Duration;
 import rjc.table.Utils;
 import rjc.table.view.axis.TableAxis;
+import rjc.table.view.cursor.Cursors;
 
 /*************************************************************************************************/
 /*************** Extended version of ScrollBar with special increment & decrement ****************/
@@ -69,6 +71,12 @@ public class TableScrollBar extends ScrollBar
       setMaxWidth( USE_PREF_SIZE );
       setMinHeight( SIZE );
     }
+
+    // record last time scroll bar value changed to support smoother animated scrolling
+    valueProperty().addListener( ( observable, oldV, newV ) -> m_lastScrollNanos = System.nanoTime() );
+
+    // change cursor to default when mouse enters
+    addEventFilter( MouseEvent.MOUSE_ENTERED, event -> setCursor( Cursors.DEFAULT ) );
   }
 
   /************************************** scrollToShowIndex **************************************/

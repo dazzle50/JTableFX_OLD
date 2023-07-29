@@ -19,9 +19,13 @@
 package rjc.table.view.events;
 
 import javafx.event.EventHandler;
+import javafx.scene.Cursor;
+import javafx.scene.input.MouseButton;
 import javafx.scene.input.MouseEvent;
-import rjc.table.Utils;
 import rjc.table.view.TableView;
+import rjc.table.view.cell.MousePosition;
+import rjc.table.view.cell.ViewPosition;
+import rjc.table.view.cursor.Cursors;
 
 /*************************************************************************************************/
 /********************** Handles mouse button pressed events from table-view **********************/
@@ -40,8 +44,32 @@ public class MousePressed implements EventHandler<MouseEvent>
       int x = (int) event.getX();
       int y = (int) event.getY();
       TableView view = (TableView) event.getSource();
+      MouseButton button = event.getButton();
+      ViewPosition select = view.getSelectCell();
+      ViewPosition focus = view.getFocusCell();
+      MousePosition mouse = view.getMouseCell();
+      Cursor cursor = view.getCursor();
 
-      Utils.trace( event );
+      // clear status, request focus & update mouse cell position and cursor
+      view.requestFocus();
+      mouse.setXY( x, y, true );
+
+      // if primary mouse button not pressed, don't do anything else
+      if ( button != MouseButton.PRIMARY )
+        return;
+
+      // check if selecting table body cells
+      boolean moveFocus = !event.isShiftDown() || event.isControlDown();
+      if ( cursor == Cursors.CROSS )
+      {
+        if ( moveFocus )
+        {
+          view.getSelection().start();
+          focus.setPosition( mouse );
+        }
+        select.setPosition( mouse );
+      }
+
     }
   }
 

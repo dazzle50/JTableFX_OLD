@@ -212,6 +212,13 @@ public class AxisSize extends AxisBase implements IListener
     return (int) ( size * m_zoomProperty.get() );
   }
 
+  /***************************************** isResizable *****************************************/
+  public boolean isResizable( int index )
+  {
+    // overload this function if prevention of row/column resizing is wanted
+    return index > HEADER;
+  }
+
   /****************************************** isHidden *******************************************/
   public boolean isHidden( int index )
   {
