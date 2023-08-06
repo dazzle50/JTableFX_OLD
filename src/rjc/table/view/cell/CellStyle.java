@@ -145,7 +145,7 @@ public class CellStyle extends CellContext
     if ( rowIndex == TableAxis.HEADER )
     {
       if ( columnIndex == view.getFocusCell().getColumn() )
-        return Colours.HEADER_FOCUS;
+        return Colours.HEADER_FOCUS_FILL;
       else
         return view.getSelection().hasColumnSelection( columnIndex ) ? Colours.HEADER_SELECTED_FILL
             : Colours.HEADER_DEFAULT_FILL;
@@ -154,20 +154,13 @@ public class CellStyle extends CellContext
     if ( columnIndex == TableAxis.HEADER )
     {
       if ( rowIndex == view.getFocusCell().getRow() )
-        return Colours.HEADER_FOCUS;
+        return Colours.HEADER_FOCUS_FILL;
       else
         return view.getSelection().hasRowSelection( rowIndex ) ? Colours.HEADER_SELECTED_FILL
             : Colours.HEADER_DEFAULT_FILL;
     }
 
     throw new IllegalArgumentException( "Not header " + columnIndex + " " + rowIndex );
-  }
-
-  /********************************* getBackgroundPaintSelected ***********************************/
-  protected Paint getBackgroundPaintSelected()
-  {
-    // return selected cell background
-    return getBackgroundPaintDefault();
   }
 
   /**************************************** getTextPaint *****************************************/

@@ -23,6 +23,7 @@ import javafx.scene.Cursor;
 import javafx.scene.input.MouseButton;
 import javafx.scene.input.MouseEvent;
 import rjc.table.view.TableView;
+import rjc.table.view.axis.TableAxis;
 import rjc.table.view.cell.MousePosition;
 import rjc.table.view.cell.ViewPosition;
 import rjc.table.view.cursor.Cursors;
@@ -54,6 +55,12 @@ public class MousePressed implements EventHandler<MouseEvent>
       view.requestFocus();
       mouse.setXY( x, y, true );
 
+      // clear previous selections if shift & ctrl are not pressed
+      boolean clearSelections = !event.isShiftDown() && !event.isControlDown()
+          && ( cursor == Cursors.CROSS || cursor == Cursors.DOWNARROW || cursor == Cursors.RIGHTARROW );
+      if ( clearSelections )
+        view.getSelection().clear();
+
       // if primary mouse button not pressed, don't do anything else
       if ( button != MouseButton.PRIMARY )
         return;
@@ -69,6 +76,34 @@ public class MousePressed implements EventHandler<MouseEvent>
         }
         select.setPosition( mouse );
       }
+
+      // check if selecting table columns
+      else if ( cursor == Cursors.DOWNARROW )
+      {
+        if ( moveFocus )
+        {
+          view.getSelection().start();
+          int topRow = view.getRowIndex( view.getHeaderHeight() );
+          focus.setPosition( mouse.getColumn(), topRow );
+        }
+        select.setPosition( mouse.getColumn(), TableAxis.AFTER );
+      }
+
+      // check if selecting table rows
+      else if ( cursor == Cursors.RIGHTARROW )
+      {
+        if ( moveFocus )
+        {
+          view.getSelection().start();
+          int leftColumn = view.getColumnIndex( view.getHeaderWidth() );
+          focus.setPosition( leftColumn, mouse.getRow() );
+        }
+        select.setPosition( TableAxis.AFTER, mouse.getRow() );
+      }
+
+      // check if header corner to select whole table
+      else if ( x < view.getHeaderWidth() && y < view.getHeaderHeight() )
+        view.getSelection().selectAll();
 
     }
   }

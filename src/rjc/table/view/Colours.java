@@ -27,18 +27,17 @@ import javafx.scene.paint.Color;
 public class Colours
 {
   // general gui colours
-  public static final Color OVERLAY_FOCUS        = Color.rgb( 3, 158, 211 );  // light blue
+  public static final Color SELECTED_HIGHLIGHT   = Color.rgb( 0, 150, 255, 0.3 ); // opaque blue
+  public static final Color SELECTED_BORDER      = Color.rgb( 0, 150, 255 );      // light blue
 
   public static final Color CELL_BORDER          = Color.gray( 0.8 );
   public static final Color CELL_DEFAULT_FILL    = Color.WHITE;
-  public static final Color CELL_SELECTED_FILL   = Color.rgb( 51, 153, 255 ); // mid blue
 
-  public static final Color HEADER_FOCUS         = Color.LIGHTYELLOW;
   public static final Color HEADER_DEFAULT_FILL  = Color.gray( 0.95 );
+  public static final Color HEADER_FOCUS_FILL    = Color.LIGHTYELLOW;
   public static final Color HEADER_SELECTED_FILL = Color.gray( 0.85 );
 
   public static final Color TEXT_DEFAULT         = Color.BLACK;
-  public static final Color TEXT_SELECTED        = Color.WHITE;
 
   public static final Color BUTTON_ARROW         = Color.BLACK;
   public static final Color BUTTON_BACKGROUND    = Color.gray( 0.85 );

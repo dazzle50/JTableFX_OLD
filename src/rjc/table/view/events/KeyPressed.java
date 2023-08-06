@@ -49,9 +49,6 @@ public class KeyPressed implements EventHandler<KeyEvent>
     // handle the key press
     if ( handleFocusSelectMovement( event.getCode() ) )
       return;
-
-    Utils.trace( event.getCode(), event );
-
   }
 
   /********************************** handleFocusSelectMovement **********************************/
@@ -71,7 +68,7 @@ public class KeyPressed implements EventHandler<KeyEvent>
           m_view.getSelectCell().moveRight();
 
         if ( m_shift )
-          m_view.getFocusCell().moveVisible();
+          m_view.getFocusCell().moveToVisible();
         else
           m_view.getFocusCell().setPosition( m_view.getSelectCell() );
         return true;
@@ -84,7 +81,7 @@ public class KeyPressed implements EventHandler<KeyEvent>
           m_view.getSelectCell().moveLeft();
 
         if ( m_shift )
-          m_view.getFocusCell().moveVisible();
+          m_view.getFocusCell().moveToVisible();
         else
           m_view.getFocusCell().setPosition( m_view.getSelectCell() );
         return true;
@@ -97,7 +94,7 @@ public class KeyPressed implements EventHandler<KeyEvent>
           m_view.getSelectCell().moveDown();
 
         if ( m_shift )
-          m_view.getFocusCell().moveVisible();
+          m_view.getFocusCell().moveToVisible();
         else
           m_view.getFocusCell().setPosition( m_view.getSelectCell() );
         return true;
@@ -110,7 +107,7 @@ public class KeyPressed implements EventHandler<KeyEvent>
           m_view.getSelectCell().moveUp();
 
         if ( m_shift )
-          m_view.getFocusCell().moveVisible();
+          m_view.getFocusCell().moveToVisible();
         else
           m_view.getFocusCell().setPosition( m_view.getSelectCell() );
         return true;

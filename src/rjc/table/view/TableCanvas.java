@@ -61,7 +61,7 @@ public class TableCanvas extends TableCanvasDraw
         redrawColumnNow( HEADER );
 
       // draw table overlay
-      redrawOverlayNow();
+      getOverlay().redrawNow();
     }
   }
 
@@ -86,7 +86,7 @@ public class TableCanvas extends TableCanvasDraw
         redrawRowNow( HEADER );
 
       // draw table overlay
-      redrawOverlayNow();
+      getOverlay().redrawNow();
     }
   }
 
@@ -95,10 +95,10 @@ public class TableCanvas extends TableCanvasDraw
   public void resize( double width, double height )
   {
     // resize the canvas and overlay
-    setWidth( width );
-    setHeight( height );
     getOverlay().setWidth( width );
     getOverlay().setHeight( height );
+    setWidth( width );
+    setHeight( height );
   }
 
 }

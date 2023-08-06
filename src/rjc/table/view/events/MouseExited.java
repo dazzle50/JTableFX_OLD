@@ -21,7 +21,6 @@ package rjc.table.view.events;
 import javafx.event.EventHandler;
 import javafx.scene.input.MouseEvent;
 import rjc.table.view.TableView;
-import rjc.table.view.axis.TableAxis;
 
 /*************************************************************************************************/
 /************************* Handles mouse exited events from table-view ***************************/

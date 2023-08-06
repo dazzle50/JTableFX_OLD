@@ -61,9 +61,9 @@ public class TableView extends TableViewParent
   private CellSelection    m_selection;
   private UndoStack        m_undostack;
 
-  protected ViewPosition   m_focusCell;
-  protected ViewPosition   m_selectCell;
-  protected MousePosition  m_mouseCell;
+  private ViewPosition     m_focusCell;
+  private ViewPosition     m_selectCell;
+  private MousePosition    m_mouseCell;
 
   /**************************************** constructor ******************************************/
   public TableView( TableData data )
@@ -97,7 +97,7 @@ public class TableView extends TableViewParent
   protected void addEventHandlers()
   {
     // create the observable positions for focus, select and mouse
-    m_selection = new CellSelection();
+    m_selection = new CellSelection( this );
     m_focusCell = new ViewPosition( this );
     m_focusCell.addListener( ( sender, msg ) ->
     {
