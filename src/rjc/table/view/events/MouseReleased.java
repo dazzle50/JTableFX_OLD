@@ -20,7 +20,6 @@ package rjc.table.view.events;
 
 import javafx.event.EventHandler;
 import javafx.scene.input.MouseEvent;
-import rjc.table.Utils;
 import rjc.table.view.TableView;
 
 /*************************************************************************************************/
@@ -40,7 +39,8 @@ public class MouseReleased implements EventHandler<MouseEvent>
     int y = (int) event.getY();
     TableView view = (TableView) event.getSource();
 
-    Utils.trace( event );
+    // update mouse cell position and cursor
+    view.getMouseCell().setXY( x, y, true );
   }
 
 }

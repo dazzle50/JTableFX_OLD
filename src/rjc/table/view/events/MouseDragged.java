@@ -21,7 +21,6 @@ package rjc.table.view.events;
 import javafx.event.EventHandler;
 import javafx.scene.input.MouseButton;
 import javafx.scene.input.MouseEvent;
-import rjc.table.Utils;
 import rjc.table.view.TableView;
 
 /*************************************************************************************************/
@@ -30,9 +29,6 @@ import rjc.table.view.TableView;
 
 public class MouseDragged implements EventHandler<MouseEvent>
 {
-  TableView m_view;
-  int       m_x;
-  int       m_y;
 
   /******************************************* handle ********************************************/
   @Override
@@ -44,11 +40,12 @@ public class MouseDragged implements EventHandler<MouseEvent>
       return;
 
     // handle mouse drag events (movement with button pressed)
-    m_x = (int) event.getX();
-    m_y = (int) event.getY();
-    m_view = (TableView) event.getSource();
-    m_view.requestFocus();
+    event.consume();
+    int x = (int) event.getX();
+    int y = (int) event.getY();
+    TableView view = (TableView) event.getSource();
 
-    Utils.trace( event );
+    // update mouse cell position
+    view.getMouseCell().setXY( x, y, false );
   }
 }

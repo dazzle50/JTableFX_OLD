@@ -29,6 +29,7 @@ import rjc.table.view.cell.CellDrawer;
 import rjc.table.view.cell.CellSelection;
 import rjc.table.view.cell.MousePosition;
 import rjc.table.view.cell.ViewPosition;
+import rjc.table.view.cursor.Cursors;
 import rjc.table.view.events.ContextMenu;
 import rjc.table.view.events.KeyPressed;
 import rjc.table.view.events.KeyTyped;
@@ -102,7 +103,7 @@ public class TableView extends TableViewParent
     m_focusCell.addListener( ( sender, msg ) ->
     {
       getSelection().update();
-      redraw();
+      getCanvas().redrawOverlay();
       scrollTo( m_focusCell );
     } );
 
@@ -110,11 +111,20 @@ public class TableView extends TableViewParent
     m_selectCell.addListener( ( sender, msg ) ->
     {
       getSelection().update();
-      redraw();
+      getCanvas().redrawOverlay();
       scrollTo( m_selectCell );
     } );
 
     m_mouseCell = new MousePosition( this );
+    m_mouseCell.addListener( ( sender, msg ) ->
+    {
+      if ( getCursor() == Cursors.SELECTING_CELLS )
+        m_selectCell.setPosition( m_mouseCell );
+      if ( getCursor() == Cursors.SELECTING_COLS )
+        m_selectCell.setPosition( m_mouseCell.getColumn(), m_selectCell.getRow() );
+      if ( getCursor() == Cursors.SELECTING_ROWS )
+        m_selectCell.setPosition( m_selectCell.getColumn(), m_mouseCell.getRow() );
+    } );
 
     // react to mouse events
     setOnMouseMoved( new MouseMoved() );

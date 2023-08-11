@@ -54,6 +54,23 @@ public class MousePosition extends ObservablePosition
     m_view = view;
   }
 
+  /***************************************** setPosition *****************************************/
+  @Override
+  public void setPosition( int columnIndex, int rowIndex )
+  {
+    // don't allow direct setting position
+    throw new UnsupportedOperationException( "Use setXY() or setInvalid() instead" );
+  }
+
+  /***************************************** setInvalid ******************************************/
+  public void setInvalid()
+  {
+    // set position index to invalid
+    m_cellXend = INVALID;
+    m_cellYend = INVALID;
+    super.setPosition( INVALID, INVALID );
+  }
+
   /******************************************* checkXY *******************************************/
   public void checkXY()
   {
@@ -142,23 +159,6 @@ public class MousePosition extends ObservablePosition
     // update the mouse cursor if requested
     if ( updateCursor )
       setCursor();
-  }
-
-  /***************************************** setPosition *****************************************/
-  @Override
-  public void setPosition( int columnIndex, int rowIndex )
-  {
-    // don't allow direct setting position
-    throw new UnsupportedOperationException( "Use setXY() or setInvalid() instead" );
-  }
-
-  /***************************************** setInvalid ******************************************/
-  public void setInvalid()
-  {
-    // set position index to invalid
-    m_cellXend = INVALID;
-    m_cellYend = INVALID;
-    super.setPosition( INVALID, INVALID );
   }
 
   /****************************************** setCursor ******************************************/

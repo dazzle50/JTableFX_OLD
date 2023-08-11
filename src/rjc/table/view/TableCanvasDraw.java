@@ -37,7 +37,8 @@ public class TableCanvasDraw extends Canvas
   private CanvasOverlay    m_overlay;
 
   private AtomicBoolean    m_redrawIsRequested;                      // flag if redraw has been scheduled
-  private boolean          m_fullRedraw;                             // full view redraw (headers & body)
+  private boolean          m_fullRedraw;                             // full view redraw (headers & body including overlay)
+  private boolean          m_overlayRedraw;                          // just overlay redraw
   private HashSet<Integer> m_columns;                                // requested column indexes
   private HashSet<Integer> m_rows;                                   // requested row indexes
   private HashSet<Long>    m_cells;                                  // long = (long) column << 32 | row & 0xFFFFFFFFL
@@ -74,6 +75,16 @@ public class TableCanvasDraw extends Canvas
     if ( m_fullRedraw )
       return;
     m_fullRedraw = true;
+    schedule();
+  }
+
+  /******************************************* redrawOverlay ********************************************/
+  public void redrawOverlay()
+  {
+    // request redraw table overlay (shows selection etc)
+    if ( m_overlayRedraw || m_fullRedraw )
+      return;
+    m_overlayRedraw = true;
     schedule();
   }
 
@@ -121,13 +132,18 @@ public class TableCanvasDraw extends Canvas
   /*************************************** performRedraws ****************************************/
   private void performRedraws()
   {
-    // redraw parts of table that have been requested
+    // redraw parts of table or overlay that have been requested
     m_redrawIsRequested.set( false );
+
+    // redraw overlay if requested or full redraw requested
+    if ( m_overlayRedraw || m_fullRedraw )
+      getOverlay().redrawNow();
+
+    // ensure full canvas is redrawn if many columns/rows/cells are redrawn
     if ( m_fullRedraw || m_redrawCount > REDRAW_COUNT_MAX )
     {
       // full redraw requested so don't need to redraw anything else
       redrawNow();
-      getOverlay().redrawNow();
       m_redrawCount = 0;
     }
     else
@@ -150,6 +166,7 @@ public class TableCanvasDraw extends Canvas
 
     // clear requests
     m_fullRedraw = false;
+    m_overlayRedraw = false;
     m_columns.clear();
     m_rows.clear();
     m_cells.clear();

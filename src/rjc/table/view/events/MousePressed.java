@@ -69,6 +69,7 @@ public class MousePressed implements EventHandler<MouseEvent>
       boolean moveFocus = !event.isShiftDown() || event.isControlDown();
       if ( cursor == Cursors.CROSS )
       {
+        view.setCursor( Cursors.SELECTING_CELLS );
         if ( moveFocus )
         {
           view.getSelection().start();
@@ -80,6 +81,7 @@ public class MousePressed implements EventHandler<MouseEvent>
       // check if selecting table columns
       else if ( cursor == Cursors.DOWNARROW )
       {
+        view.setCursor( Cursors.SELECTING_COLS );
         if ( moveFocus )
         {
           view.getSelection().start();
@@ -92,6 +94,7 @@ public class MousePressed implements EventHandler<MouseEvent>
       // check if selecting table rows
       else if ( cursor == Cursors.RIGHTARROW )
       {
+        view.setCursor( Cursors.SELECTING_ROWS );
         if ( moveFocus )
         {
           view.getSelection().start();
