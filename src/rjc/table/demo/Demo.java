@@ -63,8 +63,8 @@ public class Demo extends Application
     stage.setOnHidden( event -> Platform.exit() );
 
     // open demo app window
-    stage.setWidth( 500 );
-    stage.setHeight( 300 );
+    stage.setWidth( 900 );
+    stage.setHeight( 600 );
     stage.show();
   }
 

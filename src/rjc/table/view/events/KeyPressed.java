@@ -23,6 +23,7 @@ import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
 import rjc.table.Utils;
 import rjc.table.view.TableView;
+import rjc.table.view.action.Zoom;
 
 /*************************************************************************************************/
 /************************ Handles keyboard pressed events for table-view *************************/
@@ -49,6 +50,38 @@ public class KeyPressed implements EventHandler<KeyEvent>
     // handle the key press
     if ( handleFocusSelectMovement( event.getCode() ) )
       return;
+    if ( handleZoom( event.getCode() ) )
+      return;
+  }
+
+  /***************************************** handleZoom ******************************************/
+  private boolean handleZoom( KeyCode code )
+  {
+    // handle movement only if ALT not pressed
+    if ( m_alt || !m_ctrl )
+      return false;
+
+    // handle control keys
+    switch ( code )
+    {
+      case MINUS: // zoom out (Ctrl-minus)
+      case SUBTRACT:
+        Zoom.setZoom( m_view, m_view.getZoom().get() / Math.pow( 2.0, 0.0625 ) );
+        return true;
+
+      case EQUALS: // zoom in (Ctrl-plus)
+      case ADD:
+        Zoom.setZoom( m_view, m_view.getZoom().get() * Math.pow( 2.0, 0.0625 ) );
+        return true;
+
+      case DIGIT0: // reset zoom 1:1 (Ctrl-0)
+      case NUMPAD0:
+        Zoom.setZoom( m_view, 1.0 );
+        return true;
+
+      default:
+        return false;
+    }
   }
 
   /********************************** handleFocusSelectMovement **********************************/
@@ -58,6 +91,7 @@ public class KeyPressed implements EventHandler<KeyEvent>
     if ( m_alt )
       return false;
 
+    // react to keyboard cursor keys, page-up, page-down and home
     switch ( code )
     {
       case RIGHT: // right -> arrow key

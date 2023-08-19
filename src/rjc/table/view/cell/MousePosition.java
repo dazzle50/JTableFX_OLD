@@ -18,6 +18,7 @@
 
 package rjc.table.view.cell;
 
+import javafx.application.Platform;
 import rjc.table.signal.ObservablePosition;
 import rjc.table.view.TableView;
 import rjc.table.view.axis.TableAxis;
@@ -77,7 +78,7 @@ public class MousePosition extends ObservablePosition
     // re-check mouse cell position
     m_cellXend = INVALID;
     m_cellYend = INVALID;
-    setXY( m_x, m_y, false );
+    Platform.runLater( () -> setXY( m_x, m_y, false ) );
   }
 
   /******************************************** setXY ********************************************/

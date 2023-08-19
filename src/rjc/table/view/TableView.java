@@ -19,7 +19,6 @@
 package rjc.table.view;
 
 import javafx.geometry.Orientation;
-import rjc.table.Utils;
 import rjc.table.data.TableData;
 import rjc.table.signal.ObservableDouble;
 import rjc.table.signal.ObservablePosition;
@@ -100,19 +99,19 @@ public class TableView extends TableViewParent
     // create the observable positions for focus, select and mouse
     m_selection = new CellSelection( this );
     m_focusCell = new ViewPosition( this );
-    m_focusCell.addListener( ( sender, msg ) ->
-    {
-      getSelection().update();
-      getCanvas().redrawOverlay();
-      scrollTo( m_focusCell );
-    } );
-
     m_selectCell = new ViewPosition( this );
     m_selectCell.addListener( ( sender, msg ) ->
     {
       getSelection().update();
       getCanvas().redrawOverlay();
       scrollTo( m_selectCell );
+    } );
+
+    // react to zoom values changes
+    m_zoom.addListener( ( sender, msg ) ->
+    {
+      layoutDisplay();
+      viewtModified();
     } );
 
     m_mouseCell = new MousePosition( this );
@@ -141,16 +140,13 @@ public class TableView extends TableViewParent
     setOnKeyPressed( new KeyPressed() );
     setOnKeyTyped( new KeyTyped() );
 
-    // react to zoom values changes
-    m_zoom.addListener( ( sender, msg ) -> Utils.trace( "TODO" ) );
-
     // react to losing & gaining focus and visibility
     focusedProperty().addListener( ( observable, oldFocus, newFocus ) -> redraw() );
     visibleProperty().addListener( ( observable, oldVisibility, newVisibility ) -> redraw() );
 
     // react to scroll bar position value changes
-    m_horizontalScrollBar.valueProperty().addListener( ( observable, oldValue, newValue ) -> tableScrolled() );
-    m_verticalScrollBar.valueProperty().addListener( ( observable, oldValue, newValue ) -> tableScrolled() );
+    m_horizontalScrollBar.valueProperty().addListener( ( observable, oldValue, newValue ) -> viewtModified() );
+    m_verticalScrollBar.valueProperty().addListener( ( observable, oldValue, newValue ) -> viewtModified() );
 
     // set mouse position cell to invalid if mouse is over scroll-bar
     m_horizontalScrollBar.setOnMouseEntered( ( event ) -> m_mouseCell.setInvalid() );
@@ -247,12 +243,14 @@ public class TableView extends TableViewParent
     m_canvas.resize( visibleWidth, visibleHeight );
   }
 
-  /**************************************** tableScrolled ****************************************/
-  private void tableScrolled()
+  /**************************************** viewtModified ****************************************/
+  private void viewtModified()
   {
-    // handle any actions needed due to the table scrolled
+    // handle any actions needed due to the view changing for example scrolled
     redraw();
     getMouseCell().checkXY();
+
+    // TODO handle more situations and end any editing
   }
 
   /****************************************** getData ********************************************/
@@ -373,6 +371,9 @@ public class TableView extends TableViewParent
   public UndoStack getUndoStack()
   {
     // return undo-stack for table-view (create if necessary)
+    // return class responsible for drawing the cells on canvas
+    if ( m_undostack == null )
+      m_undostack = new UndoStack();
     return m_undostack;
   }
 
