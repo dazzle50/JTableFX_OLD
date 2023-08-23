@@ -371,10 +371,16 @@ public class TableView extends TableViewParent
   public UndoStack getUndoStack()
   {
     // return undo-stack for table-view (create if necessary)
-    // return class responsible for drawing the cells on canvas
     if ( m_undostack == null )
       m_undostack = new UndoStack();
     return m_undostack;
+  }
+
+  /***************************************** setUndoStack ****************************************/
+  public void setUndoStack( UndoStack undostack )
+  {
+    // set the undo-stack for table-view
+    m_undostack = undostack;
   }
 
   /*************************************** getColumnStartX ***************************************/

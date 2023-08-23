@@ -20,6 +20,7 @@ package rjc.table.demo;
 
 import javafx.application.Platform;
 import javafx.scene.Node;
+import javafx.scene.control.CheckMenuItem;
 import javafx.scene.control.Menu;
 import javafx.scene.control.MenuBar;
 import javafx.scene.control.MenuItem;
@@ -31,6 +32,9 @@ import rjc.table.Utils;
 import rjc.table.demo.large.DemoTableLarge;
 import rjc.table.signal.ObservableStatus;
 import rjc.table.signal.ObservableStatus.Level;
+import rjc.table.undo.UndoStack;
+import rjc.table.undo.UndoStackWindow;
+import rjc.table.view.TableView;
 
 /*************************************************************************************************/
 /****************************** Contents of demo application window ******************************/
@@ -39,6 +43,9 @@ import rjc.table.signal.ObservableStatus.Level;
 public class DemoContents extends GridPane
 {
   private ObservableStatus m_status = new ObservableStatus(); // status associated with status bar
+
+  private UndoStack        m_undostack;                       // shared undostack for whole demo application
+  private UndoStackWindow  m_undoWindow;                      // window to interact with undo-stack
 
   /**************************************** constructor ******************************************/
   public DemoContents()
@@ -62,11 +69,17 @@ public class DemoContents extends GridPane
 
     // create help menu
     Menu help = new Menu( "Help" );
-    MenuItem about = new MenuItem( "About JTableFX  ..." );
-    about.setOnAction( event -> Utils.trace( "About JTableFX  ..." ) );
+    MenuItem about = new MenuItem( "About JTableFX ..." );
+    about.setOnAction( event -> Utils.trace( "About JTableFX ..." ) );
     help.getItems().addAll( about );
 
-    menuBar.getMenus().addAll( help );
+    // create view menu
+    Menu view = new Menu( "View" );
+    CheckMenuItem undoWindow = new CheckMenuItem( "Undo Stack ..." );
+    undoWindow.setOnAction( event -> showUndoWindow( undoWindow ) );
+    view.getItems().addAll( undoWindow );
+
+    menuBar.getMenus().addAll( help, view );
     return menuBar;
   }
 
@@ -82,6 +95,11 @@ public class DemoContents extends GridPane
     tabs.getTabs().add( new DemoTableDefault() );
     tabs.getTabs().add( new DemoTableLarge() );
     tabs.getTabs().add( new DemoTableEditable() );
+
+    // set common undo-stack across all the views
+    m_undostack = ( (TableView) tabs.getTabs().get( 0 ).getContent() ).getUndoStack();
+    for ( int tab = 1; tab < tabs.getTabs().size(); tab++ )
+      ( (TableView) tabs.getTabs().get( tab ).getContent() ).setUndoStack( m_undostack );
 
     return tabs;
   }
@@ -107,4 +125,25 @@ public class DemoContents extends GridPane
 
     return statusBar;
   }
+
+  /*************************************** showUndoWindow ****************************************/
+  private void showUndoWindow( CheckMenuItem menuitem )
+  {
+    // create undo-stack window if not already created
+    if ( m_undoWindow == null )
+    {
+      m_undoWindow = new UndoStackWindow( m_undostack );
+      m_undoWindow.setOnHiding( event -> menuitem.setSelected( false ) );
+    }
+
+    // make the undo-stack window visible or hidden
+    if ( m_undoWindow.isShowing() )
+      m_undoWindow.hide();
+    else
+    {
+      m_undoWindow.show();
+      m_undoWindow.toFront();
+    }
+  }
+
 }

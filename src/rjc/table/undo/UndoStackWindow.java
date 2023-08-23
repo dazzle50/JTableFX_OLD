@@ -16,34 +16,30 @@
  *  along with this program.  If not, see http://www.gnu.org/licenses/    *
  **************************************************************************/
 
-package rjc.table.view;
+package rjc.table.undo;
 
-import javafx.scene.paint.Color;
+import javafx.scene.Scene;
+import javafx.stage.Stage;
 
 /*************************************************************************************************/
-/************************** Miscellaneous utility public static colours **************************/
+/****************************** Window for undo-stack command list *******************************/
 /*************************************************************************************************/
 
-public class Colours
+public class UndoStackWindow extends Stage
 {
-  // general gui colours
-  public static final Color SELECTED_HIGHLIGHT       = Color.rgb( 0, 150, 255, 0.3 ); // opaque blue
-  public static final Color SELECTED_BORDER          = Color.rgb( 0, 150, 255 );      // light blue
 
-  public static final Color CELL_BORDER              = Color.gray( 0.8 );
-  public static final Color CELL_DEFAULT_FILL        = Color.WHITE;
+  /**************************************** constructor ******************************************/
+  public UndoStackWindow( UndoStack undoStack )
+  {
+    // create undo-stack window
+    setTitle( "Undostack" );
+    setWidth( 250 );
+    setHeight( 300 );
 
-  public static final Color HEADER_DEFAULT_FILL      = Color.gray( 0.95 );
-  public static final Color HEADER_FOCUS_FILL        = Color.LIGHTYELLOW;
-  public static final Color HEADER_SELECTED_FILL     = Color.gray( 0.85 );
+    // setup scene
+    UndoStackView control = new UndoStackView( undoStack );
+    Scene scene = new Scene( control );
+    setScene( scene );
+  }
 
-  public static final Color TEXT_DEFAULT             = Color.BLACK;
-  public static final Color TEXT_DEFAULT_BACKGROUND  = Color.WHITE;
-  public static final Color TEXT_SELECTED            = Color.WHITE;
-  public static final Color TEXT_SELECTED_BACKGROUND = Color.rgb( 51, 153, 255 );     // mid blue
-
-  public static final Color BUTTON_ARROW             = Color.BLACK;
-  public static final Color BUTTON_BACKGROUND        = Color.gray( 0.85 );
-
-  public static final Color REORDER_LINE             = Color.RED;
 }

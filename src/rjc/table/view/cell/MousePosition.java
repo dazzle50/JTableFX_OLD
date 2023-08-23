@@ -69,6 +69,8 @@ public class MousePosition extends ObservablePosition
     // set position index to invalid
     m_cellXend = INVALID;
     m_cellYend = INVALID;
+    m_x = INVALID;
+    m_y = INVALID;
     super.setPosition( INVALID, INVALID );
   }
 

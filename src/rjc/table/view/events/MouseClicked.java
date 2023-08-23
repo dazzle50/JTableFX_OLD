@@ -20,7 +20,6 @@ package rjc.table.view.events;
 
 import javafx.event.EventHandler;
 import javafx.scene.input.MouseEvent;
-import rjc.table.Utils;
 import rjc.table.view.TableView;
 
 /*************************************************************************************************/
@@ -38,7 +37,7 @@ public class MouseClicked implements EventHandler<MouseEvent>
     event.consume();
     TableView view = (TableView) event.getSource();
 
-    Utils.trace( event );
+    // Utils.trace( event );
   }
 
 }
