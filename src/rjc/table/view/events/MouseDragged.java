@@ -19,9 +19,12 @@
 package rjc.table.view.events;
 
 import javafx.event.EventHandler;
+import javafx.scene.Cursor;
 import javafx.scene.input.MouseButton;
 import javafx.scene.input.MouseEvent;
+import rjc.table.view.TableScrollBar;
 import rjc.table.view.TableView;
+import rjc.table.view.cursor.Cursors;
 
 /*************************************************************************************************/
 /************* Handles mouse drag (move with button pressed) events from table-view **************/
@@ -29,6 +32,10 @@ import rjc.table.view.TableView;
 
 public class MouseDragged implements EventHandler<MouseEvent>
 {
+  private TableView m_view;
+  private int       m_x;
+  private int       m_y;
+  private Cursor    m_cursor;
 
   /******************************************* handle ********************************************/
   @Override
@@ -41,11 +48,55 @@ public class MouseDragged implements EventHandler<MouseEvent>
 
     // handle mouse drag events (movement with button pressed)
     event.consume();
-    int x = (int) event.getX();
-    int y = (int) event.getY();
-    TableView view = (TableView) event.getSource();
+    m_x = (int) event.getX();
+    m_y = (int) event.getY();
+    m_view = (TableView) event.getSource();
+    m_cursor = m_view.getCursor();
+
+    // check if table scrolling is wanted
+    verticalScrolling();
+    horizontalScrolling();
 
     // update mouse cell position
-    view.getMouseCell().setXY( x, y, false );
+    m_view.getMouseCell().setXY( m_x, m_y, false );
+
+  }
+
+  /************************************* horizontalScrolling *************************************/
+  private void horizontalScrolling()
+  {
+    // determine whether any horizontal scrolling needed
+    TableScrollBar scrollbar = m_view.getHorizontalScrollBar();
+    int header = m_view.getHeaderWidth();
+    int width = (int) m_view.getCanvas().getWidth();
+    boolean scroll = m_cursor == Cursors.H_RESIZE || m_cursor == Cursors.H_MOVE || m_cursor == Cursors.SELECTING_CELLS
+        || m_cursor == Cursors.SELECTING_COLS;
+
+    // update or stop view scrolling depending on mouse position
+    if ( scroll && m_x >= width && scrollbar.getValue() < scrollbar.getMax() )
+      scrollbar.scrollToEnd( m_x - width );
+    else if ( scroll && m_x < header && scrollbar.getValue() > 0.0 )
+      scrollbar.scrollToStart( header - m_x );
+    else
+      scrollbar.stopAnimationStartEnd();
+  }
+
+  /************************************** verticalScrolling **************************************/
+  private void verticalScrolling()
+  {
+    // determine whether any vertical scrolling needed
+    TableScrollBar scrollbar = m_view.getVerticalScrollBar();
+    int height = (int) m_view.getCanvas().getHeight();
+    int header = m_view.getHeaderHeight();
+    boolean scroll = m_cursor == Cursors.V_RESIZE || m_cursor == Cursors.V_MOVE || m_cursor == Cursors.SELECTING_CELLS
+        || m_cursor == Cursors.SELECTING_ROWS;
+
+    // update or stop view scrolling depending on mouse position
+    if ( scroll & m_y >= height && scrollbar.getValue() < scrollbar.getMax() )
+      scrollbar.scrollToEnd( m_y - height );
+    else if ( scroll && m_y < header && scrollbar.getValue() > 0.0 )
+      scrollbar.scrollToStart( header - m_y );
+    else
+      scrollbar.stopAnimationStartEnd();
   }
 }

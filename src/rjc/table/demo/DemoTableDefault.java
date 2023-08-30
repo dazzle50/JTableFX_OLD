@@ -35,7 +35,7 @@ public class DemoTableDefault extends Tab
   {
     // create default table with default view
     m_data = new TableData();
-    TableView view = new TableView( m_data );
+    TableView view = new TableView( m_data, "Default" );
 
     // make view only visible when tab is selected
     view.visibleProperty().bind( selectedProperty() );

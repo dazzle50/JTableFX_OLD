@@ -48,6 +48,7 @@ import rjc.table.view.events.MouseScroll;
 public class TableView extends TableViewParent
 {
   private TableData        m_data;
+  private String           m_name;
 
   private TableCanvas      m_canvas;
   private TableScrollBar   m_verticalScrollBar;
@@ -66,7 +67,22 @@ public class TableView extends TableViewParent
   private MousePosition    m_mouseCell;
 
   /**************************************** constructor ******************************************/
+  public TableView( TableData data, String name )
+  {
+    // set view name and construct the view
+    m_name = name;
+    constructView( data );
+  }
+
+  /**************************************** constructor ******************************************/
   public TableView( TableData data )
+  {
+    // construct the view
+    constructView( data );
+  }
+
+  /**************************************** constructView ****************************************/
+  private void constructView( TableData data )
   {
     // check parameters and setup table-view
     if ( data == null )
@@ -258,6 +274,20 @@ public class TableView extends TableViewParent
   {
     // return data model for table-view
     return m_data;
+  }
+
+  /****************************************** getName ********************************************/
+  public String getName()
+  {
+    // return name of table-view
+    return m_name;
+  }
+
+  /****************************************** setName ********************************************/
+  public void setName( String name )
+  {
+    // set name of table-view
+    m_name = name;
   }
 
   /***************************************** getCanvas *******************************************/

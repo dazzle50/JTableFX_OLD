@@ -35,7 +35,7 @@ public class DemoTableEditable extends Tab
   {
     // create
     m_data = new TableData();
-    TableView view = new TableView( m_data );
+    TableView view = new TableView( m_data, "Editable" );
 
     // make view only visible when tab is selected
     view.visibleProperty().bind( selectedProperty() );

@@ -132,4 +132,73 @@ public class TableScrollBar extends ScrollBar
     m_animation = Animation.TO_POSITION;
   }
 
+  /***************************************** scrollToEnd *****************************************/
+  public void scrollToEnd( double speed )
+  {
+    // animate scroll to end of axis if not already there
+    if ( isVisible() && getValue() < getMax() )
+    {
+      // if last scroll value change less than SCROLL_TO_DURATION ago, update value to make animation smoother
+      double pixelsPerSec = speed * Math.sqrt( speed );
+      long elapsedNanos = System.nanoTime() - m_lastScrollNanos;
+      if ( elapsedNanos < SCROLL_TO_DURATION * 1e6 )
+        setValue( Math.min( getValue() + elapsedNanos * pixelsPerSec / 1e9, getMax() ) );
+
+      // setup new animation
+      double ms = ( getMax() - getValue() ) * 1e3 / pixelsPerSec;
+      m_scrollingTo = INVALID;
+      scrollToValue( (int) getMax(), (int) ms );
+      m_animation = Animation.TO_END;
+    }
+  }
+
+  /**************************************** scrollToStart ****************************************/
+  public void scrollToStart( double speed )
+  {
+    // animate scroll to beginning of axis if not already there
+    if ( isVisible() && getValue() > getMin() )
+    {
+      // if last scroll value change less than SCROLL_TO_DURATION ago, update value to make animation smoother
+      double pixelsPerSec = speed * Math.sqrt( speed );
+      long elapsedNanos = System.nanoTime() - m_lastScrollNanos;
+      if ( elapsedNanos < SCROLL_TO_DURATION * 1e6 )
+        setValue( Math.max( getValue() - elapsedNanos * pixelsPerSec / 1e9, getMin() ) );
+
+      // setup new animation
+      double ms = getValue() * 1000.0 / pixelsPerSec;
+      m_scrollingTo = INVALID;
+      scrollToValue( 0, (int) ms );
+      m_animation = Animation.TO_START;
+    }
+  }
+
+  /************************************ stopAnimationStartEnd ************************************/
+  public void stopAnimationStartEnd()
+  {
+    // stop any scrolling to edges
+    if ( m_animation == Animation.TO_START || m_animation == Animation.TO_END )
+      stopAnimation();
+  }
+
+  /*************************************** finishAnimation ***************************************/
+  public void finishAnimation()
+  {
+    // finish animation by jumping to end
+    if ( m_timeline != null )
+      m_timeline.jumpTo( "end" );
+  }
+
+  /**************************************** stopAnimation ****************************************/
+  public void stopAnimation()
+  {
+    // stop animation where it is
+    if ( m_timeline != null )
+    {
+      m_timeline.pause();
+      m_timeline = null;
+      m_scrollingTo = INVALID;
+      m_animation = Animation.NONE;
+    }
+  }
+
 }

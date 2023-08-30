@@ -80,7 +80,12 @@ public class CommandZoom implements IUndoCommand
   {
     // command description
     if ( m_text == null )
-      m_text = "Zoom " + Math.round( m_newZoom * 100 ) + "%";
+    {
+      if ( m_view.getName() == null )
+        m_text = "Zoom " + Math.round( m_newZoom * 100 ) + "%";
+      else
+        m_text = m_view.getName() + " zoom " + Math.round( m_newZoom * 100 ) + "%";
+    }
 
     return m_text;
   }

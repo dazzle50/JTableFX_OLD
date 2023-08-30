@@ -34,7 +34,7 @@ public class LargeView extends TableView
   public LargeView( TableData data )
   {
     // construct customised table view
-    super( data );
+    super( data, "Large" );
 
     // when mouse moved to new cell, redraw table to move shading
     getMouseCell().addListener( ( mousePosition, oldPos ) -> redraw() );
