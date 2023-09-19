@@ -113,13 +113,10 @@ public class DemoContents extends GridPane
     statusBar.setEditable( false );
 
     // display status changes on status-bar using runLater so can handle signals from other threads
-    m_status.addListener( ( sender, msg ) ->
+    m_status.addLaterListener( ( sender, msg ) ->
     {
-      Platform.runLater( () ->
-      {
-        statusBar.setText( m_status.getMessage() );
-        statusBar.setStyle( m_status.getStyle() );
-      } );
+      statusBar.setText( m_status.getMessage() );
+      statusBar.setStyle( m_status.getStyle() );
     } );
     m_status.update( Level.NORMAL, "Started" );
 

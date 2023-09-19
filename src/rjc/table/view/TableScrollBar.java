@@ -201,4 +201,11 @@ public class TableScrollBar extends ScrollBar
     }
   }
 
+  /**************************************** getAnimation *****************************************/
+  public Animation getAnimation()
+  {
+    // return current in progress animation
+    return m_animation;
+  }
+
 }

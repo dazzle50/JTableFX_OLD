@@ -91,6 +91,13 @@ public class KeyPressed implements EventHandler<KeyEvent>
     if ( m_alt )
       return false;
 
+    // does new selection need to be started
+    if ( !m_shift )
+    {
+      m_view.getSelectCell().setPosition( m_view.getFocusCell() );
+      m_view.getSelection().clear();
+    }
+
     // react to keyboard cursor keys, page-up, page-down and home
     switch ( code )
     {

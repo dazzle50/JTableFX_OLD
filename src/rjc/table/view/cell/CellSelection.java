@@ -103,6 +103,8 @@ public class CellSelection implements ISignal
     // update last selected area
     ViewPosition focus = m_view.getFocusCell();
     ViewPosition select = m_view.getSelectCell();
+    if ( m_selected.isEmpty() )
+      start();
     SelectedArea last = m_selected.get( m_selected.size() - 1 );
 
     // if selecting columns or rows, then start selecting from first cell

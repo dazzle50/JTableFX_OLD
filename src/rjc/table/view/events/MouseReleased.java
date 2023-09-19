@@ -41,6 +41,8 @@ public class MouseReleased implements EventHandler<MouseEvent>
 
     // update mouse cell position and cursor
     view.getMouseCell().setXY( x, y, true );
+    view.getHorizontalScrollBar().stopAnimationStartEnd();
+    view.getVerticalScrollBar().stopAnimationStartEnd();
   }
 
 }

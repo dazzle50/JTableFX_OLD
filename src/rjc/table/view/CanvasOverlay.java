@@ -35,6 +35,9 @@ public class CanvasOverlay extends Canvas
   private TableView       m_view;
   private GraphicsContext m_gc;
 
+  final public static int MIN_COORD = -999;  // highlighting coordinate limit
+  final public static int MAX_COORD = 99999; // highlighting coordinate limit
+
   /**************************************** constructor ******************************************/
   public CanvasOverlay( TableView tableView )
   {
@@ -74,10 +77,15 @@ public class CanvasOverlay extends Canvas
     // fill each selected rectangle with opaque colour & border
     for ( var area : areas )
     {
+      // limit highlighted area to avoid drawing overflow artifacts
       int x = m_view.getColumnStartX( area[0] );
+      x = x < MIN_COORD ? MIN_COORD : x;
       int y = m_view.getRowStartY( area[1] );
+      y = y < MIN_COORD ? MIN_COORD : y;
       int w = m_view.getColumnStartX( area[2] + 1 ) - x;
+      w = w > MAX_COORD ? MAX_COORD : w;
       int h = m_view.getRowStartY( area[3] + 1 ) - y;
+      h = h > MAX_COORD ? MAX_COORD : h;
 
       m_gc.fillRect( x, y, w - 1, h - 1 );
       m_gc.strokeRect( x - 0.5, y - 0.5, w, h );

@@ -23,6 +23,7 @@ import rjc.table.data.TableData;
 import rjc.table.signal.ObservableDouble;
 import rjc.table.signal.ObservablePosition;
 import rjc.table.undo.UndoStack;
+import rjc.table.view.TableScrollBar.Animation;
 import rjc.table.view.axis.TableAxis;
 import rjc.table.view.cell.CellDrawer;
 import rjc.table.view.cell.CellSelection;
@@ -115,31 +116,27 @@ public class TableView extends TableViewParent
     // create the observable positions for focus, select and mouse
     m_selection = new CellSelection( this );
     m_focusCell = new ViewPosition( this );
+    m_focusCell.addListener( ( sender, msg ) -> redraw() );
+
     m_selectCell = new ViewPosition( this );
-    m_selectCell.addListener( ( sender, msg ) ->
+    m_selectCell.addLaterListener( ( sender, msg ) ->
     {
       getSelection().update();
       getCanvas().redrawOverlay();
-      scrollTo( m_selectCell );
+      if ( getCursor() != Cursors.SELECTING_CELLS && getCursor() != Cursors.SELECTING_COLS
+          && getCursor() != Cursors.SELECTING_ROWS )
+        scrollTo( m_selectCell );
     } );
 
     // react to zoom values changes
     m_zoom.addListener( ( sender, msg ) ->
     {
       layoutDisplay();
-      viewtModified();
+      tableScrolled();
     } );
 
     m_mouseCell = new MousePosition( this );
-    m_mouseCell.addListener( ( sender, msg ) ->
-    {
-      if ( getCursor() == Cursors.SELECTING_CELLS )
-        m_selectCell.setPosition( m_mouseCell );
-      if ( getCursor() == Cursors.SELECTING_COLS )
-        m_selectCell.setPosition( m_mouseCell.getColumn(), m_selectCell.getRow() );
-      if ( getCursor() == Cursors.SELECTING_ROWS )
-        m_selectCell.setPosition( m_selectCell.getColumn(), m_mouseCell.getRow() );
-    } );
+    m_mouseCell.addListener( ( sender, msg ) -> checkSelectPosition() );
 
     // react to mouse events
     setOnMouseMoved( new MouseMoved() );
@@ -161,8 +158,8 @@ public class TableView extends TableViewParent
     visibleProperty().addListener( ( observable, oldVisibility, newVisibility ) -> redraw() );
 
     // react to scroll bar position value changes
-    m_horizontalScrollBar.valueProperty().addListener( ( observable, oldValue, newValue ) -> viewtModified() );
-    m_verticalScrollBar.valueProperty().addListener( ( observable, oldValue, newValue ) -> viewtModified() );
+    m_horizontalScrollBar.valueProperty().addListener( ( observable, oldValue, newValue ) -> tableScrolled() );
+    m_verticalScrollBar.valueProperty().addListener( ( observable, oldValue, newValue ) -> tableScrolled() );
 
     // set mouse position cell to invalid if mouse is over scroll-bar
     m_horizontalScrollBar.setOnMouseEntered( ( event ) -> m_mouseCell.setInvalid() );
@@ -259,14 +256,55 @@ public class TableView extends TableViewParent
     m_canvas.resize( visibleWidth, visibleHeight );
   }
 
-  /**************************************** viewtModified ****************************************/
-  private void viewtModified()
+  /**************************************** tableScrolled ****************************************/
+  private void tableScrolled()
   {
-    // handle any actions needed due to the view changing for example scrolled
+    // handle any actions needed due to view being modified usually scrolled
     redraw();
     getMouseCell().checkXY();
 
     // TODO handle more situations and end any editing
+    checkSelectPosition();
+  }
+
+  /************************************* checkSelectPosition *************************************/
+  private void checkSelectPosition()
+  {
+    // if not selecting then nothing to do and just return
+    if ( getCursor() != Cursors.SELECTING_CELLS && getCursor() != Cursors.SELECTING_COLS
+        && getCursor() != Cursors.SELECTING_ROWS )
+      return;
+
+    int column = getCursor() == Cursors.SELECTING_ROWS ? m_selectCell.getColumn() : m_mouseCell.getColumn();
+    int row = getCursor() == Cursors.SELECTING_COLS ? m_selectCell.getRow() : m_mouseCell.getRow();
+
+    // if animating to start or end means drag is in progress, so update select cell position
+    var animation = getHorizontalScrollBar().getAnimation();
+    if ( animation == Animation.TO_START )
+    {
+      column = getColumnIndex( getHeaderWidth() );
+      column = getColumnsAxis().getNextVisible( column );
+    }
+    if ( animation == Animation.TO_END )
+    {
+      column = getColumnIndex( (int) getCanvas().getWidth() );
+      column = getColumnsAxis().getPreviousVisible( column );
+    }
+
+    animation = getVerticalScrollBar().getAnimation();
+    if ( animation == Animation.TO_START )
+    {
+      row = getRowIndex( getHeaderHeight() );
+      row = getRowsAxis().getNextVisible( row );
+    }
+    if ( animation == Animation.TO_END )
+    {
+      row = getRowIndex( (int) getCanvas().getHeight() );
+      row = getRowsAxis().getPreviousVisible( row );
+    }
+
+    // update select cell position
+    m_selectCell.setPosition( column, row );
   }
 
   /****************************************** getData ********************************************/

@@ -92,7 +92,7 @@ public class MousePosition extends ObservablePosition
 
     // check if mouse moved outside current column
     int columnIndex = getColumn();
-    int width = Math.min( (int) m_view.getCanvas().getWidth(), m_view.getTableWidth() );
+    int width = m_view.getTableWidth();
     int header = m_view.getHeaderWidth();
 
     if ( m_x < m_cellXstart || m_x >= m_cellXend )
@@ -113,7 +113,7 @@ public class MousePosition extends ObservablePosition
       {
         m_cellXstart = width;
         m_cellXend = Integer.MAX_VALUE;
-        columnIndex = AFTER;
+        columnIndex = m_view.getData().getColumnCount() - 1;
       }
       else
       {
@@ -125,7 +125,7 @@ public class MousePosition extends ObservablePosition
 
     // check if mouse moved outside current row
     int rowIndex = getRow();
-    int height = Math.min( (int) m_view.getCanvas().getHeight(), m_view.getTableHeight() );
+    int height = m_view.getTableHeight();
     header = m_view.getHeaderHeight();
 
     if ( m_y < m_cellYstart || m_y >= m_cellYend )
@@ -146,7 +146,7 @@ public class MousePosition extends ObservablePosition
       {
         m_cellYstart = height;
         m_cellYend = Integer.MAX_VALUE;
-        rowIndex = AFTER;
+        rowIndex = m_view.getData().getRowCount() - 1;
       }
       else
       {

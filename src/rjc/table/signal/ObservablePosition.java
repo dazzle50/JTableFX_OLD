@@ -78,6 +78,20 @@ public class ObservablePosition implements ISignal
     return m_row;
   }
 
+  /****************************************** setColumn ******************************************/
+  public void setColumn( int column )
+  {
+    // set column position
+    setPosition( column, m_row );
+  }
+
+  /******************************************* setRow ********************************************/
+  public void setRow( int row )
+  {
+    // set row position
+    setPosition( m_column, row );
+  }
+
   /****************************************** toString *******************************************/
   @Override
   public String toString()

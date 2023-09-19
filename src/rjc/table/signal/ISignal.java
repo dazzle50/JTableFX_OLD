@@ -31,7 +31,8 @@ public interface ISignal
 {
   static class SignalHelper
   {
-    final private static HashMap<ISignal, ArrayList<IListener>> m_listeners = new HashMap<>();
+    final private static HashMap<ISignal, ArrayList<IListener>> m_listeners      = new HashMap<>();
+    final private static HashMap<ISignal, ArrayList<IListener>> m_laterListeners = new HashMap<>();
 
     /****************************************** signal *******************************************/
     private static void signal( ISignal signaller, Object[] objects )
@@ -40,15 +41,16 @@ public interface ISignal
       var list = m_listeners.get( signaller );
       if ( list != null )
         list.forEach( ( listener ) -> listener.slot( signaller, objects ) );
+      list = m_laterListeners.get( signaller );
+      if ( list != null )
+        list.forEach( ( listener ) -> Platform.runLater( () -> listener.slot( signaller, objects ) ) );
     }
 
     /**************************************** signalLater ****************************************/
     private static void signalLater( ISignal signaller, Object[] objects )
     {
       // send signal objects using Platform.runLater to each listener registered with specified signal sender
-      var list = m_listeners.get( signaller );
-      if ( list != null )
-        list.forEach( ( listener ) -> Platform.runLater( () -> listener.slot( signaller, objects ) ) );
+      Platform.runLater( () -> signal( signaller, objects ) );
     }
 
     /*************************************** addListener *****************************************/
@@ -64,11 +66,27 @@ public interface ISignal
       list.add( listener );
     }
 
+    /************************************* addLaterListener **************************************/
+    private static void addLaterListener( ISignal signaller, IListener listener )
+    {
+      // register listener for specified signal sender
+      var list = m_laterListeners.get( signaller );
+      if ( list == null )
+      {
+        list = new ArrayList<>();
+        m_laterListeners.put( signaller, list );
+      }
+      list.add( listener );
+    }
+
     /************************************** removeListener ***************************************/
     private static void removeListener( ISignal signaller, IListener listener )
     {
       // unregister listener for specified signal sender, no-action if not present
       var list = m_listeners.get( signaller );
+      if ( list != null )
+        list.remove( listener );
+      list = m_laterListeners.get( signaller );
       if ( list != null )
         list.remove( listener );
     }
@@ -80,6 +98,9 @@ public interface ISignal
       var list = m_listeners.get( signaller );
       if ( list != null )
         list.clear();
+      list = m_laterListeners.get( signaller );
+      if ( list != null )
+        list.clear();
     }
 
     /*************************************** getListeners ****************************************/
@@ -87,6 +108,13 @@ public interface ISignal
     {
       // return list of all listeners for specified signal sender, can be null
       return m_listeners.get( signaller );
+    }
+
+    /************************************* getLaterListeners *************************************/
+    private static ArrayList<IListener> getLaterListeners( ISignal signaller )
+    {
+      // return list of all listeners for specified signal sender, can be null
+      return m_laterListeners.get( signaller );
     }
   }
 
@@ -111,6 +139,13 @@ public interface ISignal
     SignalHelper.addListener( this, listener );
   }
 
+  /************************************** addLaterListener ***************************************/
+  default void addLaterListener( IListener listener )
+  {
+    // default implementation for adding a listener to a signal sender
+    SignalHelper.addLaterListener( this, listener );
+  }
+
   /*************************************** removeListener ****************************************/
   default void removeListener( IListener listener )
   {
@@ -130,6 +165,13 @@ public interface ISignal
   {
     // default implementation for getting list of all listeners for a signal sender
     return SignalHelper.getListeners( this );
+  }
+
+  /************************************** getLaterListeners **************************************/
+  default ArrayList<IListener> getLaterListeners()
+  {
+    // default implementation for getting list of all listeners for a signal sender
+    return SignalHelper.getLaterListeners( this );
   }
 
 }
