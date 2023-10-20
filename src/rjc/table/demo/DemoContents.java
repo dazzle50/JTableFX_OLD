@@ -29,6 +29,7 @@ import javafx.scene.control.TextField;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.Priority;
 import rjc.table.Utils;
+import rjc.table.demo.edit.DemoTableEditable;
 import rjc.table.demo.large.DemoTableLarge;
 import rjc.table.signal.ObservableStatus;
 import rjc.table.signal.ObservableStatus.Level;

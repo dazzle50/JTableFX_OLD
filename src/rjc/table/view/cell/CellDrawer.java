@@ -21,19 +21,14 @@ package rjc.table.view.cell;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.text.Font;
-import rjc.table.view.TableView;
 import rjc.table.view.axis.TableAxis;
+
+/*************************************************************************************************/
+/*************************************** Draws table cell ****************************************/
+/*************************************************************************************************/
 
 public class CellDrawer extends CellStyle
 {
-
-  /**************************************** constructor ******************************************/
-  public CellDrawer( TableView tableView )
-  {
-    // prepare the cell drawer
-    view = tableView;
-    gc = view.getCanvas().getGraphicsContext2D();
-  }
 
   /******************************************** draw *********************************************/
   public void draw()

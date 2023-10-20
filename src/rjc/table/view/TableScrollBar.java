@@ -208,4 +208,35 @@ public class TableScrollBar extends ScrollBar
     return m_animation;
   }
 
+  /****************************************** increment ******************************************/
+  @Override
+  public void increment()
+  {
+    // increase scroll bar value to next table cell boundary
+    int headerSize = m_axis.getHeaderPixels();
+    int index = m_axis.getIndexFromCoordinate( headerSize, (int) getValue() );
+    int nextIndex = m_axis.getNextVisible( index );
+    int start = m_axis.getStartPixel( nextIndex, 0 ) - headerSize;
+
+    scrollToValue( start, SCROLL_TO_DURATION );
+  }
+
+  /****************************************** decrement ******************************************/
+  @Override
+  public void decrement()
+  {
+    // decrease scroll bar value to next table cell boundary
+    int headerSize = m_axis.getHeaderPixels();
+    int index = m_axis.getIndexFromCoordinate( headerSize, (int) getValue() );
+    int start = m_axis.getStartPixel( index, 0 ) - headerSize;
+
+    if ( start < getValue() )
+      scrollToValue( start, SCROLL_TO_DURATION );
+    else
+    {
+      int previousIndex = m_axis.getPreviousVisible( index );
+      start = m_axis.getStartPixel( previousIndex, 0 ) - headerSize;
+      scrollToValue( start, SCROLL_TO_DURATION );
+    }
+  }
 }

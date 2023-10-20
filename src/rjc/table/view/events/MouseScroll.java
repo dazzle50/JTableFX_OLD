@@ -20,7 +20,7 @@ package rjc.table.view.events;
 
 import javafx.event.EventHandler;
 import javafx.scene.input.ScrollEvent;
-import rjc.table.Utils;
+import rjc.table.view.TableView;
 
 /*************************************************************************************************/
 /************************** Handles mouse scroll events from table-view **************************/
@@ -34,7 +34,21 @@ public class MouseScroll implements EventHandler<ScrollEvent>
   public void handle( ScrollEvent event )
   {
     // scroll up or down depending on mouse wheel scroll event
-    Utils.trace( event );
+    var scrollbar = ( (TableView) event.getSource() ).getVerticalScrollBar();
+
+    if ( scrollbar.isVisible() )
+    {
+      if ( event.getDeltaY() > 0 )
+      {
+        scrollbar.finishAnimation();
+        scrollbar.decrement();
+      }
+      else
+      {
+        scrollbar.finishAnimation();
+        scrollbar.increment();
+      }
+    }
   }
 
 }

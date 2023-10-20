@@ -21,7 +21,6 @@ package rjc.table.demo.large;
 import javafx.scene.paint.Color;
 import javafx.scene.paint.Paint;
 import rjc.table.view.Colours;
-import rjc.table.view.TableView;
 import rjc.table.view.cell.CellDrawer;
 
 /*************************************************************************************************/
@@ -30,13 +29,6 @@ import rjc.table.view.cell.CellDrawer;
 
 public class LargeCellDrawer extends CellDrawer
 {
-
-  /**************************************** constructor ******************************************/
-  public LargeCellDrawer( TableView view )
-  {
-    // cell drawer
-    super( view );
-  }
 
   /************************************* getBackgroundPaint **************************************/
   @Override

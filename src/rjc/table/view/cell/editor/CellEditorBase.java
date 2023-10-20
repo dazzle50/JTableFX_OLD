@@ -16,34 +16,32 @@
  *  along with this program.  If not, see http://www.gnu.org/licenses/    *
  **************************************************************************/
 
-package rjc.table.demo;
+package rjc.table.view.cell.editor;
 
-import javafx.scene.control.Tab;
-import rjc.table.data.TableData;
-import rjc.table.view.TableView;
+import javafx.scene.control.Control;
+import rjc.table.view.cell.CellStyle;
 
 /*************************************************************************************************/
-/*************************** Demonstrates a very large table and view ****************************/
+/****************************** Base class for a table cell editor *******************************/
 /*************************************************************************************************/
 
-public class DemoTableEditable extends Tab
+public class CellEditorBase
 {
-  private TableData m_data; // data for the table view
+  private static CellEditorBase m_cellEditorInProgress; // only one editor can be open at any time
 
-  /**************************************** constructor ******************************************/
-  public DemoTableEditable()
+  private Control               m_control;              // primary control that has focus
+  private CellStyle             m_cell;                 // cell style and position etc
+
+  /***************************************** constructor *****************************************/
+  public CellEditorBase()
   {
-    // create
-    m_data = new TableData();
-    TableView view = new TableView( m_data, "Editable" );
-
-    // make view only visible when tab is selected
-    view.visibleProperty().bind( selectedProperty() );
-
-    // configure the tab
-    setText( "Edit" );
-    setClosable( false );
-    setContent( view );
+    // nothing needs doing here
   }
 
+  /***************************************** getControl ******************************************/
+  public Control getControl()
+  {
+    // return editor main control
+    return m_control;
+  }
 }

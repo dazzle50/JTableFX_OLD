@@ -16,47 +16,63 @@
  *  along with this program.  If not, see http://www.gnu.org/licenses/    *
  **************************************************************************/
 
-package rjc.table.demo.large;
+package rjc.table.demo.edit;
 
-import rjc.table.data.TableData;
 import rjc.table.view.TableView;
+import rjc.table.view.cell.CellContext;
 import rjc.table.view.cell.CellDrawer;
+import rjc.table.view.cell.editor.CellEditorBase;
 
 /*************************************************************************************************/
-/********************** Example customised table view for extra large table **********************/
+/*********************** Example customised table view for editable table ************************/
 /*************************************************************************************************/
 
-public class LargeView extends TableView
+public class EditView extends TableView
 {
-  private CellDrawer m_drawer;
-
   /**************************************** constructor ******************************************/
-  public LargeView( TableData data )
+  public EditView( EditData data )
   {
     // construct customised table view
-    super( data, "Large" );
+    super( data, "Editable" );
 
-    // when mouse moved to new cell, redraw table to move shading
-    getMouseCell().addListener( ( mousePosition, oldPos ) -> redraw() );
+    getColumnsAxis().setIndexSize( EditData.SECTION_READONLY, 120 );
+    getColumnsAxis().setIndexSize( EditData.SECTION_TEXT, 120 );
+    getColumnsAxis().setIndexSize( EditData.SECTION_INTEGER, 80 );
+    getColumnsAxis().setIndexSize( EditData.SECTION_DOUBLE, 80 );
+    getColumnsAxis().setIndexSize( EditData.SECTION_DATETIME, 200 );
   }
 
   /**************************************** getCellDrawer ****************************************/
   @Override
   public CellDrawer getCellDrawer()
   {
-    // return class responsible for drawing the cells on canvas
-    if ( m_drawer == null )
-      m_drawer = new LargeCellDrawer();
-    return m_drawer;
+    // return new instance of class that draws table cells
+    return new EditCellDrawer();
   }
 
-  /******************************************** reset ********************************************/
+  /**************************************** getCellEditor ****************************************/
   @Override
-  public void reset()
+  public CellEditorBase getCellEditor( CellContext cell )
   {
-    // reset table view to default settings with wider header
-    super.reset();
-    getColumnsAxis().setHeaderSize( 60 );
-  }
+    // determine editor appropriate for cell
+    CellEditorBase editor = null;
+    /**
+    if ( cell.columnIndex == EditData.SECTION_TEXT )
+      editor = new EditorText();
+    if ( cell.columnIndex == EditData.SECTION_INTEGER )
+      editor = new EditorInteger();
+    if ( cell.columnIndex == EditData.SECTION_DOUBLE )
+      editor = new EditorDouble();
+    if ( cell.columnIndex == EditData.SECTION_DATE )
+      editor = new EditorDate();
+    if ( cell.columnIndex == EditData.SECTION_TIME )
+      editor = new EditorTime();
+    if ( cell.columnIndex == EditData.SECTION_DATETIME )
+      editor = new EditorDateTime();
+    if ( cell.columnIndex == EditData.SECTION_CHOOSE )
+      editor = new EditorChoose( Fruit.values() );
+    **/
 
+    return editor;
+  }
 }

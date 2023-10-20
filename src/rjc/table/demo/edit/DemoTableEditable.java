@@ -16,33 +16,29 @@
  *  along with this program.  If not, see http://www.gnu.org/licenses/    *
  **************************************************************************/
 
-package rjc.table.demo.large;
+package rjc.table.demo.edit;
 
 import javafx.scene.control.Tab;
-import rjc.table.data.TableData;
 
 /*************************************************************************************************/
-/*************************** Demonstrates a very large table and view ****************************/
+/********************** Demonstrates a table and view with editable values ***********************/
 /*************************************************************************************************/
 
-public class DemoTableLarge extends Tab
+public class DemoTableEditable extends Tab
 {
 
   /**************************************** constructor ******************************************/
-  public DemoTableLarge()
+  public DemoTableEditable()
   {
     // create
-    TableData m_data = new TableData();
-    m_data.setColumnCount( 1_000_000 );
-    m_data.setRowCount( 1_000_000 );
-
-    LargeView view = new LargeView( m_data );
+    EditData m_data = new EditData();
+    EditView view = new EditView( m_data );
 
     // make view only visible when tab is selected
     view.visibleProperty().bind( selectedProperty() );
 
     // configure the tab
-    setText( "Large" );
+    setText( "Edit" );
     setClosable( false );
     setContent( view );
   }

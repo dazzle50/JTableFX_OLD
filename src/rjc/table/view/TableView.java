@@ -25,10 +25,12 @@ import rjc.table.signal.ObservablePosition;
 import rjc.table.undo.UndoStack;
 import rjc.table.view.TableScrollBar.Animation;
 import rjc.table.view.axis.TableAxis;
+import rjc.table.view.cell.CellContext;
 import rjc.table.view.cell.CellDrawer;
 import rjc.table.view.cell.CellSelection;
 import rjc.table.view.cell.MousePosition;
 import rjc.table.view.cell.ViewPosition;
+import rjc.table.view.cell.editor.CellEditorBase;
 import rjc.table.view.cursor.Cursors;
 import rjc.table.view.events.ContextMenu;
 import rjc.table.view.events.KeyPressed;
@@ -361,8 +363,15 @@ public class TableView extends TableViewParent
   {
     // return class responsible for drawing the cells on canvas
     if ( m_drawer == null )
-      m_drawer = new CellDrawer( this );
+      m_drawer = new CellDrawer();
     return m_drawer;
+  }
+
+  /**************************************** getCellEditor ****************************************/
+  public CellEditorBase getCellEditor( CellContext cell )
+  {
+    // return cell editor control (or null if cell is read-only)
+    return null;
   }
 
   /*********************************** getHorizontalScrollBar ************************************/

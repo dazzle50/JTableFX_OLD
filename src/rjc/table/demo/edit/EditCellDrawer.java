@@ -16,35 +16,40 @@
  *  along with this program.  If not, see http://www.gnu.org/licenses/    *
  **************************************************************************/
 
-package rjc.table.demo.large;
+package rjc.table.demo.edit;
 
-import javafx.scene.control.Tab;
-import rjc.table.data.TableData;
+import javafx.geometry.Insets;
+import javafx.geometry.Pos;
+import rjc.table.view.axis.TableAxis;
+import rjc.table.view.cell.CellDrawer;
 
 /*************************************************************************************************/
-/*************************** Demonstrates a very large table and view ****************************/
+/******************************** Example customised cell drawer *********************************/
 /*************************************************************************************************/
 
-public class DemoTableLarge extends Tab
+public class EditCellDrawer extends CellDrawer
 {
+  protected final static Insets CELL_TEXT_INSERTS = new Insets( 0.0, 5.0, 1.0, 4.0 );
 
-  /**************************************** constructor ******************************************/
-  public DemoTableLarge()
+  /************************************ getTextAlignment *************************************/
+  @Override
+  protected Pos getTextAlignment()
   {
-    // create
-    TableData m_data = new TableData();
-    m_data.setColumnCount( 1_000_000 );
-    m_data.setRowCount( 1_000_000 );
+    // return left alignment for the two text columns
+    if ( rowIndex > TableAxis.HEADER )
+      if ( columnIndex == EditData.SECTION_READONLY || columnIndex == EditData.SECTION_TEXT )
+        return Pos.CENTER_LEFT;
 
-    LargeView view = new LargeView( m_data );
+    // otherwise centre alignment
+    return Pos.CENTER;
+  }
 
-    // make view only visible when tab is selected
-    view.visibleProperty().bind( selectedProperty() );
-
-    // configure the tab
-    setText( "Large" );
-    setClosable( false );
-    setContent( view );
+  /************************************** getTextInsets **************************************/
+  @Override
+  protected Insets getTextInsets()
+  {
+    // return cell text insets with wider right & left margins to give nicer look
+    return CELL_TEXT_INSERTS;
   }
 
 }

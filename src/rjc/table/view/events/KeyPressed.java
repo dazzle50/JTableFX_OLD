@@ -91,18 +91,12 @@ public class KeyPressed implements EventHandler<KeyEvent>
     if ( m_alt )
       return false;
 
-    // does new selection need to be started
-    if ( !m_shift )
-    {
-      m_view.getSelectCell().setPosition( m_view.getFocusCell() );
-      m_view.getSelection().clear();
-    }
-
     // react to keyboard cursor keys, page-up, page-down and home
     switch ( code )
     {
       case RIGHT: // right -> arrow key
       case KP_RIGHT:
+        checkSelectToFocus();
         if ( m_ctrl )
           m_view.getSelectCell().moveRightEdge();
         else
@@ -116,6 +110,7 @@ public class KeyPressed implements EventHandler<KeyEvent>
 
       case LEFT: // left <- arrow key
       case KP_LEFT:
+        checkSelectToFocus();
         if ( m_ctrl )
           m_view.getSelectCell().moveLeftEdge();
         else
@@ -129,6 +124,7 @@ public class KeyPressed implements EventHandler<KeyEvent>
 
       case DOWN: // down arrow key
       case KP_DOWN:
+        checkSelectToFocus();
         if ( m_ctrl )
           m_view.getSelectCell().moveBottom();
         else
@@ -142,6 +138,7 @@ public class KeyPressed implements EventHandler<KeyEvent>
 
       case UP: // up arrow key
       case KP_UP:
+        checkSelectToFocus();
         if ( m_ctrl )
           m_view.getSelectCell().moveTop();
         else
@@ -154,23 +151,38 @@ public class KeyPressed implements EventHandler<KeyEvent>
         return true;
 
       case PAGE_DOWN: // page down key
+        checkSelectToFocus();
         Utils.trace( "TODO page down", code );
         return true;
 
       case PAGE_UP: // page up key
+        checkSelectToFocus();
         Utils.trace( "TODO page up", code );
         return true;
 
       case HOME: // home key - navigate to left-most visible column
+        checkSelectToFocus();
         Utils.trace( "TODO home", code );
         return true;
 
       case END: // end key - navigate to right-most visible column
+        checkSelectToFocus();
         Utils.trace( "TODO end", code );
         return true;
 
       default:
         return false;
+    }
+  }
+
+  /************************************* checkSelectToFocus **************************************/
+  private void checkSelectToFocus()
+  {
+    // does new selection need to be started
+    if ( !m_shift )
+    {
+      m_view.getSelectCell().setPosition( m_view.getFocusCell() );
+      m_view.getSelection().clear();
     }
   }
 
