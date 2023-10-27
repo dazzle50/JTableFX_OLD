@@ -130,6 +130,13 @@ public class TableView extends TableViewParent
         scrollTo( m_selectCell );
     } );
 
+    // when selection changes redraw the vertical & horizontal headers
+    m_selection.addLaterListener( ( sender, msg ) ->
+    {
+      getCanvas().redrawColumn( TableAxis.HEADER );
+      getCanvas().redrawRow( TableAxis.HEADER );
+    } );
+
     // react to zoom values changes
     m_zoom.addListener( ( sender, msg ) ->
     {

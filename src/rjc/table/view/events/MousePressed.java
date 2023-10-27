@@ -23,6 +23,8 @@ import javafx.scene.Cursor;
 import javafx.scene.input.MouseButton;
 import javafx.scene.input.MouseEvent;
 import rjc.table.view.TableView;
+import rjc.table.view.action.Resize.HorizontalResize;
+import rjc.table.view.action.Resize.VerticalResize;
 import rjc.table.view.axis.TableAxis;
 import rjc.table.view.cell.MousePosition;
 import rjc.table.view.cell.ViewPosition;
@@ -72,7 +74,7 @@ public class MousePressed implements EventHandler<MouseEvent>
         view.setCursor( Cursors.SELECTING_CELLS );
         if ( moveFocus )
         {
-          view.getSelection().start();
+          view.getSelection().select();
           focus.setPosition( mouse );
         }
         select.setPosition( mouse );
@@ -84,7 +86,7 @@ public class MousePressed implements EventHandler<MouseEvent>
         view.setCursor( Cursors.SELECTING_COLS );
         if ( moveFocus )
         {
-          view.getSelection().start();
+          view.getSelection().select();
           int topRow = view.getRowIndex( view.getHeaderHeight() );
           focus.setPosition( mouse.getColumn(), topRow );
         }
@@ -97,12 +99,18 @@ public class MousePressed implements EventHandler<MouseEvent>
         view.setCursor( Cursors.SELECTING_ROWS );
         if ( moveFocus )
         {
-          view.getSelection().start();
+          view.getSelection().select();
           int leftColumn = view.getColumnIndex( view.getHeaderWidth() );
           focus.setPosition( leftColumn, mouse.getRow() );
         }
         select.setPosition( TableAxis.AFTER, mouse.getRow() );
       }
+
+      // check if resizing
+      else if ( cursor == Cursors.H_RESIZE )
+        HorizontalResize.start( view, x );
+      else if ( cursor == Cursors.V_RESIZE )
+        VerticalResize.start( view, y );
 
       // check if header corner to select whole table
       else if ( x < view.getHeaderWidth() && y < view.getHeaderHeight() )

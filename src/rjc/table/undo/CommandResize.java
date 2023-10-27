@@ -1,0 +1,79 @@
+/**************************************************************************
+ *  Copyright (C) 2023 by Richard Crook                                   *
+ *  https://github.com/dazzle50/JTableFX                                  *
+ *                                                                        *
+ *  This program is free software: you can redistribute it and/or modify  *
+ *  it under the terms of the GNU General Public License as published by  *
+ *  the Free Software Foundation, either version 3 of the License, or     *
+ *  (at your option) any later version.                                   *
+ *                                                                        *
+ *  This program is distributed in the hope that it will be useful,       *
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of        *
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the         *
+ *  GNU General Public License for more details.                          *
+ *                                                                        *
+ *  You should have received a copy of the GNU General Public License     *
+ *  along with this program.  If not, see http://www.gnu.org/licenses/    *
+ **************************************************************************/
+
+package rjc.table.undo;
+
+import java.util.HashMap;
+import java.util.HashSet;
+
+import rjc.table.view.TableView;
+import rjc.table.view.axis.TableAxis;
+
+/*************************************************************************************************/
+/******************** UndoCommand for resizing columns widths or rows height *********************/
+/*************************************************************************************************/
+
+public class CommandResize implements IUndoCommand
+{
+  private TableView                 m_view;                 // table view
+  private TableAxis                 m_axis;                 // columns or rows being resized
+  private HashSet<Integer>          m_indexes;              // indexes being resized
+  private String                    m_text;                 // text describing command
+
+  private HashMap<Integer, Integer> m_oldExceptions;        // old size exceptions before resize
+  private int                       m_oldDefault;           // old default before resize
+  private int                       m_newSize;              // new size
+
+  final static private int          NO_EXCEPTION = -999999; // no size exception
+
+  /******************************************* redo **********************************************/
+  @Override
+  public void redo()
+  {
+    // action command
+
+    // update layout in case scroll-bar need changed and redraw table in this view only
+    m_view.layoutDisplay();
+    m_view.redraw();
+  }
+
+  /******************************************* undo **********************************************/
+  @Override
+  public void undo()
+  {
+    // revert command - if all revert default size
+
+    // update layout in case scroll-bar need changed and redraw table in this view only
+    m_view.layoutDisplay();
+    m_view.redraw();
+  }
+
+  /******************************************* text **********************************************/
+  @Override
+  public String text()
+  {
+    // command description
+    if ( m_text == null )
+      m_text = "Resizing " + ( m_indexes == null ? "all" : m_indexes.size() )
+          + ( m_axis == m_view.getColumnsAxis() ? " column" : " row" )
+          + ( m_indexes == null || m_indexes.size() > 1 ? "s" : "" );
+
+    return m_text;
+  }
+
+}

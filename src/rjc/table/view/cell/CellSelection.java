@@ -19,6 +19,7 @@
 package rjc.table.view.cell;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 
 import rjc.table.signal.ISignal;
 import rjc.table.view.TableView;
@@ -30,44 +31,11 @@ import rjc.table.view.axis.TableAxis;
 
 public class CellSelection implements ISignal
 {
-  // class represents one selected rectangle
-  private class SelectedArea
-  {
-    public int c1; // smallest column index
-    public int r1; // smallest row index
-    public int c2; // largest column index
-    public int r2; // largest row index
+  final static private int     FIRSTCELL = TableAxis.FIRSTCELL;
+  final static private int     AFTER     = TableAxis.AFTER;
 
-    public void set( int columnIndex1, int rowIndex1, int columnIndex2, int rowIndex2 )
-    {
-      // set private variables in correct order
-      c1 = Math.min( columnIndex1, columnIndex2 );
-      c1 = c1 < FIRSTCELL ? FIRSTCELL : c1;
-      c2 = Math.max( columnIndex1, columnIndex2 );
-      r1 = Math.min( rowIndex1, rowIndex2 );
-      r1 = r1 < FIRSTCELL ? FIRSTCELL : r1;
-      r2 = Math.max( rowIndex1, rowIndex2 );
-    }
-
-    public boolean isCellSelected( int columnIndex, int rowIndex )
-    {
-      // return true is specified position is selected
-      return columnIndex >= c1 && columnIndex <= c2 && rowIndex >= r1 && rowIndex <= r2;
-    }
-
-    @Override
-    public String toString()
-    {
-      return getClass().getSimpleName() + "@" + Integer.toHexString( System.identityHashCode( this ) ) + "[c1=" + c1
-          + " r1=" + r1 + " c2=" + c2 + " r2=" + r2 + "]";
-    }
-  }
-
-  final static private int        FIRSTCELL = TableAxis.FIRSTCELL;
-  final static private int        AFTER     = TableAxis.AFTER;
-
-  private TableView               m_view;
-  private ArrayList<SelectedArea> m_selected;
+  private TableView            m_view;
+  private ArrayList<Selection> m_selected;
 
   /***************************************** constructor *****************************************/
   public CellSelection( TableView view )
@@ -81,20 +49,40 @@ public class CellSelection implements ISignal
   public void clear()
   {
     // remove all selected areas
-    if ( !m_selected.isEmpty() )
-    {
-      m_selected.clear();
-      signal( m_selected.size() ); // signal selection model has been cleared
-    }
+    if ( m_selected.isEmpty() )
+      return;
+
+    m_selected.clear();
+    signal( m_selected.size() ); // signal selection model has been cleared
   }
 
-  /******************************************** start ********************************************/
-  public void start()
+  /****************************************** selectAll ******************************************/
+  public void selectAll()
   {
-    // start selecting new area based on focus & select cells
+    // select entire table
+    m_selected.clear(); // direct clear to avoid clear signal before add signal
+    select( FIRSTCELL, FIRSTCELL, AFTER, AFTER );
+    m_view.getFocusCell().setPosition( FIRSTCELL, FIRSTCELL );
+    m_view.getSelectCell().setPosition( AFTER, AFTER );
+  }
+
+  /******************************************* select ********************************************/
+  public void select( int columnIndex1, int rowIndex1, int columnIndex2, int rowIndex2 )
+  {
+    // add new selected area to table selected
+    Selection newArea = new Selection();
+    newArea.set( columnIndex1, rowIndex1, columnIndex2, rowIndex2 );
+    m_selected.add( newArea );
+    signal( m_selected.size() );
+  }
+
+  /******************************************* select ********************************************/
+  public void select()
+  {
+    // select new area based on focus & select cell positions
     ViewPosition focus = m_view.getFocusCell();
     ViewPosition select = m_view.getSelectCell();
-    selectArea( focus.getColumn(), focus.getRow(), select.getColumn(), select.getRow() );
+    select( focus.getColumn(), focus.getRow(), select.getColumn(), select.getRow() );
   }
 
   /******************************************* update ********************************************/
@@ -104,8 +92,8 @@ public class CellSelection implements ISignal
     ViewPosition focus = m_view.getFocusCell();
     ViewPosition select = m_view.getSelectCell();
     if ( m_selected.isEmpty() )
-      start();
-    SelectedArea last = m_selected.get( m_selected.size() - 1 );
+      select();
+    Selection last = m_selected.get( m_selected.size() - 1 );
 
     // if selecting columns or rows, then start selecting from first cell
     int focusColumn = select.isColumnAfter() ? FIRSTCELL : focus.getColumn();
@@ -117,56 +105,136 @@ public class CellSelection implements ISignal
   /*************************************** isCellSelected ****************************************/
   public boolean isCellSelected( int columnIndex, int rowIndex )
   {
-    // TODO Auto-generated method stub
+    // return true if specified cell is in a selected area
+    for ( var area : m_selected )
+      if ( area.isCellSelected( columnIndex, rowIndex ) )
+        return true;
+
     return false;
   }
 
   /************************************** isColumnSelected ***************************************/
-  public boolean isColumnSelected( int column )
+  public boolean isColumnSelected( int columnIndex )
   {
-    // TODO Auto-generated method stub
-    return false;
+    // return true if all visible cells in specified column are selected
+    TableAxis axis = m_view.getRowsAxis();
+    int top = axis.getFirstVisible();
+    int bottom = axis.getLastVisible();
+
+    for ( int rowIndex = top; rowIndex <= bottom; rowIndex++ )
+      rows: if ( axis.isIndexVisible( rowIndex ) )
+      {
+        for ( var area : m_selected )
+          if ( area.isCellSelected( columnIndex, rowIndex ) )
+          {
+            rowIndex = area.r2;
+            break rows;
+          }
+        return false;
+      }
+
+    return true;
   }
 
   /**************************************** isRowSelected ****************************************/
-  public boolean isRowSelected( int row )
+  public boolean isRowSelected( int rowIndex )
   {
-    // TODO Auto-generated method stub
-    return false;
+    // return true if all visible cells in specified row are selected
+    TableAxis axis = m_view.getColumnsAxis();
+    int left = axis.getFirstVisible();
+    int right = axis.getLastVisible();
+
+    for ( int columnIndex = left; columnIndex <= right; columnIndex++ )
+      columns: if ( axis.isIndexVisible( columnIndex ) )
+      {
+        for ( var area : m_selected )
+          if ( area.isCellSelected( columnIndex, rowIndex ) )
+          {
+            columnIndex = area.c2;
+            break columns;
+          }
+        return false;
+      }
+
+    return true;
   }
 
   /************************************* hasColumnSelection **************************************/
   public boolean hasColumnSelection( int columnIndex )
   {
-    // TODO Auto-generated method stub
+    // return true if specified column has any selection
+    for ( var area : m_selected )
+      if ( columnIndex >= area.c1 && columnIndex <= area.c2 )
+        return true;
+
     return false;
   }
 
   /*************************************** hasRowSelection ***************************************/
   public boolean hasRowSelection( int rowIndex )
   {
-    // TODO Auto-generated method stub
+    // return true if specified row has any selection
+    for ( var area : m_selected )
+      if ( rowIndex >= area.r1 && rowIndex <= area.r2 )
+        return true;
+
     return false;
   }
 
-  /***************************************** selectArea ******************************************/
-  public void selectArea( int columnIndex1, int rowIndex1, int columnIndex2, int rowIndex2 )
+  /************************************* getSelectedColumns **************************************/
+  public HashSet<Integer> getSelectedColumns()
   {
-    // add new selected area to table selected
-    SelectedArea newArea = new SelectedArea();
-    newArea.set( columnIndex1, rowIndex1, columnIndex2, rowIndex2 );
-    m_selected.add( newArea );
-    signal( m_selected.size() );
+    // return return list of selected columns, null = all, empty-set = none
+    var columns = new HashSet<Integer>();
+    int first = m_view.getColumnsAxis().getFirstVisible();
+    int last = m_view.getColumnsAxis().getLastVisible();
+    int top = m_view.getRowsAxis().getFirstVisible();
+    int bottom = m_view.getRowsAxis().getLastVisible();
+
+    // loop through the selected areas
+    for ( var area : m_selected )
+    {
+      // if whole table selected then return null (= all)
+      if ( area.c1 <= first && area.c2 >= last && area.r1 <= top && area.r2 >= bottom )
+        return null;
+
+      // if columns selected then add to set
+      if ( area.r1 <= top && area.r2 >= bottom )
+      {
+        for ( int column = area.c1; column <= area.c2; column++ )
+          columns.add( column );
+      }
+    }
+
+    return columns;
   }
 
-  /****************************************** selectAll ******************************************/
-  public void selectAll()
+  /*************************************** getSelectedRows ***************************************/
+  public HashSet<Integer> getSelectedRows()
   {
-    // select entire table
-    m_selected.clear(); // direct clear to avoid clear signal before add signal
-    selectArea( FIRSTCELL, FIRSTCELL, AFTER, AFTER );
-    m_view.getFocusCell().setPosition( FIRSTCELL, FIRSTCELL );
-    m_view.getSelectCell().setPosition( AFTER, AFTER );
+    // return return list of selected rows, null = all, empty-set = none
+    var rows = new HashSet<Integer>();
+    int first = m_view.getColumnsAxis().getFirstVisible();
+    int last = m_view.getColumnsAxis().getLastVisible();
+    int top = m_view.getRowsAxis().getFirstVisible();
+    int bottom = m_view.getRowsAxis().getLastVisible();
+
+    // loop through the selected areas
+    for ( var area : m_selected )
+    {
+      // if whole table selected then return null (= all)
+      if ( area.c1 <= first && area.c2 >= last && area.r1 <= top && area.r2 >= bottom )
+        return null;
+
+      // if rows selected then add to list
+      if ( area.c1 <= first && area.c2 >= last )
+      {
+        for ( int row = area.r1; row <= area.r2; row++ )
+          rows.add( row );
+      }
+    }
+
+    return rows;
   }
 
   /****************************************** getAreas *******************************************/
@@ -178,7 +246,7 @@ public class CellSelection implements ISignal
     var areas = new ArrayList<int[]>();
 
     // construct the list
-    for ( SelectedArea selected : m_selected )
+    for ( Selection selected : m_selected )
     {
       int[] area = { selected.c1, selected.r1, Math.min( selected.c2, maxColumn ), Math.min( selected.r2, maxRow ) };
       areas.add( area );
