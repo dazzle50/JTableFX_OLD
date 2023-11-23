@@ -69,8 +69,89 @@ public class Resize
   }
 
   /******************************************** start ********************************************/
-  private static void start( int coordinate, HashSet<Integer> positions )
+  private static void start( int coordinate, HashSet<Integer> selected )
   {
+    // determine resize index from mouse coordinate
+    int scroll = (int) m_scrollbar.getValue();
+    int index = m_axis.getIndexFromCoordinate( coordinate, scroll );
+    int indexStart = m_axis.getStartPixel( index, scroll );
+    int indexEnd = m_axis.getStartPixel( index + 1, scroll );
+    if ( coordinate - indexStart < indexEnd - coordinate )
+    {
+      index = m_axis.getPreviousVisible( index );
+      m_offset = coordinate - indexStart;
+    }
+    else
+      m_offset = coordinate - indexEnd;
+
+    // if selected is "null" means all indexes selected
+    if ( selected == null )
+    {
+      // resizing all indexes, count visible sections before and including resize index
+      for ( int section = 0; section <= index; section++ )
+        if ( !m_axis.isHidden( index ) )
+          m_before++;
+      m_offset += m_axis.getIndexPixels( TableAxis.HEADER );
+    }
+    else
+    {
+      // if resize index is not selected, ignore selected
+      if ( !selected.contains( index ) )
+        selected.clear();
+
+      // if selected is empty, add resize index
+      if ( selected.isEmpty() )
+        selected.add( index );
+
+      // resize some sections, count visible selected sections before and including resize index
+      m_offset += m_axis.getStartPixel( index + 1, 0 );
+      m_before = 0;
+      for ( int section : selected )
+        if ( section <= index && !m_axis.isHidden( section ) )
+        {
+          m_before++;
+          m_offset -= m_axis.getIndexPixels( section );
+        }
+    }
+
+    // prepare resize command (if selected is null = all)
+    m_command = new CommandResize( m_view, m_axis, selected );
+
+    // start reordering
+    drag( coordinate );
   }
 
+  /******************************************** drag *********************************************/
+  public static void drag( int coordinate )
+  {
+    // resize columns or rows
+    m_coordinate = coordinate;
+    double pixels = ( coordinate - m_offset + m_scrollbar.getValue() ) / m_before;
+    int size = (int) ( pixels / m_view.getZoom().get() );
+
+    // resize
+    m_command.setNewSize( size );
+    m_command.redo();
+  }
+
+  /***************************************** inProgress ******************************************/
+  public static boolean inProgress()
+  {
+    // if no resize in progress return false
+    if ( m_view == null )
+      return false;
+
+    // return true as resize in progress
+    drag( m_coordinate );
+    return true;
+  }
+
+  /********************************************* end *********************************************/
+  public static void end()
+  {
+    // end resizing, push resize command onto undo-stack
+    m_view.getUndoStack().push( m_command );
+    m_view = null;
+    m_command = null;
+  }
 }

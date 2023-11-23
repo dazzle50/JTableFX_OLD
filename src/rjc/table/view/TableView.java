@@ -24,6 +24,7 @@ import rjc.table.signal.ObservableDouble;
 import rjc.table.signal.ObservablePosition;
 import rjc.table.undo.UndoStack;
 import rjc.table.view.TableScrollBar.Animation;
+import rjc.table.view.action.Resize;
 import rjc.table.view.axis.TableAxis;
 import rjc.table.view.cell.CellContext;
 import rjc.table.view.cell.CellDrawer;
@@ -271,8 +272,13 @@ public class TableView extends TableViewParent
     // handle any actions needed due to view being modified usually scrolled
     redraw();
     getMouseCell().checkXY();
+    // CellEditorBase.endEditing();
 
-    // TODO handle more situations and end any editing
+    // if column/row resize in progress, no need to do anything more
+    if ( Resize.inProgress() )
+      return;
+
+    // check selected cell position
     checkSelectPosition();
   }
 

@@ -19,8 +19,12 @@
 package rjc.table.view.events;
 
 import javafx.event.EventHandler;
+import javafx.scene.Cursor;
+import javafx.scene.input.MouseButton;
 import javafx.scene.input.MouseEvent;
 import rjc.table.view.TableView;
+import rjc.table.view.action.Resize;
+import rjc.table.view.cursor.Cursors;
 
 /*************************************************************************************************/
 /********************* Handles mouse button released events from table-view **********************/
@@ -38,6 +42,17 @@ public class MouseReleased implements EventHandler<MouseEvent>
     int x = (int) event.getX();
     int y = (int) event.getY();
     TableView view = (TableView) event.getSource();
+
+    // check for ending resize before updating cursor
+    if ( event.getButton() == MouseButton.PRIMARY )
+    {
+      view.getMouseCell().checkXY();
+      Cursor cursor = view.getCursor();
+
+      // check if ending resize column or row
+      if ( cursor == Cursors.H_RESIZE || cursor == Cursors.V_RESIZE )
+        Resize.end();
+    }
 
     // update mouse cell position and cursor
     view.getMouseCell().setXY( x, y, true );

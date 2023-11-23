@@ -240,7 +240,7 @@ public class CellSelection implements ISignal
   /****************************************** getAreas *******************************************/
   public ArrayList<int[]> getAreas()
   {
-    // return list of selected areas
+    // return list of selected areas - used by CanvasOverlay to draw the highlighting
     int maxColumn = m_view.getColumnsAxis().getCount() - 1;
     int maxRow = m_view.getRowsAxis().getCount() - 1;
     var areas = new ArrayList<int[]>();

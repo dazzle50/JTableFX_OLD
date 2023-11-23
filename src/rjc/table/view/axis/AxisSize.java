@@ -19,6 +19,7 @@
 package rjc.table.view.axis;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -99,11 +100,11 @@ public class AxisSize extends AxisBase implements IListener
     m_totalPixelsCache.set( INVALID );
   }
 
-  /************************************** getDefaultPixels ***************************************/
-  public int getDefaultPixels()
+  /*************************************** getDefaultSize ****************************************/
+  public int getDefaultSize()
   {
-    // return default cell size in pixels
-    return zoom( m_defaultSize );
+    // return default cell pixel size
+    return m_defaultSize;
   }
 
   /************************************** getMinimumPixels ***************************************/
@@ -207,6 +208,37 @@ public class AxisSize extends AxisBase implements IListener
     }
   }
 
+  /************************************* clearSizeExceptions *************************************/
+  public void clearSizeExceptions()
+  {
+    // clear all size exceptions
+    m_sizeExceptions.clear();
+    m_startPixelCache.clear();
+    m_totalPixelsCache.set( INVALID );
+  }
+
+  /*************************************** clearIndexSize ****************************************/
+  public void clearIndexSize( int cellIndex )
+  {
+    // check cell index is valid
+    if ( cellIndex < FIRSTCELL || cellIndex >= getCount() )
+      throw new IndexOutOfBoundsException( "cell index=" + cellIndex + " but count=" + getCount() );
+
+    // remove cell index size exception if exists
+    if ( m_sizeExceptions.remove( cellIndex ) != null )
+    {
+      m_totalPixelsCache.set( INVALID );
+      m_startPixelCache.clear();
+    }
+  }
+
+  /************************************** getSizeExceptions **************************************/
+  public Map<Integer, Integer> getSizeExceptions()
+  {
+    // return size exceptions
+    return Collections.unmodifiableMap( m_sizeExceptions );
+  }
+
   /**************************************** truncateCache ****************************************/
   public void truncateCache( int index, int deltaSize )
   {
@@ -283,7 +315,7 @@ public class AxisSize extends AxisBase implements IListener
           pixels += zoom( exception.getValue() );
       }
 
-      m_totalPixelsCache.set( pixels + defaultCount * getDefaultPixels() );
+      m_totalPixelsCache.set( pixels + defaultCount * zoom( m_defaultSize ) );
     }
 
     return m_totalPixelsCache.get();

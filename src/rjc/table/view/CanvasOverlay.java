@@ -77,7 +77,7 @@ public class CanvasOverlay extends Canvas
     // fill each selected rectangle with opaque colour & border
     for ( var area : areas )
     {
-      // limit highlighted area to avoid drawing overflow artifacts
+      // limit highlighted area to avoid drawing overflow artifacts on large tables
       int x = m_view.getColumnStartX( area[0] );
       x = x < MIN_COORD ? MIN_COORD : x;
       int y = m_view.getRowStartY( area[1] );
