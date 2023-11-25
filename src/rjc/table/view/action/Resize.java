@@ -141,8 +141,13 @@ public class Resize
     if ( m_view == null )
       return false;
 
+    // only resize if scrolling to start or end to avoid feedback loop
+    var vsb = m_view.getVerticalScrollBar();
+    var hsb = m_view.getHorizontalScrollBar();
+    if ( vsb.isAnimationStartEnd() || hsb.isAnimationStartEnd() )
+      drag( m_coordinate );
+
     // return true as resize in progress
-    drag( m_coordinate );
     return true;
   }
 

@@ -172,6 +172,13 @@ public class TableScrollBar extends ScrollBar
     }
   }
 
+  /************************************* isAnimationStartEnd *************************************/
+  public boolean isAnimationStartEnd()
+  {
+    // return true is scrolling to start or end edge
+    return m_animation == Animation.TO_START || m_animation == Animation.TO_END;
+  }
+
   /************************************ stopAnimationStartEnd ************************************/
   public void stopAnimationStartEnd()
   {

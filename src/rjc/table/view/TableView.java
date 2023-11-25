@@ -290,10 +290,15 @@ public class TableView extends TableViewParent
         && getCursor() != Cursors.SELECTING_ROWS )
       return;
 
-    int column = getCursor() == Cursors.SELECTING_ROWS ? m_selectCell.getColumn() : m_mouseCell.getColumn();
-    int row = getCursor() == Cursors.SELECTING_COLS ? m_selectCell.getRow() : m_mouseCell.getRow();
+    // if mouse is beyond the table, limit to last visible column/row
+    int column = Math.min( getColumnsAxis().getLastVisible(), m_mouseCell.getColumn() );
+    int row = Math.min( getRowsAxis().getLastVisible(), m_mouseCell.getRow() );
 
-    // if animating to start or end means drag is in progress, so update select cell position
+    // if selecting rows ignore mouse column, if selecting columns ignore mouse row
+    column = getCursor() == Cursors.SELECTING_ROWS ? m_selectCell.getColumn() : column;
+    row = getCursor() == Cursors.SELECTING_COLS ? m_selectCell.getRow() : row;
+
+    // if animating to start or end, ensure selection edge is visible on view
     var animation = getHorizontalScrollBar().getAnimation();
     if ( animation == Animation.TO_START )
     {
@@ -530,7 +535,7 @@ public class TableView extends TableViewParent
   }
 
   /****************************************** scrollTo *******************************************/
-  private void scrollTo( ObservablePosition position )
+  public void scrollTo( ObservablePosition position )
   {
     // scroll view if necessary to show specified position
     int column = position.getColumn();

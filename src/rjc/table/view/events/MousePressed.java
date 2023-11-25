@@ -89,6 +89,7 @@ public class MousePressed implements EventHandler<MouseEvent>
           view.getSelection().select();
           int topRow = view.getRowIndex( view.getHeaderHeight() );
           focus.setPosition( mouse.getColumn(), topRow );
+          view.scrollTo( focus );
         }
         select.setPosition( mouse.getColumn(), TableAxis.AFTER );
       }
@@ -102,6 +103,7 @@ public class MousePressed implements EventHandler<MouseEvent>
           view.getSelection().select();
           int leftColumn = view.getColumnIndex( view.getHeaderWidth() );
           focus.setPosition( leftColumn, mouse.getRow() );
+          view.scrollTo( focus );
         }
         select.setPosition( TableAxis.AFTER, mouse.getRow() );
       }

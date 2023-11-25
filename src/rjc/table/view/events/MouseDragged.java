@@ -48,7 +48,6 @@ public class MouseDragged implements EventHandler<MouseEvent>
       return;
 
     // handle mouse drag events (movement with button pressed)
-    event.consume();
     m_x = (int) event.getX();
     m_y = (int) event.getY();
     m_view = (TableView) event.getSource();
