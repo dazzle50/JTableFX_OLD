@@ -23,8 +23,10 @@ import javafx.scene.Cursor;
 import javafx.scene.input.MouseButton;
 import javafx.scene.input.MouseEvent;
 import rjc.table.view.TableView;
-import rjc.table.view.action.Resize.HorizontalResize;
-import rjc.table.view.action.Resize.VerticalResize;
+import rjc.table.view.action.ReorderColumns;
+import rjc.table.view.action.ReorderRows;
+import rjc.table.view.action.Resize.ResizeColumns;
+import rjc.table.view.action.Resize.ResizeRows;
 import rjc.table.view.axis.TableAxis;
 import rjc.table.view.cell.MousePosition;
 import rjc.table.view.cell.ViewPosition;
@@ -110,14 +112,19 @@ public class MousePressed implements EventHandler<MouseEvent>
 
       // check if resizing
       else if ( cursor == Cursors.H_RESIZE )
-        HorizontalResize.start( view, x );
+        ResizeColumns.start( view, x );
       else if ( cursor == Cursors.V_RESIZE )
-        VerticalResize.start( view, y );
+        ResizeRows.start( view, y );
+
+      // check if reordering
+      else if ( cursor == Cursors.H_MOVE )
+        ReorderColumns.start( view, x );
+      else if ( cursor == Cursors.V_MOVE )
+        ReorderRows.start( view, y );
 
       // check if header corner to select whole table
       else if ( x < view.getHeaderWidth() && y < view.getHeaderHeight() )
         view.getSelection().selectAll();
-
     }
   }
 

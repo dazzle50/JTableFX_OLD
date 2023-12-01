@@ -18,16 +18,20 @@
 
 package rjc.table.demo.edit;
 
-import rjc.table.data.Date;
-import rjc.table.data.DateTime;
+import java.util.ArrayList;
+
+import rjc.table.Utils;
+import rjc.table.data.IDataReorderRows;
 import rjc.table.data.TableData;
-import rjc.table.data.Time;
+import rjc.table.data.types.Date;
+import rjc.table.data.types.DateTime;
+import rjc.table.data.types.Time;
 
 /*************************************************************************************************/
 /******************** Example customised table data source for editable table ********************/
 /*************************************************************************************************/
 
-public class EditData extends TableData
+public class EditData extends TableData implements IDataReorderRows
 {
   public static final int SECTION_READONLY = 0;
   public static final int SECTION_TEXT     = 1;
@@ -181,6 +185,25 @@ public class EditData extends TableData
       // exception raised, so return false
       return false;
     }
+  }
+
+  /***************************************** reorderRows *****************************************/
+  @Override
+  public void reorderRows( ArrayList<Integer> fromIndexes, ArrayList<Integer> toIndexes )
+  {
+    // requests rows reorder - raise exception if cannot
+    if ( fromIndexes == null )
+      throw new NullPointerException( "From-list is null" );
+    if ( toIndexes == null )
+      throw new NullPointerException( "To-list is null" );
+    if ( fromIndexes.size() != toIndexes.size() )
+      throw new IllegalArgumentException(
+          "From-list size " + fromIndexes.size() + " different to To-list size " + toIndexes.size() );
+
+    Utils.trace( "FROM = ", fromIndexes );
+    Utils.trace( "TO   = ", toIndexes );
+
+    throw new UnsupportedOperationException( "NOT YET IMPLEMENTED !!!" );
   }
 
 }

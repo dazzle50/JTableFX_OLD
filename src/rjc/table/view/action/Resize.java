@@ -41,7 +41,7 @@ public class Resize
   private static CommandResize  m_command;    // command for undo-stack
 
   // static class to support column resizing
-  public static class HorizontalResize extends Resize
+  public static class ResizeColumns extends Resize
   {
     /******************************************** start ********************************************/
     public static void start( TableView view, int coordinate )
@@ -55,7 +55,7 @@ public class Resize
   }
 
   // static class to support row resizing
-  public static class VerticalResize extends Resize
+  public static class ResizeRows extends Resize
   {
     /******************************************** start ********************************************/
     public static void start( TableView view, int coordinate )
