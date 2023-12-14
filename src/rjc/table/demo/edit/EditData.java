@@ -18,7 +18,7 @@
 
 package rjc.table.demo.edit;
 
-import java.util.ArrayList;
+import java.util.HashSet;
 
 import rjc.table.Utils;
 import rjc.table.data.IDataReorderRows;
@@ -189,19 +189,14 @@ public class EditData extends TableData implements IDataReorderRows
 
   /***************************************** reorderRows *****************************************/
   @Override
-  public void reorderRows( ArrayList<Integer> fromIndexes, ArrayList<Integer> toIndexes )
+  public void reorderRows( HashSet<Integer> fromIndexes, int insertIndex )
   {
     // requests rows reorder - raise exception if cannot
     if ( fromIndexes == null )
       throw new NullPointerException( "From-list is null" );
-    if ( toIndexes == null )
-      throw new NullPointerException( "To-list is null" );
-    if ( fromIndexes.size() != toIndexes.size() )
-      throw new IllegalArgumentException(
-          "From-list size " + fromIndexes.size() + " different to To-list size " + toIndexes.size() );
 
     Utils.trace( "FROM = ", fromIndexes );
-    Utils.trace( "TO   = ", toIndexes );
+    Utils.trace( "TO   = ", insertIndex );
 
     throw new UnsupportedOperationException( "NOT YET IMPLEMENTED !!!" );
   }

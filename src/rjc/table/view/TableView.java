@@ -19,11 +19,14 @@
 package rjc.table.view;
 
 import javafx.geometry.Orientation;
+import rjc.table.Utils;
 import rjc.table.data.TableData;
 import rjc.table.signal.ObservableDouble;
 import rjc.table.signal.ObservablePosition;
 import rjc.table.undo.UndoStack;
 import rjc.table.view.TableScrollBar.Animation;
+import rjc.table.view.action.ReorderColumns;
+import rjc.table.view.action.ReorderRows;
 import rjc.table.view.action.Resize;
 import rjc.table.view.axis.TableAxis;
 import rjc.table.view.cell.CellContext;
@@ -278,6 +281,12 @@ public class TableView extends TableViewParent
     if ( Resize.inProgress() )
       return;
 
+    // if column/row resize in progress, no need to do anything more
+    if ( ReorderColumns.inProgress() )
+      return;
+    if ( ReorderRows.inProgress() )
+      return;
+
     // check selected cell position
     checkSelectPosition();
   }
@@ -495,15 +504,35 @@ public class TableView extends TableViewParent
   /*************************************** getColumnIndex ****************************************/
   public int getColumnIndex( int xCoordinate )
   {
-    // return column position at specified x coordinate
+    // return column index at specified x coordinate
     return getColumnsAxis().getIndexFromCoordinate( xCoordinate, (int) getHorizontalScrollBar().getValue() );
   }
 
   /***************************************** getRowIndex *****************************************/
   public int getRowIndex( int yCoordinate )
   {
-    // return row position at specified y coordinate
+    // return row index at specified y coordinate
     return getRowsAxis().getIndexFromCoordinate( yCoordinate, (int) getVerticalScrollBar().getValue() );
+  }
+
+  /********************************* getColumnNearestStartIndex **********************************/
+  public int getColumnNearestStartIndex( int xCoordinate )
+  {
+    // return nearest column start at specified x coordinate
+    int column = Utils.clamp( getColumnIndex( xCoordinate ), TableAxis.FIRSTCELL, getData().getColumnCount() - 1 );
+    double xs = getColumnStartX( column );
+    double xe = getColumnStartX( column + 1 );
+    return xCoordinate - xs < xe - xCoordinate ? column : column + 1;
+  }
+
+  /*********************************** getRowNearestStartIndex ***********************************/
+  public int getRowNearestStartIndex( int yCoordinate )
+  {
+    // return nearest column start at specified x coordinate
+    int column = Utils.clamp( getRowIndex( yCoordinate ), TableAxis.FIRSTCELL, getData().getRowCount() - 1 );
+    double ys = getRowStartY( column );
+    double ye = getRowStartY( column + 1 );
+    return yCoordinate - ys < ye - yCoordinate ? column : column + 1;
   }
 
   /******************************************* redraw ********************************************/
@@ -545,5 +574,14 @@ public class TableView extends TableViewParent
     int row = position.getRow();
     if ( row >= TableAxis.FIRSTCELL && row < getRowsAxis().getCount() )
       getVerticalScrollBar().scrollToShowIndex( row );
+  }
+
+  /****************************************** toString *******************************************/
+  @Override
+  public String toString()
+  {
+    // return as string
+    return getClass().getSimpleName() + "@" + Integer.toHexString( System.identityHashCode( this ) ) + "[m_name="
+        + m_name + " m_canvas=" + m_canvas + "]";
   }
 }

@@ -24,6 +24,8 @@ import javafx.scene.input.MouseButton;
 import javafx.scene.input.MouseEvent;
 import rjc.table.view.TableScrollBar;
 import rjc.table.view.TableView;
+import rjc.table.view.action.ReorderColumns;
+import rjc.table.view.action.ReorderRows;
 import rjc.table.view.action.Resize;
 import rjc.table.view.cursor.Cursors;
 
@@ -60,11 +62,17 @@ public class MouseDragged implements EventHandler<MouseEvent>
     // update mouse cell position
     m_view.getMouseCell().setXY( m_x, m_y, false );
 
-    // check if resize columns or rows
+    // check if resizing columns or rows
     if ( m_cursor == Cursors.H_RESIZE )
       Resize.drag( m_x );
     if ( m_cursor == Cursors.V_RESIZE )
       Resize.drag( m_y );
+
+    // check if reordering columns or rows
+    else if ( m_cursor == Cursors.H_MOVE )
+      ReorderColumns.drag( m_x );
+    else if ( m_cursor == Cursors.V_MOVE )
+      ReorderRows.drag( m_y );
   }
 
   /************************************* horizontalScrolling *************************************/

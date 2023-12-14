@@ -23,6 +23,8 @@ import javafx.scene.Cursor;
 import javafx.scene.input.MouseButton;
 import javafx.scene.input.MouseEvent;
 import rjc.table.view.TableView;
+import rjc.table.view.action.ReorderColumns;
+import rjc.table.view.action.ReorderRows;
 import rjc.table.view.action.Resize;
 import rjc.table.view.cursor.Cursors;
 
@@ -52,6 +54,12 @@ public class MouseReleased implements EventHandler<MouseEvent>
       // check if ending resize column or row
       if ( cursor == Cursors.H_RESIZE || cursor == Cursors.V_RESIZE )
         Resize.end();
+
+      // check if ending column/row reordering
+      if ( cursor == Cursors.H_MOVE )
+        ReorderColumns.end();
+      if ( cursor == Cursors.V_MOVE )
+        ReorderRows.end();
     }
 
     // update mouse cell position and cursor

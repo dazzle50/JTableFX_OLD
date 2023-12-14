@@ -18,7 +18,7 @@
 
 package rjc.table.data;
 
-import java.util.ArrayList;
+import java.util.HashSet;
 
 /*************************************************************************************************/
 /************************ Interface for reordering columns in table data *************************/
@@ -26,6 +26,10 @@ import java.util.ArrayList;
 
 public interface IDataReorderColumns
 {
-  // requests columns reorder - raise exception if cannot
-  public void reorderColumns( ArrayList<Integer> fromIndexes, ArrayList<Integer> toIndexes );
+  /*************************************** reorderColumns ****************************************/
+  default public void reorderColumns( HashSet<Integer> fromIndexes, int insertIndex )
+  {
+    // implements columns reordering if possible
+    throw new UnsupportedOperationException( "NOT YET IMPLEMENTED !!!" );
+  }
 }

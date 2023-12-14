@@ -21,6 +21,7 @@ package rjc.table.view.axis;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
 
 import rjc.table.signal.IListener;
@@ -418,6 +419,13 @@ public class AxisSize extends AxisBase implements IListener
         endPos = rowPos;
     }
     return startPos - 1;
+  }
+
+  /******************************************* reorder *******************************************/
+  public void reorder( HashSet<Integer> m_selected, int index )
+  {
+    // implements column/row reordering if possible
+    throw new UnsupportedOperationException( "NOT YET IMPLEMENTED !!!" );
   }
 
 }

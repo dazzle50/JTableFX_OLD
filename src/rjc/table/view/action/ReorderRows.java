@@ -18,25 +18,72 @@
 
 package rjc.table.view.action;
 
+import java.util.HashSet;
+
+import rjc.table.data.IDataReorderRows;
 import rjc.table.view.TableView;
 
 /*************************************************************************************************/
 /****************************** Supports table-view row re-ordering ******************************/
 /*************************************************************************************************/
 
-public class ReorderRows extends Reorder
+public class ReorderRows
 {
+  private static TableView        m_view;     // table view for reordering
+  private static HashSet<Integer> m_selected; // rows to be moved
+  private static ReorderLine      m_line;     // red line to show new location
+  private static int              m_y;        // latest y-coordinate used when table scrolled
+
   /******************************************** start ********************************************/
   public static void start( TableView view, int y )
   {
     // if selected is "null" means all indexes selected - cannot reorder
     m_view = view;
-    m_selected = view.getSelection().getSelectedColumns();
+    m_selected = view.getSelection().getSelectedRows();
     if ( m_selected == null )
       return;
+    m_line = new ReorderLine( view );
 
     // start reordering
     drag( y );
   }
 
+  /******************************************** drag *********************************************/
+  public static void drag( int y )
+  {
+    // position line at nearest row edge
+    m_y = y;
+    int row = m_view.getRowNearestStartIndex( y );
+    m_line.setRow( row );
+  }
+
+  /***************************************** inProgress ******************************************/
+  public static boolean inProgress()
+  {
+    // if no reorder in progress return false
+    if ( m_view == null )
+      return false;
+
+    // return true as reorder in progress
+    drag( m_y );
+    return true;
+  }
+
+  /********************************************* end *********************************************/
+  public static void end()
+  {
+    // return without doing anything is reorder not started
+    if ( m_view == null )
+      return;
+
+    // determine if data-model supports row reordering, otherwise reorder view only
+    if ( m_view.getData() instanceof IDataReorderRows data )
+      data.reorderRows( m_selected, m_line.getIndex() );
+    else
+      m_view.getRowsAxis().reorder( m_selected, m_line.getIndex() );
+
+    m_view.remove( m_line );
+    m_view = null;
+    m_line = null;
+  }
 }
