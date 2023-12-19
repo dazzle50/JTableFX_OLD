@@ -20,6 +20,8 @@ package rjc.table.data;
 
 import java.util.HashSet;
 
+import rjc.table.view.axis.AxisBase;
+
 /*************************************************************************************************/
 /************************ Interface for reordering columns in table data *************************/
 /*************************************************************************************************/
@@ -27,9 +29,9 @@ import java.util.HashSet;
 public interface IDataReorderColumns
 {
   /*************************************** reorderColumns ****************************************/
-  default public void reorderColumns( HashSet<Integer> fromIndexes, int insertIndex )
+  default public int reorderColumns( HashSet<Integer> fromIndexes, int insertIndex )
   {
-    // implements columns reordering if possible
-    throw new UnsupportedOperationException( "NOT YET IMPLEMENTED !!!" );
+    // return start index of moved columns if reordering successful, otherwise return INVALID
+    return AxisBase.INVALID;
   }
 }

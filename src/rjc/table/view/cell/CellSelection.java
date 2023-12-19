@@ -20,6 +20,7 @@ package rjc.table.view.cell;
 
 import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.TreeSet;
 
 import rjc.table.signal.ISignal;
 import rjc.table.view.TableView;
@@ -31,6 +32,7 @@ import rjc.table.view.axis.TableAxis;
 
 public class CellSelection implements ISignal
 {
+  final static private int     INVALID   = TableAxis.INVALID;
   final static private int     FIRSTCELL = TableAxis.FIRSTCELL;
   final static private int     AFTER     = TableAxis.AFTER;
 
@@ -70,8 +72,7 @@ public class CellSelection implements ISignal
   public void select( int columnIndex1, int rowIndex1, int columnIndex2, int rowIndex2 )
   {
     // add new selected area to table selected
-    Selection newArea = new Selection();
-    newArea.set( columnIndex1, rowIndex1, columnIndex2, rowIndex2 );
+    Selection newArea = new Selection( columnIndex1, rowIndex1, columnIndex2, rowIndex2 );
     m_selected.add( newArea );
     signal( m_selected.size() );
   }
@@ -83,6 +84,74 @@ public class CellSelection implements ISignal
     ViewPosition focus = m_view.getFocusCell();
     ViewPosition select = m_view.getSelectCell();
     select( focus.getColumn(), focus.getRow(), select.getColumn(), select.getRow() );
+  }
+
+  /**************************************** selectColumns ****************************************/
+  public void selectColumns( HashSet<Integer> columns )
+  {
+    // select specified columns
+    var orderedColumns = new TreeSet<Integer>( columns );
+    int startColumn = INVALID;
+    int endColumn = INVALID;
+
+    for ( int column : orderedColumns )
+    {
+      if ( startColumn == INVALID )
+      {
+        startColumn = column;
+        endColumn = column;
+      }
+      else if ( column == endColumn + 1 )
+        endColumn = column;
+      else
+      {
+        Selection newArea = new Selection( startColumn, FIRSTCELL, endColumn, AFTER );
+        m_selected.add( newArea );
+        startColumn = column;
+        endColumn = column;
+      }
+    }
+
+    if ( startColumn != INVALID )
+    {
+      Selection newArea = new Selection( startColumn, FIRSTCELL, endColumn, AFTER );
+      m_selected.add( newArea );
+    }
+    signal( m_selected.size() );
+  }
+
+  /***************************************** selectRows ******************************************/
+  public void selectRows( HashSet<Integer> rows )
+  {
+    // select specified rows
+    var orderedRows = new TreeSet<Integer>( rows );
+    int startRow = INVALID;
+    int endRow = INVALID;
+
+    for ( int row : orderedRows )
+    {
+      if ( startRow == INVALID )
+      {
+        startRow = row;
+        endRow = row;
+      }
+      else if ( row == endRow + 1 )
+        endRow = row;
+      else
+      {
+        Selection newArea = new Selection( FIRSTCELL, startRow, AFTER, endRow );
+        m_selected.add( newArea );
+        startRow = row;
+        endRow = row;
+      }
+    }
+
+    if ( startRow != INVALID )
+    {
+      Selection newArea = new Selection( FIRSTCELL, startRow, AFTER, endRow );
+      m_selected.add( newArea );
+    }
+    signal( m_selected.size() );
   }
 
   /******************************************* update ********************************************/

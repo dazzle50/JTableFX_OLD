@@ -35,6 +35,13 @@ public class Selection
   public int               r2;                             // largest row index
 
   /***************************************** constructor *****************************************/
+  public Selection( int columnIndex1, int rowIndex1, int columnIndex2, int rowIndex2 )
+  {
+    // set private variables in correct order
+    set( columnIndex1, rowIndex1, columnIndex2, rowIndex2 );
+  }
+
+  /********************************************* set *********************************************/
   public void set( int columnIndex1, int rowIndex1, int columnIndex2, int rowIndex2 )
   {
     // set private variables in correct order

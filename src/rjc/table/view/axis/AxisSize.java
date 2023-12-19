@@ -23,6 +23,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
+import java.util.TreeSet;
 
 import rjc.table.signal.IListener;
 import rjc.table.signal.ISignal;
@@ -43,13 +44,16 @@ public class AxisSize extends AxisBase implements IListener
   private ReadOnlyDouble              m_zoomProperty;
 
   // exceptions to default size
-  final private Map<Integer, Integer> m_sizeExceptions   = new HashMap<>();
+  final private Map<Integer, Integer> m_sizeExceptions         = new HashMap<>();
 
   // cached cell index to start pixel coordinate
-  final private ArrayList<Integer>    m_startPixelCache  = new ArrayList<>();
+  final private ArrayList<Integer>    m_startPixelCache        = new ArrayList<>();
 
   // observable integer for cached axis size in pixels (includes header)
-  private ObservableInteger           m_totalPixelsCache = new ObservableInteger( INVALID );
+  private ObservableInteger           m_totalPixelsCache       = new ObservableInteger( INVALID );
+
+  // array mapping from position to index
+  final private ArrayList<Integer>    m_dataIndexFromViewIndex = new ArrayList<>();
 
   /**************************************** constructor ******************************************/
   public AxisSize( ReadOnlyInteger countProperty )
@@ -422,10 +426,67 @@ public class AxisSize extends AxisBase implements IListener
   }
 
   /******************************************* reorder *******************************************/
-  public void reorder( HashSet<Integer> m_selected, int index )
+  public int reorder( HashSet<Integer> toBeMovedIndexes, int insertIndex )
   {
-    // implements column/row reordering if possible
-    throw new UnsupportedOperationException( "NOT YET IMPLEMENTED !!!" );
+    // trim unnecessary mapping, and calculate hash
+    var beforeHash = trimHashIndexMapping();
+
+    // reorder mapping between view-indexes and data-indexes, first create reverse ordered set
+    TreeSet<Integer> ordered = new TreeSet<>();
+    for ( int index : toBeMovedIndexes )
+      ordered.add( -index );
+
+    // ensure data-view mapping array is big enough
+    int neededSize = Math.max( insertIndex, -ordered.first() );
+    while ( m_dataIndexFromViewIndex.size() <= neededSize )
+      m_dataIndexFromViewIndex.add( m_dataIndexFromViewIndex.size() );
+
+    // remove the indexes to be moved from mapping
+    var moved = new ArrayList<Integer>( toBeMovedIndexes.size() );
+    for ( int index : ordered )
+      moved.add( 0, m_dataIndexFromViewIndex.remove( -index ) );
+
+    // count of indexes before insertion point
+    int beforeInsert = 0;
+    for ( int index : ordered )
+      if ( -index < insertIndex )
+        beforeInsert++;
+
+    // re-insert moved indexes back into mapping at correct new position
+    m_dataIndexFromViewIndex.addAll( insertIndex - beforeInsert, moved );
+
+    // trim unnecessary mapping, and compare hash to see if changed from before reorder
+    if ( trimHashIndexMapping() == beforeHash )
+      return INVALID;
+
+    // return start index of reordered
+    return insertIndex - beforeInsert;
+  }
+
+  /************************************ trimHashIndexMapping *************************************/
+  private int trimHashIndexMapping()
+  {
+    // remove any unneeded mapping, and return hash-code of resulting array
+    int index = m_dataIndexFromViewIndex.size() - 1;
+    while ( index >= 0 && m_dataIndexFromViewIndex.get( index ) == index )
+      m_dataIndexFromViewIndex.remove( index-- );
+
+    return m_dataIndexFromViewIndex.hashCode();
+  }
+
+  /**************************************** getDataIndex *****************************************/
+  public int getDataIndex( int viewIndex )
+  {
+    // return the data-model index from the table-view index
+    if ( viewIndex >= FIRSTCELL && viewIndex < m_dataIndexFromViewIndex.size() )
+      return m_dataIndexFromViewIndex.get( viewIndex );
+
+    // if not in mapping but within count, then return view index as not re-ordered
+    if ( viewIndex >= INVALID && viewIndex < getCount() )
+      return viewIndex;
+
+    // view index is out of bounds so return invalid
+    return INVALID;
   }
 
 }

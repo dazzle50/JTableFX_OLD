@@ -36,8 +36,9 @@ public class EditCellDrawer extends CellDrawer
   protected Pos getTextAlignment()
   {
     // return left alignment for the two text columns
+    int dataColumn = view.getColumnsAxis().getDataIndex( columnIndex );
     if ( rowIndex > TableAxis.HEADER )
-      if ( columnIndex == EditData.SECTION_READONLY || columnIndex == EditData.SECTION_TEXT )
+      if ( dataColumn == EditData.SECTION_READONLY || columnIndex == EditData.SECTION_TEXT )
         return Pos.CENTER_LEFT;
 
     // otherwise centre alignment

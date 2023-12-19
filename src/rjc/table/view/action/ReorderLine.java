@@ -52,7 +52,7 @@ public class ReorderLine extends Line
     setStartY( 0.0 );
     setEndY( Math.min( m_view.getCanvas().getHeight(), m_view.getTableHeight() ) );
 
-    int m_index = beforeColumnIndex;
+    m_index = beforeColumnIndex;
     int x = m_view.getColumnStartX( m_index );
     if ( x < m_view.getHeaderWidth() )
     {
@@ -75,7 +75,7 @@ public class ReorderLine extends Line
     setStartX( 0.0 );
     setEndX( Math.min( m_view.getCanvas().getWidth(), m_view.getTableWidth() ) );
 
-    int m_index = beforeRowIndex;
+    m_index = beforeRowIndex;
     int y = m_view.getRowStartY( m_index );
     if ( y < m_view.getHeaderHeight() )
     {

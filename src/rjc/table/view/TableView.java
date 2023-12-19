@@ -122,13 +122,11 @@ public class TableView extends TableViewParent
     // create the observable positions for focus, select and mouse
     m_selection = new CellSelection( this );
     m_focusCell = new ViewPosition( this );
-    m_focusCell.addListener( ( sender, msg ) -> redraw() );
 
     m_selectCell = new ViewPosition( this );
     m_selectCell.addLaterListener( ( sender, msg ) ->
     {
       getSelection().update();
-      getCanvas().redrawOverlay();
       if ( getCursor() != Cursors.SELECTING_CELLS && getCursor() != Cursors.SELECTING_COLS
           && getCursor() != Cursors.SELECTING_ROWS )
         scrollTo( m_selectCell );
@@ -139,6 +137,7 @@ public class TableView extends TableViewParent
     {
       getCanvas().redrawColumn( TableAxis.HEADER );
       getCanvas().redrawRow( TableAxis.HEADER );
+      getCanvas().redrawOverlay();
     } );
 
     // react to zoom values changes

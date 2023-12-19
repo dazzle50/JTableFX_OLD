@@ -26,6 +26,7 @@ import rjc.table.data.TableData;
 import rjc.table.data.types.Date;
 import rjc.table.data.types.DateTime;
 import rjc.table.data.types.Time;
+import rjc.table.view.axis.AxisBase;
 
 /*************************************************************************************************/
 /******************** Example customised table data source for editable table ********************/
@@ -189,16 +190,13 @@ public class EditData extends TableData implements IDataReorderRows
 
   /***************************************** reorderRows *****************************************/
   @Override
-  public void reorderRows( HashSet<Integer> fromIndexes, int insertIndex )
+  public int reorderRows( HashSet<Integer> fromIndexes, int insertIndex )
   {
     // requests rows reorder - raise exception if cannot
-    if ( fromIndexes == null )
-      throw new NullPointerException( "From-list is null" );
-
     Utils.trace( "FROM = ", fromIndexes );
     Utils.trace( "TO   = ", insertIndex );
 
-    throw new UnsupportedOperationException( "NOT YET IMPLEMENTED !!!" );
+    return AxisBase.INVALID;
   }
 
 }

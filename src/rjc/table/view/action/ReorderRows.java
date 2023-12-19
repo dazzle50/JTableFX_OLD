@@ -22,6 +22,7 @@ import java.util.HashSet;
 
 import rjc.table.data.IDataReorderRows;
 import rjc.table.view.TableView;
+import rjc.table.view.axis.AxisBase;
 
 /*************************************************************************************************/
 /****************************** Supports table-view row re-ordering ******************************/
@@ -42,15 +43,21 @@ public class ReorderRows
     m_selected = view.getSelection().getSelectedRows();
     if ( m_selected == null )
       return;
-    m_line = new ReorderLine( view );
 
     // start reordering
+    m_view.getSelection().clear();
+    m_view.getSelection().selectRows( m_selected );
+    m_line = new ReorderLine( view );
     drag( y );
   }
 
   /******************************************** drag *********************************************/
   public static void drag( int y )
   {
+    // return without doing anything is reorder not started
+    if ( m_line == null )
+      return;
+
     // position line at nearest row edge
     m_y = y;
     int row = m_view.getRowNearestStartIndex( y );
@@ -61,7 +68,7 @@ public class ReorderRows
   public static boolean inProgress()
   {
     // if no reorder in progress return false
-    if ( m_view == null )
+    if ( m_line == null )
       return false;
 
     // return true as reorder in progress
@@ -73,16 +80,27 @@ public class ReorderRows
   public static void end()
   {
     // return without doing anything is reorder not started
-    if ( m_view == null )
+    if ( m_line == null )
       return;
 
-    // determine if data-model supports row reordering, otherwise reorder view only
+    // check if data-model supports row reordering, otherwise reorder on view only
+    int insertIndex;
     if ( m_view.getData() instanceof IDataReorderRows data )
-      data.reorderRows( m_selected, m_line.getIndex() );
+      insertIndex = data.reorderRows( m_selected, m_line.getIndex() );
     else
-      m_view.getRowsAxis().reorder( m_selected, m_line.getIndex() );
+      insertIndex = m_view.getRowsAxis().reorder( m_selected, m_line.getIndex() );
 
+    // update selected rows
+    if ( insertIndex >= AxisBase.FIRSTCELL )
+    {
+      m_view.getSelection().clear();
+      int lastIndex = insertIndex + m_selected.size() - 1;
+      m_view.getSelection().select( AxisBase.FIRSTCELL, insertIndex, AxisBase.AFTER, lastIndex );
+    }
+
+    // tidy up and redraw the view
     m_view.remove( m_line );
+    m_view.redraw();
     m_view = null;
     m_line = null;
   }

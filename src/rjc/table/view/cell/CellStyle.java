@@ -43,11 +43,20 @@ public class CellStyle extends CellContext
   }
 
   /****************************************** getText ********************************************/
-  public String getText( int cIndex, int rIndex )
+  public String getText( int viewColumn, int viewRow )
   {
     // return cell value as string for specified cell index
-    Object value = view.getData().getValue( cIndex, rIndex );
+    Object value = getData( viewColumn, viewRow );
     return value == null ? null : value.toString();
+  }
+
+  /****************************************** getData ********************************************/
+  public Object getData( int viewColumn, int viewRow )
+  {
+    // return data-model object for specified view index
+    int dataColumn = view.getColumnsAxis().getDataIndex( viewColumn );
+    int dataRow = view.getRowsAxis().getDataIndex( viewRow );
+    return view.getData().getValue( dataColumn, dataRow );
   }
 
   /************************************** getTextAlignment ***************************************/
