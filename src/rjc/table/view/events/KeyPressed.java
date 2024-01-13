@@ -52,6 +52,23 @@ public class KeyPressed implements EventHandler<KeyEvent>
       return;
     if ( handleZoom( event.getCode() ) )
       return;
+
+    // handle control keys
+    if ( m_ctrl && !m_alt )
+      switch ( event.getCode() )
+      {
+        case Z: // undo command (Ctrl-Z)
+          m_view.getUndoStack().undo();
+          return;
+
+        case Y: // redo command (Ctrl-Y)
+          m_view.getUndoStack().redo();
+          return;
+
+        default:
+          break;
+      }
+
   }
 
   /***************************************** handleZoom ******************************************/

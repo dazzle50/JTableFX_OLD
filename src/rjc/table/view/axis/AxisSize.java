@@ -21,8 +21,8 @@ package rjc.table.view.axis;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 import java.util.TreeSet;
 
 import rjc.table.signal.IListener;
@@ -38,22 +38,22 @@ import rjc.table.signal.ObservableInteger.ReadOnlyInteger;
 public class AxisSize extends AxisBase implements IListener
 {
   // variables defining default & minimum cell size (width or height) equals pixels if zoom is 1.0
-  private int                         m_defaultSize;
-  private int                         m_minimumSize;
-  private int                         m_headerSize;
-  private ReadOnlyDouble              m_zoomProperty;
+  private int                   m_defaultSize;
+  private int                   m_minimumSize;
+  private int                   m_headerSize;
+  private ReadOnlyDouble        m_zoomProperty;
 
   // exceptions to default size
-  final private Map<Integer, Integer> m_sizeExceptions         = new HashMap<>();
+  private Map<Integer, Integer> m_sizeExceptions         = new HashMap<>();
 
   // cached cell index to start pixel coordinate
-  final private ArrayList<Integer>    m_startPixelCache        = new ArrayList<>();
+  private ArrayList<Integer>    m_startPixelCache        = new ArrayList<>();
 
   // observable integer for cached axis size in pixels (includes header)
-  private ObservableInteger           m_totalPixelsCache       = new ObservableInteger( INVALID );
+  private ObservableInteger     m_totalPixelsCache       = new ObservableInteger( INVALID );
 
   // array mapping from position to index
-  final private ArrayList<Integer>    m_dataIndexFromViewIndex = new ArrayList<>();
+  private ArrayList<Integer>    m_dataIndexFromViewIndex = new ArrayList<>();
 
   /**************************************** constructor ******************************************/
   public AxisSize( ReadOnlyInteger countProperty )
@@ -426,45 +426,78 @@ public class AxisSize extends AxisBase implements IListener
   }
 
   /******************************************* reorder *******************************************/
-  public int reorder( HashSet<Integer> toBeMovedIndexes, int insertIndex )
+  public int reorder( Set<Integer> toBeMovedIndexes, int insertIndex )
   {
-    // trim unnecessary mapping, and calculate hash
-    var beforeHash = trimHashIndexMapping();
-
-    // reorder mapping between view-indexes and data-indexes, first create reverse ordered set
-    TreeSet<Integer> ordered = new TreeSet<>();
-    for ( int index : toBeMovedIndexes )
-      ordered.add( -index );
+    // reorder mapping between view-indexes and data-indexes
+    var beforeHash = getIndexMappingHash();
+    var movedSorted = new ArrayList<Integer>( toBeMovedIndexes );
+    movedSorted.sort( null );
 
     // ensure data-view mapping array is big enough
-    int neededSize = Math.max( insertIndex, -ordered.first() );
+    int neededSize = Math.max( insertIndex, movedSorted.getLast() );
     while ( m_dataIndexFromViewIndex.size() <= neededSize )
       m_dataIndexFromViewIndex.add( m_dataIndexFromViewIndex.size() );
 
-    // remove the indexes to be moved from mapping
-    var moved = new ArrayList<Integer>( toBeMovedIndexes.size() );
-    for ( int index : ordered )
-      moved.add( 0, m_dataIndexFromViewIndex.remove( -index ) );
+    // remove the indexes to be moved from mapping (highest to lowest to preserve position)
+    var movedList = new ArrayList<Integer>( movedSorted.size() );
+    for ( int i = movedSorted.size(); i-- > 0; )
+      movedList.add( m_dataIndexFromViewIndex.remove( (int) movedSorted.get( i ) ) );
 
-    // count of indexes before insertion point
-    int beforeInsert = 0;
-    for ( int index : ordered )
-      if ( -index < insertIndex )
-        beforeInsert++;
+    // adjust insert-index to take account of removed entries
+    int oldInsert = insertIndex;
+    for ( int index : movedSorted )
+      if ( index < oldInsert )
+        insertIndex--;
+      else
+        break;
 
-    // re-insert moved indexes back into mapping at correct new position
-    m_dataIndexFromViewIndex.addAll( insertIndex - beforeInsert, moved );
+    // re-insert moved indexes back into mapping at adjusted insert position and in correct order
+    m_dataIndexFromViewIndex.addAll( insertIndex, movedList.reversed() );
 
-    // trim unnecessary mapping, and compare hash to see if changed from before reorder
-    if ( trimHashIndexMapping() == beforeHash )
+    // compare mapping hash to see if changed from before reorder, if no change return INVALID
+    if ( getIndexMappingHash() == beforeHash )
       return INVALID;
 
+    // truncate pixel cache in case sizes also moved
+    int min = Math.min( insertIndex, movedSorted.getFirst() );
+    if ( min < m_startPixelCache.size() )
+      m_startPixelCache.subList( min, m_startPixelCache.size() ).clear();
+
+    // update size exceptions taking into account moves
+    var newSizeExceptions = new HashMap<Integer, Integer>();
+    for ( int exceptionIndex : new TreeSet<Integer>( m_sizeExceptions.keySet() ) )
+    {
+      int moved = movedSorted.indexOf( exceptionIndex );
+      if ( moved >= 0 )
+        // moved index
+        newSizeExceptions.put( insertIndex + moved, m_sizeExceptions.get( exceptionIndex ) );
+      else
+        // not-moved index
+        newSizeExceptions.put( adjustedIndex( exceptionIndex, insertIndex, movedSorted ),
+            m_sizeExceptions.get( exceptionIndex ) );
+    }
+    m_sizeExceptions = newSizeExceptions;
+
     // return start index of reordered
-    return insertIndex - beforeInsert;
+    return insertIndex;
   }
 
-  /************************************ trimHashIndexMapping *************************************/
-  private int trimHashIndexMapping()
+  /**************************************** adjustedIndex ****************************************/
+  private Integer adjustedIndex( int exceptionIndex, int insertIndex, ArrayList<Integer> movedSorted )
+  {
+    // count of moved before exception index
+    int before = 0;
+    while ( movedSorted.size() > before && movedSorted.get( before ) < exceptionIndex )
+      before++;
+
+    if ( exceptionIndex < insertIndex + before )
+      return exceptionIndex - before;
+
+    return exceptionIndex - before + movedSorted.size();
+  }
+
+  /************************************* getIndexMappingHash *************************************/
+  private int getIndexMappingHash()
   {
     // remove any unneeded mapping, and return hash-code of resulting array
     int index = m_dataIndexFromViewIndex.size() - 1;

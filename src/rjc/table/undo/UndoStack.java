@@ -81,6 +81,20 @@ public class UndoStack implements ISignal
   /******************************************** push *********************************************/
   public boolean push( IUndoCommand command )
   {
+    // push command onto undo-stack and do command
+    return push( command, true );
+  }
+
+  /**************************************** pushWithoutDo ****************************************/
+  public boolean pushWithoutDo( IUndoCommand command )
+  {
+    // push command onto undo-stack and do NOT do command
+    return push( command, false );
+  }
+
+  /******************************************** push *********************************************/
+  private boolean push( IUndoCommand command, boolean redo )
+  {
     // if command not valid, then return false and don't push on stack
     if ( !command.isValid() )
       return false;
@@ -95,9 +109,10 @@ public class UndoStack implements ISignal
         m_cleanIndex = Integer.MIN_VALUE;
     }
 
-    // add new command to stack, do it, and update stack index
+    // add new command to stack, do it (if requested), and update stack index
     m_stack.add( command );
-    command.redo();
+    if ( redo )
+      command.redo();
     m_index = m_stack.size();
     signal();
 

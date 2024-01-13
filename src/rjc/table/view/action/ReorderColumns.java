@@ -20,7 +20,9 @@ package rjc.table.view.action;
 
 import java.util.HashSet;
 
+import javafx.geometry.Orientation;
 import rjc.table.data.IDataReorderColumns;
+import rjc.table.undo.CommandReorderView;
 import rjc.table.view.TableView;
 import rjc.table.view.axis.AxisBase;
 
@@ -83,19 +85,27 @@ public class ReorderColumns
     if ( m_line == null )
       return;
 
-    // check if data-model supports column reordering, otherwise reorder on view only
-    int insertIndex;
+    int adjustedInsertIndex;
     if ( m_view.getData() instanceof IDataReorderColumns data )
-      insertIndex = data.reorderColumns( m_selected, m_line.getIndex() );
+      // if data-model supports column reordering
+      adjustedInsertIndex = data.reorderColumns( m_selected, m_line.getIndex() );
     else
-      insertIndex = m_view.getColumnsAxis().reorder( m_selected, m_line.getIndex() );
+    {
+      // reorder columns on view via undo-command
+      var command = new CommandReorderView();
+      adjustedInsertIndex = command.prepare( m_view, Orientation.HORIZONTAL, m_selected, m_line.getIndex() );
+
+      // only push undo-command onto stack if valid adjusted insert index
+      if ( adjustedInsertIndex != AxisBase.INVALID )
+        m_view.getUndoStack().pushWithoutDo( command );
+    }
 
     // update selected columns
-    if ( insertIndex >= AxisBase.FIRSTCELL )
+    if ( adjustedInsertIndex >= AxisBase.FIRSTCELL )
     {
       m_view.getSelection().clear();
-      int lastIndex = insertIndex + m_selected.size() - 1;
-      m_view.getSelection().select( insertIndex, AxisBase.FIRSTCELL, lastIndex, AxisBase.AFTER );
+      int lastIndex = adjustedInsertIndex + m_selected.size() - 1;
+      m_view.getSelection().select( adjustedInsertIndex, AxisBase.FIRSTCELL, lastIndex, AxisBase.AFTER );
     }
 
     // tidy up and redraw the view
@@ -104,4 +114,5 @@ public class ReorderColumns
     m_view = null;
     m_line = null;
   }
+
 }

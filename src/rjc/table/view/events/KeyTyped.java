@@ -20,7 +20,6 @@ package rjc.table.view.events;
 
 import javafx.event.EventHandler;
 import javafx.scene.input.KeyEvent;
-import rjc.table.Utils;
 import rjc.table.view.TableView;
 
 /*************************************************************************************************/
@@ -40,7 +39,32 @@ public class KeyTyped implements EventHandler<KeyEvent>
     var focus = view.getFocusCell();
     var select = view.getSelectCell();
 
-    Utils.trace( event );
+    // move editor right or left when tab typed
+    char key = event.getCharacter().charAt( 0 );
+    if ( key == '\t' )
+      if ( event.isShiftDown() )
+      {
+        focus.moveLeft();
+        select.setPosition( focus );
+      }
+      else
+      {
+        focus.moveRight();
+        select.setPosition( focus );
+      }
+
+    // move editor up or down when carriage return typed
+    if ( key == '\r' )
+      if ( event.isShiftDown() )
+      {
+        focus.moveUp();
+        select.setPosition( focus );
+      }
+      else
+      {
+        focus.moveDown();
+        select.setPosition( focus );
+      }
   }
 
 }

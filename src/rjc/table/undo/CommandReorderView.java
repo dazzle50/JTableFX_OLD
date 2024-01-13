@@ -18,34 +18,86 @@
 
 package rjc.table.undo;
 
+import java.util.HashSet;
+import java.util.Set;
+import java.util.TreeSet;
+
+import javafx.geometry.Orientation;
+import rjc.table.view.TableView;
+import rjc.table.view.axis.TableAxis;
+
 /*************************************************************************************************/
 /******************** UndoCommand for reordering columns or rows in view only ********************/
 /*************************************************************************************************/
 
 public class CommandReorderView implements IUndoCommand
 {
+  private TableView    m_view;           // table view
+  private TableAxis    m_axis;           // column or row table axis
+  private Set<Integer> m_indexes;        // indexes to be moved
+  private int          m_insertBefore;   // insert before this view-index
+  private int          m_adjustedBefore; // insert position after reorder
+  private String       m_text;           // text describing command
 
   /******************************************* redo **********************************************/
   @Override
   public void redo()
   {
-    // TODO Auto-generated method stub
-
+    // action command
+    m_axis.reorder( m_indexes, m_insertBefore );
+    m_view.redraw();
   }
 
   /******************************************* undo **********************************************/
   @Override
   public void undo()
   {
-    // TODO Auto-generated method stub
+    // revert command
+    int fromOffset = 0;
+    int toOffset = m_indexes.size() + m_adjustedBefore - m_insertBefore;
+    var set = new HashSet<Integer>( 1 );
 
+    for ( int toIndex : new TreeSet<Integer>( m_indexes ) )
+    {
+      set.clear();
+      if ( toIndex < m_insertBefore )
+      {
+        set.add( m_adjustedBefore + fromOffset++ );
+        m_axis.reorder( set, toIndex );
+      }
+      else
+      {
+        set.add( m_insertBefore );
+        m_axis.reorder( set, toIndex + toOffset-- );
+      }
+    }
+
+    // redraw table in this view only
+    m_view.getSelection().clear();
+    m_view.redraw();
   }
 
   /******************************************* text **********************************************/
   @Override
   public String text()
   {
-    // TODO Auto-generated method stub
-    return null;
+    // command description
+    return m_text;
+  }
+
+  /******************************************* prepare *******************************************/
+  public int prepare( TableView view, Orientation orientation, Set<Integer> indexes, int insertIndex )
+  {
+    // setup command
+    m_view = view;
+    m_indexes = indexes;
+    m_insertBefore = insertIndex;
+    m_axis = orientation == Orientation.HORIZONTAL ? m_view.getColumnsAxis() : m_view.getRowsAxis();
+    m_text = "Moving " + m_indexes.size() + ( orientation == Orientation.HORIZONTAL ? " column" : " row" )
+        + ( m_indexes.size() > 1 ? "s" : "" );
+
+    // return start index of reordered (or INVALID(-2) if no changes)
+    m_adjustedBefore = m_axis.reorder( indexes, insertIndex );
+    return m_adjustedBefore;
   }
 }
