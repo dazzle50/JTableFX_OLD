@@ -19,8 +19,12 @@
 package rjc.table.view.events;
 
 import javafx.event.EventHandler;
+import javafx.scene.Cursor;
+import javafx.scene.input.MouseButton;
 import javafx.scene.input.MouseEvent;
+import rjc.table.Utils;
 import rjc.table.view.TableView;
+import rjc.table.view.cursor.Cursors;
 
 /*************************************************************************************************/
 /************************* Handles mouse clicked events from table-view **************************/
@@ -36,8 +40,34 @@ public class MouseClicked implements EventHandler<MouseEvent>
     // user has clicked the table
     event.consume();
     TableView view = (TableView) event.getSource();
+    Cursor cursor = view.getCursor();
 
-    // Utils.trace( event );
+    // double-click on table body to start cell editor with cell contents
+    boolean doubleClick = event.getClickCount() == 2 && event.getButton() == MouseButton.PRIMARY;
+    if ( doubleClick && cursor == Cursors.CROSS )
+      view.openEditor();
+
+    // double-click on column header resize to autofit
+    if ( doubleClick && cursor == Cursors.H_RESIZE )
+      autofitColumnWidth();
+
+    // double-click on row header resize to autofit
+    if ( doubleClick && cursor == Cursors.V_RESIZE )
+      autofitRowHeight();
+  }
+
+  /************************************* autofitColumnWidth **************************************/
+  private void autofitColumnWidth()
+  {
+    // TODO Auto-generated method stub
+    Utils.trace( "TODO - not yet implemented" );
+  }
+
+  /************************************** autofitRowHeight ***************************************/
+  private void autofitRowHeight()
+  {
+    // TODO Auto-generated method stub
+    Utils.trace( "TODO - not yet implemented" );
   }
 
 }

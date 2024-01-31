@@ -37,6 +37,26 @@ public class ViewPosition extends ObservablePosition
     m_view = view;
   }
 
+  /**************************************** getCellStyle *****************************************/
+  public CellStyle getCellStyle()
+  {
+    // return cell-context for this view-position
+    var style = new CellStyle();
+    style.view = m_view;
+    style.columnIndex = getColumn();
+    style.rowIndex = getRow();
+    return style;
+  }
+
+  /****************************************** getData ********************************************/
+  public Object getData()
+  {
+    // return data-model object for specified view index
+    int dataColumn = m_view.getColumnsAxis().getDataIndex( getColumn() );
+    int dataRow = m_view.getRowsAxis().getDataIndex( getRow() );
+    return m_view.getData().getValue( dataColumn, dataRow );
+  }
+
   /****************************************** isVisible ******************************************/
   public boolean isVisible()
   {

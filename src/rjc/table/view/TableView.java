@@ -19,6 +19,7 @@
 package rjc.table.view;
 
 import javafx.geometry.Orientation;
+import rjc.table.Status;
 import rjc.table.Utils;
 import rjc.table.data.TableData;
 import rjc.table.signal.ObservableDouble;
@@ -68,6 +69,7 @@ public class TableView extends TableViewParent
   private CellDrawer       m_drawer;
   private CellSelection    m_selection;
   private UndoStack        m_undostack;
+  private Status           m_status;
 
   private ViewPosition     m_focusCell;
   private ViewPosition     m_selectCell;
@@ -356,6 +358,20 @@ public class TableView extends TableViewParent
     m_name = name;
   }
 
+  /***************************************** getStatus *******************************************/
+  public Status getStatus()
+  {
+    // return status object for table-view
+    return m_status;
+  }
+
+  /***************************************** setStatus *******************************************/
+  public void setStatus( Status status )
+  {
+    // set status object for table-view
+    m_status = status;
+  }
+
   /***************************************** getCanvas *******************************************/
   public TableCanvas getCanvas()
   {
@@ -398,6 +414,23 @@ public class TableView extends TableViewParent
   {
     // return cell editor control (or null if cell is read-only)
     return null;
+  }
+
+  /***************************************** openEditor ******************************************/
+  public void openEditor()
+  {
+    // open editor for focus cell with current value
+    openEditor( getFocusCell().getData() );
+  }
+
+  /***************************************** openEditor ******************************************/
+  public void openEditor( Object value )
+  {
+    // open editor for focus cell with specified value
+    var cell = getFocusCell().getCellStyle();
+    CellEditorBase editor = getCellEditor( cell );
+    if ( editor != null )
+      editor.open( value, cell );
   }
 
   /*********************************** getHorizontalScrollBar ************************************/
@@ -583,4 +616,5 @@ public class TableView extends TableViewParent
     return getClass().getSimpleName() + "@" + Integer.toHexString( System.identityHashCode( this ) ) + "[m_name="
         + m_name + " m_canvas=" + m_canvas + "]";
   }
+
 }
